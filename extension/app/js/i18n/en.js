@@ -278,6 +278,14 @@
   'Động từ tả ảnh Part 1, câu hỏi – đáp Part 2, hội thoại văn phòng, đi lại, thông báo Part 3–4': 'Part 1 photo verbs, Part 2 question–response, office and travel conversations, Part 3–4 announcements',
   'TOEIC Reading – Part 5–7: collocation & thuật ngữ': 'TOEIC Reading – Parts 5–7: collocations & terms',
   'Cụm giới từ, tính từ + giới từ, collocation công sở, cụm cố định trong email – thông báo – hợp đồng': 'Prepositional phrases, adjective + preposition, business collocations, fixed phrases in emails, notices and contracts',
+  'TOEFL Listening – hội thoại trong campus': 'TOEFL Listening – campus conversations',
+  'Phòng đào tạo, cố vấn học tập, ký túc xá, học phí, gia hạn bài, môn tiên quyết, bảng điểm, thư viện, đời sống sinh viên': 'Registrar, academic advisor, dorms, tuition, extensions, prerequisites, transcripts, library, student life',
+  'TOEFL Lectures – từ theo ngành học': 'TOEFL Lectures – vocabulary by discipline',
+  'Sinh học, địa chất, thiên văn, lịch sử nghệ thuật, nhân học, tâm lý học – từ chuyên ngành hay gặp trong bài giảng': 'Biology, geology, astronomy, art history, anthropology, psychology – key lecture vocabulary',
+  'TOEIC Part 5–7 – văn phòng, nhân sự, mua hàng, tài chính': 'TOEIC Part 5–7 – office, HR, purchasing, finance',
+  'Hóa đơn, hoàn tiền, báo cáo quý, thu mua, kế toán, tuyển dụng, lương thưởng, cuộc họp & quy trình nội bộ': 'Invoices, reimbursements, quarterly reports, procurement, accounting, hiring, payroll, meetings & internal procedures',
+  'TOEIC – du lịch, khách sạn, sự kiện, sản xuất': 'TOEIC – travel, hotels, events, manufacturing',
+  'Lịch trình, quá cảnh, đặt phòng, tiện nghi khách sạn, địa điểm tổ chức – hội chợ, dây chuyền lắp ráp, kiểm soát chất lượng, kho vận': 'Itineraries, layovers, bookings, hotel amenities, venues & trade fairs, assembly lines, quality control, logistics',
 }); })(typeof self !== 'undefined' ? self : this);
 
 /* English UI strings – phrases.js, write.js, task1.js, ideas.js, assist.js */
