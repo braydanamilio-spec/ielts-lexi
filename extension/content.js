@@ -358,7 +358,7 @@
       b.querySelectorAll('.spk[data-text]').forEach(x => x.onclick = () => speak(x.dataset.text, '', accent, +(x.dataset.rate || 0.95)));
       b.querySelector('#close').onclick = hide;
       bindNav(b);
-      b.querySelector('#more').onclick = () => chrome.runtime.sendMessage({ type: 'openApp', hash: '#/dict/' + encodeURIComponent(e.word) });
+      b.querySelector('#more').onclick = () => chrome.runtime.sendMessage({ type: 'openApp', hash: '#/dict/' + encodeURIComponent(e.word) }).catch(() => {});
       b.querySelector('#save').onclick = async ev => {
         const btn = ev.currentTarget;
         btn.disabled = true;
@@ -413,6 +413,7 @@
 
     if (context) chrome.runtime.sendMessage({ type: 'translate', text: context }).then(r => { ctxVi = (r && r.vi) || ''; paintCtx(); }).catch(() => {});
     const full = chrome.runtime.sendMessage({ type: 'lookup', word });
+    full.catch(() => {}); // tránh lỗi "Uncaught (in promise)" khi add-on vừa được cập nhật
     let q;
     try { q = await chrome.runtime.sendMessage({ type: 'quick', word }); }
     catch (err) { b.innerHTML = H('<div class="muted">Add-on vừa được cập nhật – hãy tải lại trang.</div>'); return; }

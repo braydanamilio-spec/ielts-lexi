@@ -65,7 +65,7 @@ async function injectIntoOpenTabs() {
 }
 
 chrome.runtime.onInstalled.addListener(async ({ reason }) => {
-  chrome.contextMenus.removeAll();
+  await chrome.contextMenus.removeAll(); // chờ xóa xong rồi mới tạo – tránh lỗi "duplicate id" sau mỗi lần cập nhật
   chrome.contextMenus.create({ id: 'lexi-lookup', title: 'Tra từ “%s” với Vocaband', contexts: ['selection'] });
   chrome.contextMenus.create({ id: 'lexi-translate', title: 'Dịch đoạn đã chọn sang tiếng Việt', contexts: ['selection'] });
   injectIntoOpenTabs();
@@ -77,6 +77,7 @@ chrome.runtime.onInstalled.addListener(async ({ reason }) => {
 chrome.runtime.onStartup.addListener(() => { scheduleReminder(); updateBadge(); });
 
 chrome.alarms.onAlarm.addListener(a => {
+  if (a.name === 'dev-reload') return;
   if (a.name === 'daily-reminder') sendReminder();
   if (a.name === 'badge') checkGolden();
   updateBadge();
