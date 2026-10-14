@@ -923,3 +923,4 @@ button, .btn, .option, .tabs, .bottom-nav { -webkit-user-select: none; user-sele
 /* App gốc (Capacitor): chừa tai thỏ/thanh trạng thái ở trên & thanh điều hướng ở dưới */
 html.native .topbar { padding-top: max(.6rem, env(safe-area-inset-top)); }
 html.native body { overscroll-behavior: none; }
+html:not([lang="vi"]) .vi-only { display: none !important; }
