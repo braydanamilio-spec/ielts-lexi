@@ -16,7 +16,7 @@ Người dùng (mọi quốc gia)
    │
    ├─ Tra từ / dịch / phát âm: Google Translate (gtx), Wiktionary, dictionaryapi.dev, Wikimedia Commons, Datamuse
    ├─ AI: Gemini bằng khóa của người dùng / Gemini Nano có sẵn trong Chrome
-   ├─ Âm thanh: giọng đọc tốt nhất của thiết bị + bản ghi giọng người thật (bộ nhớ đệm 400 file, nghe offline)
+   ├─ Âm thanh: bài nghe IELTS/TOEIC/TOEFL + câu hỏi giám khảo = giọng Kokoro-82M (Apache-2.0) tạo sẵn trên máy (scripts/gen-audio.mjs) → mp3 trên GitHub Pages; từ vựng = bản ghi người thật (Wikimedia) + giọng tốt nhất của thiết bị; thiếu file → giọng máy
    └─ Đồng bộ: Firebase Auth (Google, miễn phí không giới hạn) + Firestore
 ```
 

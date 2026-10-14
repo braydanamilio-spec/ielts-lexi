@@ -1049,6 +1049,7 @@
           <label class="field" style="margin-top:.6rem"><span>${t('Tốc độ đọc:')} <b id="vRate">${(s.ttsRate || 0.92).toFixed(2)}×</b></span><input type="range" min="0.6" max="1.2" step="0.02" id="sRate" value="${s.ttsRate || 0.92}" style="width:100%"></label>
           <div class="row" style="margin:.4rem 0 .6rem"><button class="btn sm" id="sTry">▶️ ${t('Nghe thử câu mẫu')}</button><span class="tiny muted">${t('Từ đơn ưu tiên bản ghi giọng người thật')}</span></div>
           <label class="switch"><span>${t('Tự phát âm khi hiện thẻ')}</span><input type="checkbox" id="sAuto" ${s.autoSpeak ? 'checked' : ''}></label>
+          <label class="switch"><span>${t('Giọng đọc tự nhiên cho bài nghe & giám khảo (tải âm thanh từ mạng)')}</span><input type="checkbox" id="sHq" ${s.hqVoice !== false ? 'checked' : ''}></label>
           <label class="switch"><span>${t('Hiệu ứng âm thanh')}</span><input type="checkbox" id="sSfx" ${s.sfx ? 'checked' : ''}></label>
         </div>
         <div class="card">
@@ -1097,6 +1098,7 @@
     $('#sTry').onclick = () => UI.tts('Many people believe that renewable energy is the key to a sustainable future. However, the transition will not happen overnight.', s.accent);
     $('#sAccent').onchange = e => { s.accent = e.target.value; save(); fillVoices(); speak('pronunciation', s.accent); };
     $('#sAuto').onchange = e => { s.autoSpeak = e.target.checked; save(); };
+    $('#sHq').onchange = e => { s.hqVoice = e.target.checked; save(); };
     $('#sSfx').onchange = e => { s.sfx = e.target.checked; save(); if (s.sfx) { Core.sfxOff = false; Sfx.correct(); } };
     $$('#sTheme button').forEach(b => b.onclick = () => { s.theme = b.dataset.v; applyTheme(); save(); $$('#sTheme button').forEach(x => x.classList.toggle('on', x === b)); });
     $('#sTest').onclick = () => notify(true);

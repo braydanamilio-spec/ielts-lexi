@@ -4,7 +4,7 @@
 import fs from 'node:fs'; import vm from 'node:vm'; import { execFileSync } from 'node:child_process'; import { createRequire } from 'node:module';
 const require = createRequire(process.env.NODE_PATH ? process.env.NODE_PATH.split(':')[0] + '/' : import.meta.url);
 const OUT = 'web/audio/l', IDX = 'web/js/listen/audio-index.js', TMP = (process.env.TMPDIR || '/tmp') + '/vb-tts.wav';
-const limit = +(process.argv[process.argv.indexOf('--limit') + 1] || 0) || Infinity;
+const li = process.argv.indexOf('--limit'), limit = li > 0 ? +process.argv[li + 1] : Infinity; // --limit 0 = chỉ đếm, không tạo
 fs.mkdirSync(OUT, { recursive: true });
 const c = { self: {} }; c.self = c; vm.createContext(c);
 vm.runInContext(fs.readFileSync('web/js/listen/kvoice.js', 'utf8'), c);
@@ -35,7 +35,7 @@ for (const u of (c.TOEFL || {}).speaking || []) { const v = GEN[u.accent] || GEN
 }
 const writeIndex = () => { const keys = fs.readdirSync(OUT).filter(f => f.endsWith('.mp3')).map(f => f.slice(0, -4)).sort(); fs.writeFileSync(IDX, `/* Danh sách câu thoại đã có file âm thanh Kokoro (tự sinh bởi scripts/gen-audio.mjs) */\n(function (g) { g.LISTEN_AUDIO = new Set(${JSON.stringify(keys.join(' '))}.split(' ').filter(Boolean)); })(typeof self !== 'undefined' ? self : this);\n`); return keys.length; };
 console.log(`${parts.length} phần nghe · cần tạo ${jobs.size} câu`);
-if (jobs.size) {
+if (jobs.size && limit > 0) {
   const { KokoroTTS } = require('kokoro-js');
   const tts = await KokoroTTS.from_pretrained('onnx-community/Kokoro-82M-v1.0-ONNX', { dtype: 'q8', device: 'cpu' });
   let n = 0; const t0 = Date.now();
