@@ -1576,6 +1576,10 @@
   'Tạo mẹo nhớ bằng AI': 'Create a memory aid with AI', 'Đọc to theo 3 lần': 'Repeat aloud 3 times', 'AI đang nghĩ mẹo nhớ…': 'AI is thinking of a memory aid…',
   'Mẹo nhớ của riêng bạn (vd. liên tưởng âm thanh, hình ảnh)…': 'Your own memory aid (e.g. a sound or image association)…', 'Đã lưu mẹo nhớ': 'Memory aid saved', 'Bật AI': 'Turn on AI',
 }); })(typeof self !== 'undefined' ? self : this);
+(function (g) { Object.assign(g.I18N_DICT.en, {
+  'Gõ từ tiếng Anh rồi Enter': 'Type the English word, then Enter', 'Gợi ý: bắt đầu bằng “{a}”, {n} chữ cái': 'Hint: starts with “{a}”, {n} letters',
+  'Chính xác!': 'Correct!', 'Gần đúng – sai 1 chữ': 'Almost – one letter off', 'Chưa đúng': 'Not quite',
+}); })(typeof self !== 'undefined' ? self : this);
 
 /* English UI strings – web/js/app.js, web/index.html (app shell) */
 (function (g) { const D = g.I18N_DICT = g.I18N_DICT || {}; D.en = Object.assign(D.en || {}, {

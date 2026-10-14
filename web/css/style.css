@@ -831,3 +831,5 @@ kbd { font-family: ui-monospace, Menlo, monospace; font-size: .75em; padding: .0
 .sm-s.on { background: rgba(245, 158, 11, .25); border-radius: 4px; }
 .sm-v { cursor: pointer; border: 1px solid var(--line); }
 .leech { margin-top: .8rem; padding: .7rem .8rem; border-radius: 12px; background: var(--again-soft); border: 1px solid color-mix(in srgb, var(--again) 35%, transparent); }
+.type-in.ok { border-color: var(--good); background: var(--good-soft); } .type-in.near { border-color: #d97706; } .type-in.bad { border-color: var(--again); background: var(--again-soft); }
+.grades .suggest { outline: 3px solid var(--primary); outline-offset: 2px; }

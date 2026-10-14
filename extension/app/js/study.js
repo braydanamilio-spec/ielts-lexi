@@ -90,7 +90,15 @@
     const rev = session.reverse;
     const pct = session.done / Math.max(1, session.done + session.queue.length) * 100;
 
-    const front = rev ? `
+    // Nhớ chủ động: thẻ đã ôn ≥ 2 lần thỉnh thoảng (1/3) chuyển sang gõ lại từ từ nghĩa – nhớ sâu hơn nhận diện, đổi nhịp cho đỡ nhàm
+    const typeMode = !rev && !isNew && c.srs.reps >= 2 && state.settings.typeReview !== false && c.word.length <= 30 && Math.random() < 1 / 3;
+    const front = typeMode ? `
+        ${pic(c)}
+        <div class="vi" style="font-size:1.5rem">${esc(c.vi)}</div>${posChip(c.pos)}
+        ${c.ex ? `<div class="ctx">“${cloze(c.ex, c.word)}”</div>` : ''}
+        <input class="input type-in" id="typeIn" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="${t('Gõ từ tiếng Anh rồi Enter')}" style="margin-top:1rem;text-align:center;font-size:1.2rem">
+        <div class="muted tiny" style="margin-top:.4rem">${t('Gợi ý: bắt đầu bằng “{a}”, {n} chữ cái', { a: esc(c.word[0]), n: c.word.replace(/[^A-Za-z]/g, '').length })}</div>
+        <div id="typeRes" class="small" style="margin-top:.4rem"></div>` : rev ? `
         ${pic(c)}
         <div class="vi" style="font-size:1.6rem">${esc(c.vi)}</div>${posChip(c.pos)}
         ${c.ex ? `<div class="ctx">“${cloze(c.ex, c.word)}”</div>` : ''}
@@ -153,7 +161,23 @@
       $$('[data-grade]').forEach(b => b.onclick = () => grade(+b.dataset.grade, b));
       if (rev || state.settings.autoSpeak) say();
     };
-    $('#flash').addEventListener('click', e => { if (!e.target.closest('button, details, textarea')) flip(); });
+    $('#flash').addEventListener('click', e => { if (!e.target.closest('button, details, textarea, input')) flip(); });
+    if (typeMode) {
+      const inp = $('#typeIn'); setTimeout(() => inp.focus(), 50);
+      const norm = x => x.toLowerCase().replace(/[’']/g, "'").replace(/\s+/g, ' ').trim();
+      const dist = (a, b) => { const d = Array.from({ length: a.length + 1 }, (_, i) => [i]); for (let j = 1; j <= b.length; j++) d[0][j] = j; for (let i = 1; i <= a.length; i++) for (let j = 1; j <= b.length; j++) d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)); return d[a.length][b.length]; };
+      inp.addEventListener('keydown', e => {
+        if (e.key !== 'Enter' || flipped) return;
+        e.preventDefault(); e.stopPropagation();
+        const v = norm(inp.value); if (!v) return;
+        const dd = dist(v, norm(c.word)), sug = dd === 0 ? 2 : dd === 1 ? 1 : 0;
+        inp.disabled = true; inp.classList.add(dd === 0 ? 'ok' : dd === 1 ? 'near' : 'bad');
+        $('#typeRes').innerHTML = dd === 0 ? `✅ ${t('Chính xác!')}` : `${dd === 1 ? '🟡 ' + t('Gần đúng – sai 1 chữ') : '❌ ' + t('Chưa đúng')}: <b>${esc(c.word)}</b>`;
+        dd === 0 ? Sfx.correct() : Sfx.wrong && Sfx.wrong();
+        flip();
+        const b = $(`[data-grade="${sug}"]`); if (b) { b.classList.add('suggest'); b.focus(); }
+      });
+    }
     // Từ khó nhớ: mẹo nhớ AI (lưu vào ghi chú thẻ), đọc to theo, ghi mẹo riêng
     const lb = $('[data-leech]');
     if (lb) {
