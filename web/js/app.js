@@ -46,7 +46,7 @@
     applyTheme();
     updateChrome();
   }
-  const saveSettings = async () => { await Store.set('settingsAt', Date.now()); return Store.set('settings', state.settings); };
+  const saveSettings = async () => { await Store.set('settingsAt', Date.now()); const r = await Store.set('settings', state.settings); if (window.VBNative && VBNative.scheduleReminder) VBNative.scheduleReminder(); return r; }; // app gốc: đặt lại giờ nhắc học
 
   // Ngày có học = có ôn thẻ hoặc có XP
   function activeDays() {
@@ -1276,7 +1276,7 @@
     if (Store.isExtension && chrome.storage.onChanged) {
       chrome.storage.onChanged.addListener(ch => { if (ch.cards) { state.cards = ch.cards.newValue || {}; updateChrome(); } });
     }
-    if (!Store.isExtension && 'serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(() => {});
+    if (!Store.isExtension && !(window.VBNative && VBNative.is) && 'serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(() => {});
     applyFreeze().catch(() => {});
     checkReminder(); setInterval(checkReminder, 60 * 1000);
     netState(); setTimeout(showInstallBtn, 1500);

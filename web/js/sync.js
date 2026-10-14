@@ -250,6 +250,11 @@
   document.addEventListener('visibilitychange', () => { if (document.hidden) flush(); });
   window.addEventListener('pagehide', flush);
   Sync.signIn = async () => {
+    // Trong app gốc, Google chặn đăng nhập trong WebView → dùng đăng nhập gốc khi đã cấu hình (VBNative.signIn), chưa có thì giải thích rõ
+    if (window.VBNative && VBNative.is) {
+      if (VBNative.signIn) return VBNative.signIn();
+      return UI.modal(`<h2>☁️ ${t('Đồng bộ tài khoản')}</h2><p>${t('Đăng nhập Google trong app sẽ có ở bản phát hành chính thức. Hiện tại dữ liệu học được lưu an toàn trên máy này; để đồng bộ giữa các thiết bị, hãy đăng nhập trên vocaband.web.app.')}</p>`);
+    }
     try {
       await init();
       const p = new firebase.auth.GoogleAuthProvider();

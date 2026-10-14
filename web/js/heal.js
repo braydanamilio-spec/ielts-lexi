@@ -1,6 +1,7 @@
 /* Tự phục hồi: nếu ứng dụng không khởi động được (vd. trình duyệt trộn file cũ/mới sau khi cập nhật)
  * → xóa cache + gỡ service worker rồi tải lại đúng 1 lần. Không ảnh hưởng dữ liệu học (localStorage/IndexedDB). */
 (function () {
+  if (window.Capacitor && Capacitor.isNativePlatform && Capacitor.isNativePlatform()) return; // app gốc: không dùng service worker
   // Trong add-on: ghi lỗi trang ứng dụng vào nhật ký lỗi của add-on để chẩn đoán từ xa
   if (location.protocol === 'chrome-extension:' && window.chrome && chrome.runtime) {
     const log = (where, e) => { try { chrome.runtime.sendMessage({ type: 'logErr', where, m: String((e && (e.stack || e.message)) || e).slice(0, 600) + ' @' + location.hash }).catch(() => {}); } catch (x) { /* bỏ qua */ } };
