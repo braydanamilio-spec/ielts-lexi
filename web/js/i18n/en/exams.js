@@ -309,5 +309,5 @@
   'Thử loa': 'Test sound', 'Các lần trước': 'Previous attempts', 'Bắt đầu làm bài': 'Start the test', 'Bảng câu hỏi': 'Question map',
   'Ô tô màu = đã trả lời · bấm số để nhảy tới câu': 'Filled = answered · tap a number to jump', '{a}/{b} câu đã làm': '{a}/{b} answered',
   'Còn {n} câu chưa làm. Vẫn nộp bài?': '{n} questions unanswered. Submit anyway?', 'Kết quả theo từng Part': 'Results by part',
-  'Nên luyện thêm: <b>{p}</b> – phần có tỉ lệ đúng thấp nhất.': 'Practise more: <b>{p}</b> – your lowest-scoring part.', 'Luyện theo Part →': 'Practise by part →', 'Xem lại {n} câu sai': 'Review {n} wrong answers',
+  'Luyện theo Part': 'Practise by part', 'Nên luyện thêm: <b>{p}</b> – phần có tỉ lệ đúng thấp nhất.': 'Practise more: <b>{p}</b> – your lowest-scoring part.', 'Luyện theo Part →': 'Practise by part →', 'Xem lại {n} câu sai': 'Review {n} wrong answers',
 }); })(typeof self !== 'undefined' ? self : this);

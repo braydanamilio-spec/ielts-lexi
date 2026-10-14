@@ -24,7 +24,14 @@
   const scaled = pct => Math.max(5, Math.min(495, Math.round((5 + 490 * Math.pow(pct, 1.08)) / 5) * 5));
   const words = () => IELTS_DATA.TOPICS.filter(t => t.group === 'toeic');
 
-  routes.toeic = function () {
+  routes.toeic = function (arg, query) {
+    // Chọn đề (Test 1…n) → mỗi lần chỉ hiện các Part của 1 đề, đỡ cuộn dài trên điện thoại
+    const tests = [...new Set([...T().reading.map(r => r.test), ...T().listening.map(p => p.test)])].sort((a, b) => a - b);
+    let cur = +(query && query.get && query.get('t')) || 0;
+    if (!tests.includes(cur)) { try { cur = +localStorage.getItem('vb.toeicT') || 0; } catch (e) { cur = 0; } }
+    if (!tests.includes(cur)) cur = tests[0] || 1;
+    try { localStorage.setItem('vb.toeicT', cur); } catch (e) { /* bỏ qua */ }
+    const tabs = tests.length > 1 ? `<div class="tabs" style="display:inline-flex;flex-wrap:wrap;margin:.4rem 0 .2rem">${tests.map(n => `<a class="${n === cur ? 'on' : ''}" href="#/toeic?t=${n}" style="padding:.45rem .8rem;border-radius:10px;font-weight:700;text-decoration:none;color:inherit;${n === cur ? 'background:var(--surface);box-shadow:var(--shadow-sm)' : ''}">Test ${n}</a>`).join('')}</div>` : '';
     const g = state.game, best = g.toeicBest || {};
     const ws = words(), learned = ws.reduce((a, t) => a + t.words.filter(w => App.inDeck(w.word)).length, 0), total = ws.reduce((a, t) => a + t.words.length, 0);
     view.innerHTML = `
@@ -43,11 +50,12 @@
           <div class="tiny muted" style="margin-top:.5rem">${t('Nguồn:')} TOEIC Service List 1.2 © Browne & Culligan, CC BY-SA 4.0.</div>
         </div>
       </div>
-      <h2 style="margin-top:1.4rem">🎧 Listening</h2>
-      <div class="grid auto">${T().listening.map(p => `<div class="card"><span class="chip">Part ${p.part} · ${L_PART[p.part] || ''}</span><h3 style="margin:.5rem 0 .2rem">Test ${p.test} · ${esc(p.title)}</h3><div class="small muted">${App.listening ? t('{n} câu', { n: App.listening.qNums(p).length }) : ''}</div>
+      <h2 style="margin-top:1.4rem">🎯 ${t('Luyện theo Part')}</h2>${tabs}
+      <h3 style="margin:.8rem 0 .4rem">🎧 Listening</h3>
+      <div class="grid auto">${T().listening.filter(p => p.test === cur).map(p => `<div class="card"><span class="chip">Part ${p.part} · ${L_PART[p.part] || ''}</span><h3 style="margin:.5rem 0 .2rem">Test ${p.test} · ${esc(p.title)}</h3><div class="small muted">${App.listening ? t('{n} câu', { n: App.listening.qNums(p).length }) : ''}</div>
         <div class="row" style="margin-top:.6rem"><a class="btn sm primary" href="#/listen/${p.id}">🎯 ${t('Luyện tập')}</a><a class="btn sm" href="#/listen/${p.id}?mode=exam">⏱ ${t('Nghe 1 lần')}</a><a class="btn sm ghost" href="#/dictation/${p.id}">⌨️ ${t('Chép chính tả')}</a></div></div>`).join('') || `<div class="card muted">${t('Đang cập nhật.')}</div>`}</div>
-      <h2 style="margin-top:1.4rem">📖 Reading</h2>
-      <div class="grid auto">${T().reading.flatMap(rt => rt.parts.map(pt => `<div class="card"><span class="chip">Part ${pt.part} · ${R_PART[pt.part] || ''}</span><h3 style="margin:.5rem 0 .2rem">Test ${rt.test} · ${esc(pt.title)}</h3><div class="small muted">${t('{n} câu', { n: countPart(pt) })}</div>
+      <h3 style="margin:1rem 0 .4rem">📖 Reading</h3>
+      <div class="grid auto">${T().reading.filter(rt => rt.test === cur).flatMap(rt => rt.parts.map(pt => `<div class="card"><span class="chip">Part ${pt.part} · ${R_PART[pt.part] || ''}</span><h3 style="margin:.5rem 0 .2rem">Test ${rt.test} · ${esc(pt.title)}</h3><div class="small muted">${t('{n} câu', { n: countPart(pt) })}</div>
         <div class="row" style="margin-top:.6rem"><a class="btn sm primary" href="#/toeic-r/${rt.id}?part=${pt.part}">🎯 ${t('Luyện Part {n}', { n: pt.part })}</a></div></div>`)).join('') || `<div class="card muted">${t('Đang cập nhật.')}</div>`}</div>
       <div class="card" style="margin-top:1.2rem"><h3 style="margin-top:0">💡 ${t('Chiến lược TOEIC')}</h3><ul class="small" style="line-height:1.8;padding-left:1.1rem">
         <li>${t('<b>Part 2:</b> nghe kỹ từ để hỏi (When/Where/Who…); cẩn thận đáp án lặp lại âm giống câu hỏi – thường là bẫy.')}</li>
