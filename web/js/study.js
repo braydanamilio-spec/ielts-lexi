@@ -163,7 +163,7 @@
             ${c.col.length ? `<div class="small" style="margin-top:.8rem">🔗 ${c.col.map(esc).join(' · ')}</div>` : ''}
             ${c.syn.length ? `<div class="small" style="margin-top:.3rem">≈ ${c.syn.map(esc).join(', ')}</div>` : ''}
             ${c.note ? `<div class="small" style="margin-top:.6rem">📝 ${esc(c.note)}</div>` : ''}
-            ${App.notesHtml(c.word) ? `<div style="margin-top:.8rem">${App.notesHtml(c.word)}</div>` : ''}
+            ${App.notesHtml(c.word)}
             ${SRS.retention(c.srs) != null ? `<div class="tiny muted" style="margin-top:.8rem">🧠 ${t('Khả năng còn nhớ trước lần ôn này: <b>{pct}%</b> · đã quên {n} lần', { pct: Math.round(SRS.retention(c.srs) * 100), n: c.srs.lapses })}</div>` : ''}
             ${c.srs.lapses >= 3 ? `<div class="leech" data-leech><b>🐛 ${t('Từ khó nhớ – đã quên {n} lần', { n: c.srs.lapses })}</b>
               <div class="tiny muted" style="margin:.2rem 0 .4rem">${t('Học lại theo cách khác thay vì ôn thêm lần nữa: tạo mẹo nhớ, đọc to theo, đặt câu về chính bạn.')}</div>
@@ -484,7 +484,7 @@
             ${w.ex ? `<div class="wi-sec wi-ex"><span class="wi-lb">💬 ${t('Ví dụ')}</span><div class="fi-ex">${highlight(w.ex, w.word)} <button class="ctx-say" data-saysent="${esc(w.ex)}" title="${t('Nghe cả câu')}">🔊</button><button class="ctx-say" data-saysent="${esc(w.ex)}" data-slow="1" title="${t('Nghe chậm')}">🐢</button></div><div class="fi-tr small muted" data-keep-vi id="fiTr"></div></div>` : ''}
             ${col.length || syn.length ? `<div class="wi-sec wi-chips">${col.length ? `<span class="wi-lb">🔗 ${t('Hay đi với')}</span>${col.map(x => `<span class="chip">${esc(x)}</span>`).join('')}` : ''}${syn.length ? `<span class="wi-lb" style="margin-left:${col.length ? '.6rem' : '0'}">≈ ${t('Đồng nghĩa')}</span>${syn.map(x => `<span class="chip">${esc(x)}</span>`).join('')}` : ''}</div>` : ''}
             ${w.note ? `<div class="wi-sec wi-tip">💡 ${esc(w.note)}</div>` : ''}
-            ${App.notesHtml(w.word) ? `<div class="wi-sec">${App.notesHtml(w.word)}</div>` : ''}
+            ${App.notesHtml(w.word)}
           </div>
           <button class="btn primary lg block" id="gotIt" style="margin-top:1rem">${t('Tiếp tục')} ↵</button>
           <div class="center" style="margin-top:.6rem"><button class="linklike" id="known">${t('Mình đã biết từ này')}</button></div>`;

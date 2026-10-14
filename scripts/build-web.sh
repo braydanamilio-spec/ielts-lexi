@@ -3,6 +3,7 @@
 bash "$(dirname "$0")/build-i18n.sh"
 set -euo pipefail
 cd "$(dirname "$0")/.."
+node scripts/build-notes.mjs
 rm -rf dist && cp -R web dist
 # Dùng cache npm riêng (tránh lỗi quyền của ~/.npm)
 export npm_config_cache="${TMPDIR:-/tmp}/vocaband-npm-cache"

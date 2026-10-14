@@ -183,12 +183,11 @@
     tsl: ['js/lib/tsl-a.js', 'js/lib/tsl-b.js', 'js/lib/domain-a.js', 'js/lib/domain-b.js', 'js/lib/exam-vocab.js'],
     speak: ['js/speak/samples.js'],
     toefl: ['js/qengine.js', 'js/toefl/data1.js', 'js/toefl.js'],
-    notes: ['js/lib/notes-awl.js', 'js/lib/notes-toeic.js'], // ghi chú học từ soạn sẵn (mẹo nhớ, lỗi hay gặp, cách dùng, họ từ)
     toeic: ['js/qengine.js', 'js/toeic/reading1.js', 'js/toeic/reading2.js', 'js/toeic/listening1.js', 'js/toeic/listening2.js', 'js/toeic/reading3.js', 'js/toeic/listening3.js', 'js/toeic.js'],
   };
   const ROUTE_BUNDLE = { grammar: 'grammar', placement: 'grammar', pron: 'pron', listening: 'listening', listen: ['listening', 'toeic'], 'listen-test': 'listening', dictation: ['listening', 'toeic'],
     toefl: ['listening', 'toefl'], 'toefl-p': ['listening', 'toefl'],
-    toeic: ['tsl', 'listening', 'toeic'], 'toeic-r': ['toeic'], 'toeic-test': ['listening', 'toeic'], library: 'tsl', topic: 'tsl', practice: ['tsl', 'notes'], dict: ['tsl', 'notes'], review: 'notes', write: 'writing', task1: 'writing', model: 'writing', phrases: 'writing', ideas: 'writing', rtype: 'mock', speaking: 'speak', mock: ['listening', 'writing', 'mock'] };
+    toeic: ['tsl', 'listening', 'toeic'], 'toeic-r': ['toeic'], 'toeic-test': ['listening', 'toeic'], library: 'tsl', topic: 'tsl', practice: 'tsl', dict: 'tsl', write: 'writing', task1: 'writing', model: 'writing', phrases: 'writing', ideas: 'writing', rtype: 'mock', speaking: 'speak', mock: ['listening', 'writing', 'mock'] };
   const bundleP = {};
   // Phần nặng (đề thi, từ vựng, ngữ pháp…) tải từ CDN jsDelivr (miễn phí, không giới hạn băng thông, gắn đúng phiên bản commit)
   // → máy chủ chính chỉ phục vụ phần lõi, chịu được lượng người dùng lớn gấp nhiều lần. CDN lỗi → tự lấy từ máy chủ chính.
@@ -227,12 +226,14 @@
     window.scrollTo(0, 0);
   }
   App.route = route;
-  // Ghi chú học từ soạn sẵn (AI tầng T0 – không cần mạng/khóa): mẹo nhớ, lỗi người Việt hay mắc, cách dùng khi thi, họ từ
-  App.notesHtml = word => {
-    const n = window.WORD_NOTES && WORD_NOTES[String(word || '').toLowerCase()]; if (!n) return '';
-    const row = (ic, lb, v) => v ? `<div class="wn-row"><span class="wn-lb">${ic} ${lb}</span><div>${esc(v)}</div></div>` : '';
-    return `<div class="wn" data-keep-vi>${row('💡', t('Mẹo nhớ'), n.m)}${row('⚠️', t('Lỗi hay gặp'), n.e)}${row('🎯', t('Cách dùng khi thi'), n.u)}${row('🌳', t('Họ từ'), n.f)}</div>`;
-  };
+  // Ghi chú học từ soạn sẵn (AI tầng T0 – không cần mạng/khóa): mẹo nhớ, lỗi người Việt hay mắc, cách dùng khi thi, họ từ.
+  // Chia theo chữ cái đầu (js/notes/a.json…) → chỉ tải phần cần; chỗ hiển thị là ô trống được điền khi dữ liệu về.
+  const notesCache = {};
+  const notesFile = w => { const c = /^[a-z]/.test(w) ? w[0] : '_'; return notesCache[c] || (notesCache[c] = fetch(`js/notes/${c}.json`).then(r => r.ok ? r.json() : {}).catch(() => { delete notesCache[c]; return {}; })); };
+  App.notesHtml = word => `<div class="wn-slot" data-notes="${esc(String(word || '').toLowerCase())}"></div>`;
+  const renderNotes = n => { const row = (ic, lb, v) => v ? `<div class="wn-row"><span class="wn-lb">${ic} ${lb}</span><div>${esc(v)}</div></div>` : ''; return `<div class="wn" data-keep-vi>${row('💡', t('Mẹo nhớ'), n.m)}${row('⚠️', t('Lỗi hay gặp'), n.e)}${row('🎯', t('Cách dùng khi thi'), n.u)}${row('🌳', t('Họ từ'), n.f)}</div>`; };
+  const fillNotes = () => document.querySelectorAll('.wn-slot[data-notes]:not([data-done])').forEach(el => { el.dataset.done = 1; const w = el.dataset.notes; notesFile(w).then(m => { const n = m[w]; if (n && el.isConnected) el.innerHTML = renderNotes(n); }); });
+  new MutationObserver(() => fillNotes()).observe(view, { childList: true, subtree: true });
   // Gợi ý giọng đọc hay hơn (miễn phí) khi máy chỉ có giọng "robot" – theo đúng hệ điều hành/trình duyệt
   App.voiceTipHtml = accent => {
       const v = UI.pickVoice(accent || state.settings.accent), good = v && /Natural|Neural|Online|^Google|Premium|Enhanced|Siri/i.test(v.name);
@@ -680,7 +681,7 @@
         ${e.syn.length ? `<div style="margin-top:.6rem"><b>≈ ${t('Đồng nghĩa:')}</b> ${e.syn.map(s => `<a class="chip" href="#/dict/${encodeURIComponent(s)}">${esc(s)}</a>`).join(' ')}</div>` : ''}
         <div id="related"></div>
         <div id="phraseBox"></div>
-        ${App.notesHtml(e.word) ? `<div style="margin-top:1.2rem">${App.notesHtml(e.word)}</div>` : ''}
+        ${App.notesHtml(e.word)}
         ${(() => { // Gom theo từ loại như Oxford/Cambridge: mỗi từ loại = nghĩa Việt + định nghĩa Anh + ví dụ của chính nghĩa đó
           const VIP = { 'danh từ': 'noun', 'động từ': 'verb', 'tính từ': 'adjective', 'trạng từ': 'adverb', 'giới từ': 'preposition', 'liên từ': 'conjunction', 'đại từ': 'pronoun', 'thán từ': 'interjection', 'từ hạn định': 'determiner', 'viết tắt': 'abbreviation', 'cụm từ': 'phrase' };
           const key = p => { p = String(p || '').toLowerCase(); return VIP[p] || p; };
