@@ -50,6 +50,6 @@
       document.write(`<script src="js/i18n/en.js"><\/script>`);
       if (lang !== 'en') document.write(`<script src="js/i18n/${lang}.js"><\/script>`);
     }
-    document.addEventListener('DOMContentLoaded', () => apply());
+    document.addEventListener('DOMContentLoaded', () => { apply(); if (lang !== 'vi' && /^Vocaband –/.test(document.title)) document.title = 'Vocaband – Free IELTS & TOEIC vocabulary: FSRS flashcards, dictionary, mock tests'; });
   }
 })(typeof self !== 'undefined' ? self : this);

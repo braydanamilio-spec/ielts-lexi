@@ -19,12 +19,13 @@
   }));
   const KIND = { vocab: ['🔤', t('Từ vựng')], grammar: ['📐', t('Ngữ pháp')], reading: ['📖', t('Đọc hiểu')], listening: ['🎧', t('Nghe')] };
 
-  routes.mistakes = async function () {
+  routes.mistakes = async function (arg, query) {
+    const retry = !!(query && query.get && query.get('retry'));
     const list = await Store.get('mistakes', []);
     const open = list.filter(x => !x.fixed);
     view.innerHTML = `
       <div class="page-head"><div><h1>📕 ${t('Sổ lỗi sai')}</h1><p class="muted">${t('Mọi câu bạn làm sai đều được ghi lại tự động. Ôn lại lỗi sai là cách tăng điểm nhanh nhất – xem lại vì sao sai rồi đánh dấu “Đã hiểu”.')}</p></div>
-        <div class="row">${open.length ? `<a class="btn primary" href="#/practice/learn?src=forgetting">🧠 ${t('Ôn từ sắp quên')}</a>` : ''}<button class="btn sm" id="clearFixed">${t('Dọn lỗi đã sửa')}</button></div></div>
+        <div class="row">${open.length ? (retry ? `<a class="btn" href="#/mistakes">📋 ${t('Xem danh sách')}</a>` : `<a class="btn primary" href="#/mistakes?retry=1">🔁 ${t('Làm lại lỗi sai')}</a>`) : ''}${open.length ? `<a class="btn" href="#/practice/learn?src=forgetting">🧠 ${t('Ôn từ sắp quên')}</a>` : ''}<button class="btn sm" id="clearFixed">${t('Dọn lỗi đã sửa')}</button></div></div>
       <div class="tabs" style="display:inline-flex;margin-bottom:1rem" id="mTabs"><button class="on" data-k="">${t('Tất cả ({n})', { n: open.length })}</button>${Object.entries(KIND).map(([k, [e, n]]) => `<button data-k="${k}">${e} ${n} (${open.filter(x => x.kind === k).length})</button>`).join('')}</div>
       <div id="mList"></div>`;
     const draw = k => {
@@ -32,9 +33,11 @@
       $('#mList').innerHTML = rows.length ? rows.map((x, i) => `<div class="card" style="margin-bottom:.7rem">
         <div class="row between"><span class="chip">${KIND[x.kind] ? KIND[x.kind][0] + ' ' + KIND[x.kind][1] : x.kind}</span><span class="tiny muted">${t('sai {n} lần', { n: x.n })} · ${new Date(x.at).toLocaleDateString(I18N.lang())}</span></div>
         <div style="margin-top:.4rem;font-weight:600">${esc(x.q)}</div>
+        ${retry ? `<div class="row" style="margin-top:.5rem;gap:.4rem" data-rt="${esc(x.key)}">${String(x.answer || '').split(/\s+/).length <= 4 ? `<input class="input" style="flex:1;min-width:0" placeholder="${t('Gõ đáp án của bạn')}" data-in><button class="btn sm primary" data-chk>${t('Kiểm tra')}</button>` : `<button class="btn sm primary" data-show>${t('Hiện đáp án')}</button>`}</div><div data-ans hidden>` : '<div>'}
         ${x.given ? `<div class="small" style="margin-top:.3rem"><span style="color:var(--again)">✗ ${esc(x.given)}</span></div>` : ''}
         <div class="small"><span style="color:var(--good)">✓ ${esc(x.answer)}</span></div>
         ${x.explain ? `<div class="small muted" style="margin-top:.3rem">💡 ${esc(x.explain)}</div>` : ''}
+        ${retry ? `<div class="row" style="margin-top:.4rem" data-self><button class="btn sm" data-ok>✅ ${t('Mình làm đúng')}</button><button class="btn sm ghost" data-no>✗ ${t('Vẫn sai')}</button></div>` : ''}</div>
         <div class="row" style="margin-top:.6rem"><button class="btn sm" data-fix="${esc(x.key)}">✓ ${t('Đã hiểu')}</button>
           ${x.kind === 'grammar' && x.ref ? `<a class="btn sm ghost" href="#/grammar/${esc(x.ref)}">📐 ${t('Xem lại bài')}</a>` : ''}
           ${x.kind === 'vocab' && x.ref ? `<a class="btn sm ghost" href="#/dict/${encodeURIComponent(x.ref)}">🔎 ${t('Tra lại từ')}</a>${App.inDeck(x.ref) ? '' : `<button class="btn sm ghost" data-add-seed="${esc(x.ref)}">+ Flashcard</button>`}` : ''}
@@ -42,6 +45,23 @@
           ${x.kind === 'listening' && x.ref ? `<a class="btn sm ghost" href="#/listen/${esc(x.ref)}">🎧 ${t('Nghe lại phần này')}</a>` : ''}</div></div>`).join('')
         : `<div class="card empty"><div class="em">🎉</div>${t('Không có lỗi sai nào cần xem lại.')}</div>`;
       App.bindCommon();
+      // Làm lại: tự nhớ đáp án trước khi xem (active recall) → đúng thì gỡ khỏi sổ, sai thì tăng số lần sai
+      const settle = async (card, key, ok) => {
+        const all = await Store.get('mistakes', []); const it = all.find(x => x.key === key);
+        if (it) { if (ok) it.fixed = true; else it.n = (it.n || 1) + 1; }
+        await Store.set('mistakes', all);
+        if (ok) { App.reward({ xp: 3 }, card); Sfx.correct(); card.style.opacity = '.5'; setTimeout(() => card.remove(), 600); } else Sfx.wrong();
+      };
+      $$('[data-rt]').forEach(box => {
+        const card = box.closest('.card'), key = box.dataset.rt, ans = $('[data-ans]', card), it = rows.find(x => x.key === key);
+        const reveal = () => { ans.hidden = false; box.hidden = true; };
+        const show = $('[data-show]', box); if (show) show.onclick = reveal;
+        const chk = $('[data-chk]', box), inp = $('[data-in]', box);
+        if (chk) { const go = () => { const ok = window.QE && QE.norm ? QE.norm(inp.value) === QE.norm(it.answer) : inp.value.trim().toLowerCase() === String(it.answer).trim().toLowerCase(); reveal(); const self = $('[data-self]', card); if (self) self.hidden = true; settle(card, key, ok); }; chk.onclick = go; inp.onkeydown = e => { if (e.key === 'Enter') go(); }; }
+        const okB = $('[data-ok]', card), noB = $('[data-no]', card);
+        if (okB) okB.onclick = () => settle(card, key, true);
+        if (noB) noB.onclick = () => { settle(card, key, false); $('[data-self]', card).hidden = true; };
+      });
       $$('[data-fix]').forEach(b => b.onclick = async () => {
         const all = await Store.get('mistakes', []); const it = all.find(x => x.key === b.dataset.fix); if (it) it.fixed = true;
         await Store.set('mistakes', all); App.reward({ xp: 2 }, b); b.closest('.card').remove();
