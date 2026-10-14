@@ -444,14 +444,17 @@
   }
 
   const fromHost = e => host && e.composedPath && e.composedPath().includes(host);
+  // Trên chính web app Vocaband: từ đã có bảng tra riêng (.tw) và nút lưu cụm riêng → tiện ích nhường, tránh hiện 2 bảng
+  const OWN_APP = /^(vocaband|ielts-lexi-2026)\.web\.app$|^localhost$/.test(location.hostname);
+  const appHandles = (el, sel) => OWN_APP && el && el.closest && !!(el.closest('.tw, .pop, .sel-fab, [data-own-lookup]') || (sel && el.closest('#view')));
 
   document.addEventListener('dblclick', e => {
-    if (!alive() || !enabled || inEditable(e.target) || fromHost(e)) return;
+    if (!alive() || !enabled || inEditable(e.target) || fromHost(e) || appHandles(e.target)) return;
     const s = fromSelection();
     if (s) show(s.word, s.rect, s.context);
   });
   document.addEventListener('mouseup', e => {
-    if (!alive() || fromHost(e) || e.button !== 0 || inEditable(e.target)) return;
+    if (!alive() || fromHost(e) || e.button !== 0 || inEditable(e.target) || appHandles(e.target, true)) return;
     // Đợi trình duyệt cập nhật vùng chọn
     setTimeout(() => {
       if (e.altKey) { const s = fromSelection(); if (s && enabled) show(s.word, s.rect, s.context); return; }

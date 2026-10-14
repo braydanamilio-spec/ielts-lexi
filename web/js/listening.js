@@ -131,7 +131,7 @@
       const sp = p.speakers[l.s] || { name: l.s };
       let html = Lexis.markSentence(l.t);
       (ev[i] || []).forEach(e => { const k = esc(e.cue); if (html.includes(k)) html = html.replace(k, `<mark class="evi">${k}</mark>`); });
-      return `<div class="tl ${ev[i] ? 'has-ev' : ''}" data-line="${i}"><span class="spk">${esc(sp.name)}</span><span class="sent">${html}</span>${(ev[i] || []).map(e => `<span class="evn">Câu ${e.n}</span>`).join('')}</div>`;
+      return `<div class="tl ${ev[i] ? 'has-ev' : ''}" data-line="${i}"><span class="spk">${esc(sp.name)}</span> <span class="sent">${html}</span>${(ev[i] || []).map(e => ` <span class="evn">Câu ${e.n}</span>`).join('')}</div>`;
     }).join('');
   }
 
@@ -203,7 +203,7 @@
       </div>
       <div class="lgrid">
         <div class="card" id="lQs">${questionsHtml(p)}<div class="row" style="margin-top:1rem"><button class="btn primary" id="lSubmit">✅ Nộp bài & xem đáp án</button></div><div id="lRes" style="margin-top:1rem"></div></div>
-        <div class="card ltrans" id="lTransWrap" ${exam ? 'hidden' : ''}><div class="row between"><h3 style="margin:0">📜 Lời thoại</h3><span class="tiny muted">Bấm dòng để nghe từ đó · chạm từ để tra</span></div><div id="lTrans" class="ltr blur">${transcriptHtml(p, false)}</div></div>
+        <div class="card ltrans" id="lTransWrap" ${exam ? 'hidden' : ''}><div class="row between"><h3 style="margin:0">📜 Lời thoại</h3><span class="tiny muted">Bấm dòng để nghe từ đó · chạm từ để tra</span></div><div id="lTrans" class="ltr blur" data-own-lookup>${transcriptHtml(p, false)}</div></div>
       </div>`;
     App.bindCommon();
     const trans = $('#lTrans');

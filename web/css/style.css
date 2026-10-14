@@ -615,3 +615,5 @@ mark.cbt-hl { background: #fde047; color: #111; cursor: pointer; }
 .dict-in { width: 100%; border: 2px solid var(--line); border-radius: 12px; padding: .7rem .8rem; font: inherit; font-size: 1.05rem; background: var(--card, #fff); color: inherit; resize: vertical; }
 .dk { padding: .05rem .25rem; border-radius: 5px; }
 .dk.ok { background: rgba(22, 163, 74, .14); } .dk.miss { background: rgba(229, 72, 77, .16); text-decoration: underline wavy #e5484d; } .dk.extra { background: rgba(245, 158, 11, .18); text-decoration: line-through; }
+/* Nhãn phụ không bị chọn/dính vào từ khi bôi đen hay bấm đúp */
+.tl .spk, .tl .evn, .an-gl, .an-role, .qn { user-select: none; -webkit-user-select: none; }

@@ -10,8 +10,8 @@
   // [[cụm|nghĩa]]  {{từ nối}}  <<Nhãn vai trò>>
   function renderAnnotated(text) {
     return text.split(/\n\s*\n/).map(p => '<p>' + esc(p)
-      .replace(/&lt;&lt;([^&]+?)&gt;&gt;/g, '<span class="an-role">$1</span>')
-      .replace(/\[\[([^|\]]+)\|([^\]]+)\]\]/g, (m, en, vi) => `<span class="an-ch" data-ph="${en}" data-vi="${vi}">${en}</span><span class="an-gl">${vi}</span>`)
+      .replace(/&lt;&lt;([^&]+?)&gt;&gt;/g, '<span class="an-role">$1</span> ')
+      .replace(/\[\[([^|\]]+)\|([^\]]+)\]\]/g, (m, en, vi) => `<span class="an-ch" data-ph="${en}" data-vi="${vi}">${en}</span> <span class="an-gl">${vi}</span>`)
       .replace(/\{\{([^}]+)\}\}/g, '<span class="an-lk">$1</span>') + '</p>').join('');
   }
   App.renderAnnotated = renderAnnotated;
