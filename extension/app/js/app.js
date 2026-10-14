@@ -1144,7 +1144,7 @@
   const boot = async () => {
     await App.ready;
     const fresh = !state.settings.onboarded && !Object.keys(state.cards).length && !state.game.xp;
-    if (fresh && !/welcome|dict|read/.test(location.hash)) { location.hash = '#/welcome'; return; }
+    if (fresh && /^(#\/?(home)?)?$/.test(location.hash)) { location.hash = '#/welcome'; return; }
     route();
   };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else setTimeout(boot, 0);

@@ -568,3 +568,4 @@ mark.cbt-hl { background: #fde047; color: #111; cursor: pointer; }
 .gap.ok { border-color: var(--good); background: var(--good-soft); } .gap.no { border-color: var(--again); background: var(--again-soft); }
 .gsel { padding: .05rem .2rem; }
 .line { padding: .7rem 0; border-bottom: 1px dashed var(--line); } .line .lin { margin-top: .4rem; } .lhint { font-family: var(--ipa); letter-spacing: .02em; }
+.bankw.used { opacity: .38; text-decoration: line-through; }
