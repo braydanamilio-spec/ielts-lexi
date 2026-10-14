@@ -400,12 +400,30 @@
       $('[data-sp]', pop).onclick = () => UI.tts(info.text, state.settings.accent);
       $('[data-sps]', pop).onclick = () => UI.tts(info.text, state.settings.accent, 0.65);
       $('[data-deep]', pop).onclick = async ev => {
-        if (!window.AI) return;
-        const out = $('[data-aiout]', pop);
-        if (!(await AI.getKey())) { const st = await AI.nanoStatus(); if (st === 'none' || st === 'unavailable') return AI.keyDialog(() => ev.target.click()); }
-        ev.target.disabled = true; out.innerHTML = `<div class="small muted">⏳ ${t('AI đang phân tích…')}</div>`;
-        try { out.innerHTML = AI.renderExplain(await AI.explain(info.text, info.sentence)); } catch (e) { out.innerHTML = `<div class="small">❌ ${esc(AI.errText(e))}</div>`; }
-        ev.target.disabled = false; place(pop, info.rect);
+        const out = $('[data-aiout]', pop), btn = ev.currentTarget; btn.disabled = true;
+        // 1) Phân tích từ vựng tức thì, miễn phí (từ điển sẵn có) – luôn có kết quả, không phụ thuộc AI
+        const STOP = new Set('the a an and or but of to in on at for with by from as is are was were be been being it its this that these those which who whom whose what when where why how than then there their they them we our you your he she his her i me my not no do does did have has had can could will would should may might must shall also very more most such into over under about after before between through during without within upon'.split(' '));
+        const ws = [...new Set((info.text.match(/[A-Za-z][A-Za-z'-]{3,}/g) || []).map(x => x.toLowerCase()).filter(x => !STOP.has(x)))].slice(0, 8);
+        out.innerHTML = `<div class="small muted">⏳ ${t('Đang phân tích từ vựng…')}</div>`;
+        const looks = await Promise.all(ws.map(w0 => { const w = (App.lemma && App.lemma(w0)) || w0; return Dict.quick(w).catch(() => null).then(d => d && d.found !== false && d.vi ? { w: d.word || w, vi: d.vi, ipa: d.ipa || '', pos: d.pos || '' } : null); }));
+        const vocab = looks.filter(Boolean);
+        out.innerHTML = `${vocab.length ? `<div class="st-box"><b class="small">📚 ${t('Từ vựng quan trọng')}</b>${vocab.map(v => `<div class="st-row"><b>${esc(v.w)}</b> <span class="muted small">${esc(v.ipa)} ${esc(v.pos)}</span><div class="small">${esc(v.vi)}</div></div>`).join('')}</div>` : ''}<div data-ai2></div>`;
+        place(pop, info.rect);
+        // 2) Giải thích sâu bằng AI chỉ khi thật sự sẵn sàng (khóa Gemini / AI Chrome đã tải) – không bao giờ treo vì tải ngầm
+        const box = $('[data-ai2]', out);
+        const run = async () => {
+          box.innerHTML = `<div class="small muted">⏳ ${t('AI đang phân tích…')}</div>`;
+          try { box.innerHTML = AI.renderExplain(await AI.explain(info.text, info.sentence)); } catch (e) { box.innerHTML = `<div class="small">❌ ${esc(AI.errText(e))}</div>`; }
+          place(pop, info.rect);
+        };
+        if (!window.AI) { btn.disabled = false; return; }
+        const key = await AI.getKey(), st = key ? 'key' : await AI.nanoStatus();
+        if (key || st === 'available') await run();
+        else box.innerHTML = `<div class="tip small" style="margin-top:.5rem">🤖 ${t('Muốn AI giải thích ngữ pháp, cấu trúc & cách dùng? Chọn 1 cách miễn phí:')}
+          <div class="row" style="gap:.4rem;margin-top:.4rem"><button class="btn sm primary" data-k>🔑 ${t('Dùng khóa Gemini (miễn phí, 1 phút)')}</button>${st === 'downloadable' || st === 'downloading' ? `<button class="btn sm" data-dl>⬇️ ${t('Tải AI của Chrome (~2GB, 1 lần)')}</button>` : ''}</div></div>`;
+        const k = $('[data-k]', box); if (k) k.onclick = () => AI.keyDialog(run);
+        const dl = $('[data-dl]', box); if (dl) dl.onclick = () => { dl.disabled = true; AI.onNanoProgress && AI.onNanoProgress(p => { dl.textContent = `⬇️ ${Math.round(p * 100)}%`; }); run(); };
+        btn.disabled = false;
       };
     } else {
       const w = info.text.toLowerCase();

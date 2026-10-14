@@ -54,12 +54,13 @@ Criteria to use: ${kind === 'task1' ? 'Task Achievement, Coherence and Cohesion,
   const LMapi = () => self.LanguageModel || null;
   const LMopts = { expectedInputs: [{ type: 'text', languages: ['en'] }], expectedOutputs: [{ type: 'text', languages: ['en'] }] };
   async function nanoStatus() { try { return LMapi() ? await LMapi().availability(LMopts) : 'none'; } catch (e) { return 'none'; } }
-  let nanoProgress = null;
+  let nanoProgress = null, nanoOptIn = false; // chỉ dùng AI Chrome khi đã tải sẵn, hoặc người dùng chủ động bấm tải (tránh treo vì tải ngầm ~2GB)
+  const nanoOk = st => st === 'available' || (nanoOptIn && st !== 'none' && st !== 'unavailable');
   async function callNano(prompt) {
     const s = await LMapi().create({ ...LMopts, initialPrompts: [{ role: 'system', content: SYS.replace(/Write all comments[^.]*\./, 'Write all comments in clear, simple English.') }],
       monitor(m) { m.addEventListener('downloadprogress', e => nanoProgress && nanoProgress(e.loaded)); } });
     try {
-      const out = await s.prompt(prompt.replace(/\(Vietnamese[^)]*\)/g, '(English)').replace(/Vietnamese/g, 'English') + '\nReturn only JSON.');
+      const out = await Promise.race([s.prompt(prompt.replace(/\(Vietnamese[^)]*\)/g, '(English)').replace(/Vietnamese/g, 'English') + '\nReturn only JSON.'), new Promise((_, rej) => setTimeout(() => rej(new Error('TIMEOUT')), 60000))]);
       const j = JSON.parse(String(out).replace(/^[^{]*/, '').replace(/[^}]*$/, ''));
       j._model = 'Gemini Nano (' + t('AI trên máy') + ')';
       return await toVietnamese(j);
@@ -83,7 +84,7 @@ Criteria to use: ${kind === 'task1' ? 'Task Achievement, Coherence and Cohesion,
     const key = await getKey();
     if (!key) {
       const st = await nanoStatus();
-      if (st !== 'none' && st !== 'unavailable') return callNano(prompt);
+      if (nanoOk(st)) return callNano(prompt);
       throw new Error('NO_KEY');
     }
     const pref = state.settings.aiModel;
@@ -106,10 +107,10 @@ Criteria to use: ${kind === 'task1' ? 'Task Achievement, Coherence and Cohesion,
         const out = JSON.parse(text.replace(/^```(json)?|```$/g, '').trim());
         out._model = m;
         return out;
-      } catch (e) { clearTimeout(t); if (['BAD_KEY', 'NO_KEY'].includes(e.message)) throw e; if (e.message === 'QUOTA') { const st = await nanoStatus(); if (st !== 'none' && st !== 'unavailable') return callNano(prompt); throw e; } lastErr = e; }
+      } catch (e) { clearTimeout(t); if (['BAD_KEY', 'NO_KEY'].includes(e.message)) throw e; if (e.message === 'QUOTA') { const st = await nanoStatus(); if (nanoOk(st)) return callNano(prompt); throw e; } lastErr = e; }
     }
     // Hết mô hình trên mạng → thử AI trên máy trước khi báo lỗi
-    const st = await nanoStatus(); if (st !== 'none' && st !== 'unavailable') return callNano(prompt);
+    const st = await nanoStatus(); if (nanoOk(st)) return callNano(prompt);
     throw lastErr || new Error('FAILED');
   }
 
@@ -147,7 +148,7 @@ Criteria to use: ${kind === 'task1' ? 'Task Achievement, Coherence and Cohesion,
       catch (e) { $('#aiMsg').textContent = '❌ ' + errText(e); if (e.message === 'BAD_KEY') await setKey(''); }
     };
   }
-  const errText = e => ({ NO_KEY: t('Chưa có khóa AI.'), BAD_KEY: t('Khóa không hợp lệ – kiểm tra lại.'), QUOTA: t('Đã hết lượt miễn phí trong ngày/phút của khóa này – thử lại sau ít phút.'), MODEL: t('Không tìm thấy mô hình AI phù hợp.') }[e.message] || t('Lỗi: {msg}', { msg: e.message }));
+  const errText = e => ({ NO_KEY: t('Chưa có khóa AI.'), BAD_KEY: t('Khóa không hợp lệ – kiểm tra lại.'), QUOTA: t('Đã hết lượt miễn phí trong ngày/phút của khóa này – thử lại sau ít phút.'), MODEL: t('Không tìm thấy mô hình AI phù hợp.'), TIMEOUT: t('AI phản hồi quá lâu – thử lại sau.') }[e.message] || t('Lỗi: {msg}', { msg: e.message }));
 
   // ---------- Hiển thị kết quả ----------
   function render(r, kind) {
@@ -218,5 +219,5 @@ Return ONLY JSON: {"meaning": string (Vietnamese meaning in THIS context), "stru
       ${x.tip ? `<div class="small" style="margin-top:.35rem">💡 ${esc(x.tip)}</div>` : ''}</div>`;
   }
 
-  window.AI = { ask: p => call(p), nanoStatus, explain, renderExplain, errText: e => errText(e), getKey, grade, attach, keyDialog, settingsHtml, bindSettings };
+  window.AI = { ask: p => call(p), nanoStatus, onNanoProgress: f => { nanoProgress = f; nanoOptIn = true; }, explain, renderExplain, errText: e => errText(e), getKey, grade, attach, keyDialog, settingsHtml, bindSettings };
 })();

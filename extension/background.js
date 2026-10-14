@@ -129,7 +129,7 @@ async function aiExplain(text, sentence) {
   const LM = self.LanguageModel;
   const nano = async () => {
     const opts = { expectedInputs: [{ type: 'text', languages: ['en'] }], expectedOutputs: [{ type: 'text', languages: ['en'] }] };
-    const av = await LM.availability(opts); if (av === 'unavailable') return null;
+    const av = await LM.availability(opts); if (av !== 'available') return null; // chưa tải sẵn → không tự tải ngầm ~2GB (tránh treo)
     const s = await LM.create(opts);
     try {
       const out = await s.prompt(EX_PROMPT(text, sentence, 'English') + '\nReturn only JSON.');

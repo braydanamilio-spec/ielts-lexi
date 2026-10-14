@@ -547,6 +547,11 @@
   'Đã thay câu': 'Sentence replaced',
   'Bật AI': 'Turn on AI',
 }); })(typeof self !== 'undefined' ? self : this);
+(function (g) { Object.assign(g.I18N_DICT.en, {
+  'Đang phân tích từ vựng…': 'Analysing vocabulary…', 'Từ vựng quan trọng': 'Key vocabulary',
+  'Muốn AI giải thích ngữ pháp, cấu trúc & cách dùng? Chọn 1 cách miễn phí:': 'Want AI to explain grammar, structure & usage? Pick a free option:',
+  'Dùng khóa Gemini (miễn phí, 1 phút)': 'Use a Gemini key (free, 1 minute)', 'Tải AI của Chrome (~2GB, 1 lần)': 'Download Chrome’s AI (~2 GB, once)', 'AI phản hồi quá lâu – thử lại sau.': 'AI took too long – try again later.',
+}); })(typeof self !== 'undefined' ? self : this);
 
 /* English UI strings – grammar.js, speaking.js, pron.js, reading.js */
 (function (g) { const D = g.I18N_DICT = g.I18N_DICT || {}; D.en = Object.assign(D.en || {}, {
