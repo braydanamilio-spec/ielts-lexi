@@ -405,7 +405,12 @@
         const STOP = new Set('the a an and or but of to in on at for with by from as is are was were be been being it its this that these those which who whom whose what when where why how than then there their they them we our you your he she his her i me my not no do does did have has had can could will would should may might must shall also very more most such into over under about after before between through during without within upon'.split(' '));
         const ws = [...new Set((info.text.match(/[A-Za-z][A-Za-z'-]{3,}/g) || []).map(x => x.toLowerCase()).filter(x => !STOP.has(x)))].slice(0, 8);
         out.innerHTML = `<div class="small muted">⏳ ${t('Đang phân tích từ vựng…')}</div>`;
-        const looks = await Promise.all(ws.map(w0 => { const w = (App.lemma && App.lemma(w0)) || w0; return Dict.quick(w).catch(() => null).then(d => d && d.found !== false && d.vi ? { w: d.word || w, vi: d.vi, ipa: d.ipa || '', pos: d.pos || '' } : null); }));
+        // Nhanh & tiết kiệm: từ có trong thư viện → lấy ngay trên máy; từ còn lại → 1 lượt dịch gộp duy nhất (không gọi từng từ)
+        const lem = w0 => (App.lemma && App.lemma(w0)) || w0;
+        const local = ws.map(w0 => IELTS_DATA.INDEX[lem(w0)] || IELTS_DATA.INDEX[w0] || null);
+        const miss = ws.filter((w0, i) => !local[i]);
+        const tr = miss.length ? (await Dict.translateVi(miss.map(lem).join('\n')).catch(() => '')).split('\n') : [];
+        const looks = ws.map((w0, i) => { const L = local[i]; if (L) return { w: L.word, vi: L.vi, ipa: L.ipa || '', pos: L.pos || '' }; const k = miss.indexOf(w0), vi = (tr[k] || '').trim(); return vi && vi.toLowerCase() !== lem(w0) ? { w: lem(w0), vi: Dict.fixVi(vi), ipa: '', pos: '' } : null; });
         const vocab = looks.filter(Boolean);
         out.innerHTML = `${vocab.length ? `<div class="st-box"><b class="small">📚 ${t('Từ vựng quan trọng')}</b>${vocab.map(v => `<div class="st-row"><b>${esc(v.w)}</b> <span class="muted small">${esc(v.ipa)} ${esc(v.pos)}</span><div class="small">${esc(v.vi)}</div></div>`).join('')}</div>` : ''}<div data-ai2></div>`;
         place(pop, info.rect);

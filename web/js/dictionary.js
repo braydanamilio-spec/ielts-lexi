@@ -121,7 +121,7 @@
       else if (/a=[^}|]*(GA|US|General American)/.test(line)) us = us || ipa;
       else any = any || ipa;
     }
-    const fix = x => x.replace(/ɹ/g, 'r').replace(/\./g, '');
+    const fix = x => x.replace(/ɹ/g, 'r').replace(/\./g, '').replace(/[\u032F\u0306\u031A]/g, ''); // bỏ ký hiệu phiên âm hẹp (ɪ̯…) – kiểu từ điển học tập Oxford/Cambridge
     if (!uk && !us && !any) return null;
     return { ipa: fix(uk || any || us), ipaUS: fix(us || any || uk) };
   }
