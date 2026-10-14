@@ -132,6 +132,7 @@
     const best = state.game.listenBest || {};
     view.innerHTML = `
       <div class="page-head"><div><h1>🎧 ${t('Luyện nghe IELTS')}</h1><p class="muted">${t('Đề tự biên soạn theo đúng cấu trúc IELTS Listening (4 phần · 40 câu). Mỗi người nói một giọng riêng – Anh, Mỹ, Úc. Luyện từng phần với nghe lại & chỉ chỗ có đáp án, hoặc thi thật nghe một lần.')}</p></div></div>
+      ${App.voiceTipHtml && App.voiceTipHtml() ? `<div class="tip small" style="margin-bottom:1rem">${App.voiceTipHtml()}</div>` : ''}
       ${!ALL().length ? `<div class="card empty"><div class="em">🎧</div>${t('Đang cập nhật đề.')}</div>` : ''}
       ${tests().map(n => `<div class="card" style="margin-bottom:1rem">
         <div class="row between"><h2 style="margin:0">Test ${n}</h2><div class="row">${best[n] != null ? `<span class="chip ok">Band ${best[n]}</span>` : ''}<a class="btn primary" href="#/listen-test/${n}">⏱ ${t('Thi thử 40 câu')}</a></div></div>

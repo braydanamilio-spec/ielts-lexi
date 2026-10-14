@@ -141,9 +141,16 @@
         entries.push({ acc, pos, ipa: fix(ipa0) });
       }
     }
+    // Bản ghi giọng người thật trên Wikimedia Commons ({{audio|en|File.ogg|a=UK}}) – miễn phí, giấy phép mở
+    const aud = { UK: '', US: '' };
+    for (const m of en.matchAll(/\{\{audio\|en\|([^|}]+\.(?:ogg|oga|mp3|wav|opus))([^}]*)\}\}/gi)) {
+      const f = m[1].trim(), a = (m[2].match(/a=([^|}]*)/) || [, ''])[1] + ' ' + f;
+      const acc = /\b(UK|RP|British|England|London)\b|en-uk|\(eng\)/i.test(a) ? 'UK' : /\b(US|GA|General American|America)\b|en-us/i.test(a) ? 'US' : '';
+      if (acc && !aud[acc]) aud[acc] = 'https://commons.wikimedia.org/wiki/Special:FilePath/' + encodeURIComponent(f.replace(/ /g, '_'));
+    }
     if (!entries.length) return null;
     const pick = acc => (entries.find(e => e.acc.split(',').includes(acc) && !e.pos.includes('other')) || entries.find(e => !e.acc && !e.pos.includes('other')) || entries[0]).ipa;
-    return { ipa: pick('UK'), ipaUS: pick('US'), entries };
+    return { ipa: pick('UK'), ipaUS: pick('US'), entries, audioUK: aud.UK, audioUS: aud.US };
   }
 
   async function myMemory(text) {
@@ -207,7 +214,7 @@
   const POS_SHORT = Object.fromEntries(Object.entries(POS_SHORT_RAW).map(([k, v]) => [k.normalize('NFC'), v]));
 
   // ---------- Bộ nhớ đệm bền (giữ kết quả tra qua các lần mở trang / khởi động lại add-on) ----------
-  const DV = 3;
+  const DV = 4;
   const persist = {
     // _v: phiên bản dữ liệu tra từ – tăng khi đổi cách xử lý (vd. phiên âm theo từ loại) để kết quả cũ trên máy tự tra lại
     async get(w) { try { const x = g.Core ? await g.Core.Store.get('dc2:' + w, null) : null; return x && x._v === DV ? fixDeep(x) : null; } catch (e) { return null; } },
@@ -249,8 +256,8 @@
       found: true,
       ipa: (local && local.ipa) || ipaFor(wk, (local && local.pos) || posRaw, 'UK') || (fd && fd.ipa) || '',
       ipaUS: ipaFor(wk, (local && local.pos) || posRaw, 'US') || (fd && fd.ipaUS) || '',
-      audio: (fd && fd.audio) || '',
-      audioUS: (fd && fd.audioUS) || '',
+      audio: (fd && fd.audio) || (wk && wk.audioUK) || '',
+      audioUS: (fd && fd.audioUS) || (wk && wk.audioUS) || '',
       pos: (local && local.pos) || POS_SHORT[posRaw] || posRaw,
       vi: (local && local.vi) || (gg && gg.vi && gg.vi.toLowerCase() !== word ? gg.vi : '') || senseVi || '',
       def: (local && local.def) || (gFirst && gFirst.def) || (fFirst && fFirst.defs[0] && fFirst.defs[0].def) || '',

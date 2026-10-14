@@ -216,6 +216,16 @@
     window.scrollTo(0, 0);
   }
   App.route = route;
+  // Gợi ý giọng đọc hay hơn (miễn phí) khi máy chỉ có giọng "robot" – theo đúng hệ điều hành/trình duyệt
+  App.voiceTipHtml = accent => {
+      const v = UI.pickVoice(accent || state.settings.accent), good = v && /Natural|Neural|Online|^Google|Premium|Enhanced|Siri/i.test(v.name);
+      if (good || !('speechSynthesis' in window) || !speechSynthesis.getVoices().length) return '';
+      const ua = navigator.userAgent, win = /Windows/.test(ua), apple = /Mac|iPhone|iPad/.test(ua), android = /Android/.test(ua), edge = /Edg\//.test(ua);
+      return '🎧 ' + (win && !edge ? t('Giọng hiện tại chưa tự nhiên. Mở Vocaband bằng <b>Microsoft Edge</b> để dùng giọng <b>Natural</b> (rất giống người thật, miễn phí).')
+        : apple ? t('Tải giọng chất lượng cao miễn phí: <b>Cài đặt → Trợ năng → Nội dung được đọc → Giọng nói → English</b> → chọn giọng có chữ <b>Nâng cao/Premium</b>, rồi mở lại Vocaband.')
+        : android ? t('Cài <b>Google Speech Services</b> (Dịch vụ giọng nói của Google) từ CH Play và tải giọng tiếng Anh chất lượng cao để nghe tự nhiên hơn.')
+        : t('Dùng Chrome hoặc Edge mới nhất để có giọng đọc tự nhiên hơn.'));
+  };
   // Nội dung bài học viết bằng tiếng Việt → tự dịch sang ngôn ngữ người học khi giao diện không phải tiếng Việt.
   // Dịch theo lô (Google Translate miễn phí), lưu bộ nhớ đệm trên máy → lần sau hiện ngay. Không dịch nghĩa từ (.vi) và dữ liệu người học nhập.
   (function contentTranslate() {
@@ -991,7 +1001,7 @@
           <h2>🔊 ${t('Âm thanh & phát âm')}</h2>
           <label class="field"><span>${t('Giọng phát âm')}</span>
             <select class="input" id="sAccent"><option value="en-GB" ${s.accent === 'en-GB' ? 'selected' : ''}>🇬🇧 ${t('Anh – Anh (khuyên dùng cho IELTS)')}</option><option value="en-US" ${s.accent === 'en-US' ? 'selected' : ''}>🇺🇸 ${t('Anh – Mỹ')}</option></select></label>
-          <label class="field" style="margin-top:.6rem"><span>${t('Giọng đọc')}</span><select class="input" id="sVoice"></select></label>
+          <label class="field" style="margin-top:.6rem"><span>${t('Giọng đọc')}</span><select class="input" id="sVoice"></select></label><div id="voiceTip" class="tip small" style="margin-top:.5rem" hidden></div>
           <label class="field" style="margin-top:.6rem"><span>${t('Tốc độ đọc:')} <b id="vRate">${(s.ttsRate || 0.92).toFixed(2)}×</b></span><input type="range" min="0.6" max="1.2" step="0.02" id="sRate" value="${s.ttsRate || 0.92}" style="width:100%"></label>
           <div class="row" style="margin:.4rem 0 .6rem"><button class="btn sm" id="sTry">▶️ ${t('Nghe thử câu mẫu')}</button><span class="tiny muted">${t('Từ đơn ưu tiên bản ghi giọng người thật')}</span></div>
           <label class="switch"><span>${t('Tự phát âm khi hiện thẻ')}</span><input type="checkbox" id="sAuto" ${s.autoSpeak ? 'checked' : ''}></label>
@@ -1035,7 +1045,9 @@
       const cur = (UI.pickVoice(s.accent) || {}).name;
       $('#sVoice').innerHTML = list.length ? list.map((v, i) => `<option value="${esc(v.name)}" ${v.name === cur ? 'selected' : ''}>${esc(v.name)}${i === 0 ? ' ⭐ ' + t('khuyên dùng') : ''}</option>`).join('') : `<option>${t('Trình duyệt chưa có giọng tiếng Anh')}</option>`;
     };
-    fillVoices(); setTimeout(fillVoices, 600);
+    // Gợi ý giọng đọc hay hơn (miễn phí) khi máy chỉ có giọng "robot" – theo đúng hệ điều hành/trình duyệt
+    const voiceTip = () => { const el = $('#voiceTip'); if (!el) return; const h = App.voiceTipHtml(s.accent); el.hidden = !h; el.innerHTML = h; };
+    fillVoices(); voiceTip(); setTimeout(() => { fillVoices(); voiceTip(); }, 600);
     $('#sVoice').onchange = e => { s.voice = { ...(s.voice || {}), [s.accent]: e.target.value }; save(); UI.tts('This is how I will read words and sentences to you.', s.accent); };
     $('#sRate').oninput = e => { s.ttsRate = +e.target.value; $('#vRate').textContent = s.ttsRate.toFixed(2) + '×'; save(); };
     $('#sTry').onclick = () => UI.tts('Many people believe that renewable energy is the key to a sustainable future. However, the transition will not happen overnight.', s.accent);

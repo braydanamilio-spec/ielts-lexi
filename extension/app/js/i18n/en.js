@@ -2036,6 +2036,12 @@
 (function (g) { Object.assign(g.I18N_DICT.en, { 'Tuần này của bạn': 'Your week', 'so với cả tuần trước': 'vs. all of last week', 'Lượt ôn': 'Reviews', 'Bài luyện': 'Quizzes', 'Ngày học': 'Days active' }); })(typeof self !== 'undefined' ? self : this);
 (function (g) { Object.assign(g.I18N_DICT.en, { 'Cài Vocaband như một app': 'Install Vocaband as an app', 'Mở nhanh từ màn hình chính, toàn màn hình, học được cả khi offline': 'Open from your home screen, full screen, works offline', 'Cài ngay – miễn phí': 'Install now – free', 'Đóng': 'Close' }); })(typeof self !== 'undefined' ? self : this);
 (function (g) { Object.assign(g.I18N_DICT.en, { 'Đồng bộ tài khoản': 'Account sync', 'Đăng nhập Google trong app sẽ có ở bản phát hành chính thức. Hiện tại dữ liệu học được lưu an toàn trên máy này; để đồng bộ giữa các thiết bị, hãy đăng nhập trên vocaband.web.app.': 'Google sign-in inside the app arrives with the official release. Your progress is saved safely on this device for now; to sync across devices, sign in at vocaband.web.app.' }); })(typeof self !== 'undefined' ? self : this);
+(function (g) { Object.assign(g.I18N_DICT.en, {
+  'Giọng hiện tại chưa tự nhiên. Mở Vocaband bằng <b>Microsoft Edge</b> để dùng giọng <b>Natural</b> (rất giống người thật, miễn phí).': 'This voice sounds robotic. Open Vocaband in <b>Microsoft Edge</b> to use its free <b>Natural</b> voices (very human-like).',
+  'Tải giọng chất lượng cao miễn phí: <b>Cài đặt → Trợ năng → Nội dung được đọc → Giọng nói → English</b> → chọn giọng có chữ <b>Nâng cao/Premium</b>, rồi mở lại Vocaband.': 'Get free high-quality voices: <b>Settings → Accessibility → Spoken Content → Voices → English</b> → pick an <b>Enhanced/Premium</b> voice, then reopen Vocaband.',
+  'Cài <b>Google Speech Services</b> (Dịch vụ giọng nói của Google) từ CH Play và tải giọng tiếng Anh chất lượng cao để nghe tự nhiên hơn.': 'Install <b>Speech Services by Google</b> from Google Play and download a high-quality English voice for more natural audio.',
+  'Dùng Chrome hoặc Edge mới nhất để có giọng đọc tự nhiên hơn.': 'Use the latest Chrome or Edge for more natural voices.',
+}); })(typeof self !== 'undefined' ? self : this);
 
 /* English UI strings – toefl.js (TOEFL iBT practice, 2026 format) */
 (function (g) { const D = g.I18N_DICT = g.I18N_DICT || {}; D.en = Object.assign(D.en || {}, {
