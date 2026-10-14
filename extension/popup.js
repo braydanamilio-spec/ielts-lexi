@@ -14,6 +14,13 @@
   $('#goalBar').style.width = Math.min(100, done / settings.dailyGoal * 100) + '%';
   $('#review').onclick = () => open(total ? '#/review' : '#/library');
   $('#open').onclick = e => { e.preventDefault(); open('#/home'); };
+  // Trạng thái đồng bộ tài khoản (liên kết qua web app vocaband.web.app)
+  const { linked } = await chrome.storage.local.get('linked');
+  const ago = t => { const m = Math.round((Date.now() - t) / 60000); return m < 60 ? `${m} phút trước` : m < 1440 ? `${Math.round(m / 60)} giờ trước` : `${Math.round(m / 1440)} ngày trước`; };
+  $('#syncRow').innerHTML = linked && linked.email
+    ? `<span>☁️ Đồng bộ với <b>${esc(linked.email)}</b> · ${ago(linked.at)}</span><a href="#" id="syncNow">Đồng bộ ngay</a>`
+    : `<span>⚠️ Chưa đồng bộ tài khoản – dữ liệu chỉ ở máy này</span><a href="#" id="syncNow" class="strong">☁️ Đồng bộ với Google</a>`;
+  $('#syncNow').onclick = e => { e.preventDefault(); chrome.tabs.create({ url: 'https://vocaband.web.app/#/settings' }); window.close(); };
 
   $('#dbl').checked = settings.dblclickOn !== false;
   $('#selMode').value = settings.selectMode || 'icon';

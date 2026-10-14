@@ -24,9 +24,10 @@
     fb = firebase.initializeApp(FIREBASE_CONFIG);
     db = firebase.firestore();
     firebase.auth().onAuthStateChanged(async u => {
-      Sync.user = u; App.state.user = u ? { uid: u.uid, displayName: u.displayName, email: u.email, photoURL: u.photoURL } : null;
+      Sync.user = u; Sync.ready = true; App.state.user = u ? { uid: u.uid, displayName: u.displayName, email: u.email, photoURL: u.photoURL } : null;
       App.updateChrome(); render();
-      if (u) await pullMerge();
+      if (u) { await pullMerge(); if (extReady) extCall('linked', { email: u.email, name: u.displayName || '' }); }
+      else nudgeLogin();
     });
   }
 
@@ -128,11 +129,32 @@
   const hash = str => { let h = 0; for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) | 0; return h + ':' + str.length; };
   let sentHashes = {};
 
+  // ---------- Nén dữ liệu đồng bộ (gzip trong trình duyệt) → giảm 3–5 lần dung lượng lưu trên cloud ----------
+  const canGz = typeof CompressionStream !== 'undefined';
+  async function gz(str) {
+    if (!canGz) return null;
+    const buf = await new Response(new Blob([str]).stream().pipeThrough(new CompressionStream('gzip'))).arrayBuffer();
+    let bin = ''; const u = new Uint8Array(buf); for (let i = 0; i < u.length; i += 0x8000) bin += String.fromCharCode.apply(null, u.subarray(i, i + 0x8000));
+    return btoa(bin);
+  }
+  async function gunz(b64) {
+    const bin = atob(b64), u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i);
+    return new Response(new Blob([u]).stream().pipeThrough(new DecompressionStream('gzip'))).text();
+  }
+  const docText = async d => !d ? '' : d.z ? gunz(d.z) : (d.json || '');
+  const docBody = async json => { const z = await gz(json); return z && z.length < json.length ? { z } : { json }; };
+
   async function pullMerge() {
     setStatus('syncing');
     try {
-      const snap = await ref().get();
-      const docs = {}; snap.forEach(d => { docs[d.id] = d.data(); });
+      // Đọc meta trước; chỉ tải các gói thẻ đã thay đổi kể từ lần đồng bộ trước (tiết kiệm lượt đọc)
+      const docs = {};
+      const ms = await ref().doc('meta').get();
+      if (ms.exists) docs.meta = ms.data();
+      const pulled = (await Store.get('pulledHashes', {}))[Sync.user.uid] || {};
+      const hs = (docs.meta && docs.meta.hs) || {};
+      const need = docs.meta ? [...Array(docs.meta.chunks || 0).keys()].map(i => 'cards_' + i).filter(k => !hs[k] || hs[k] !== pulled[k]) : [];
+      await Promise.all(need.map(async k => { const d = await ref().doc(k).get(); if (d.exists) docs[k] = d.data(); }));
       // Đăng nhập tài khoản khác với lần trước → hỏi trước khi gộp dữ liệu trên máy vào
       const lastUid = await Store.get('lastUid', '');
       if (lastUid && lastUid !== Sync.user.uid && Object.keys(await Cards.all()).length) {
@@ -143,12 +165,15 @@
       const local = { cards: await Cards.all(), stats: await Core.Stats.get(), game: await Game.get(), settings: await Store.get('settings', {}), deleted: await Store.get('deleted', {}) };
       if (docs.meta) {
         let remoteCards = {};
-        for (let i = 0; i < (docs.meta.chunks || 0); i++) if (docs['cards_' + i]) {
-          const part = JSON.parse(docs['cards_' + i].json || '{}');
-          for (const [k, v] of Object.entries(part)) remoteCards[k] = fat(v);
-          sentHashes['cards_' + i] = hash(docs['cards_' + i].json || '');
+        for (let i = 0; i < (docs.meta.chunks || 0); i++) {
+          const k = 'cards_' + i;
+          if (!docs[k]) { if (hs[k]) sentHashes[k] = hs[k]; continue; } // gói không đổi: máy này đã có
+          const txt = await docText(docs[k]);
+          const part = JSON.parse(txt || '{}');
+          for (const [w, v] of Object.entries(part)) remoteCards[w] = fat(v);
+          sentHashes[k] = hash(txt);
         }
-        const remote = JSON.parse(docs.meta.json || '{}');
+        const remote = JSON.parse((await docText(docs.meta)) || '{}');
         const deleted = { ...(remote.deleted || {}) };
         for (const [k, t] of Object.entries(local.deleted)) deleted[k] = Math.max(deleted[k] || 0, t);
         pruneDel(deleted);
@@ -164,6 +189,7 @@
         if (/^#\/(home|deck|library|stats|settings|path)?(\?|$)/.test(location.hash || '#/')) App.route();
       }
       if (!docs.meta) { await syncExtension(); await App.load(); }
+      if (docs.meta && docs.meta.hs) { const all = await Store.get('pulledHashes', {}); all[Sync.user.uid] = docs.meta.hs; await Store.set('pulledHashes', all); }
       await push();
       toast(docs.meta ? '☁️ Đã đồng bộ dữ liệu học' + (extReady ? ' (kể cả add-on)' : '') : '☁️ Đã sao lưu dữ liệu lên tài khoản');
     } catch (e) { console.warn('sync', e); setStatus('error', e.message); }
@@ -184,14 +210,17 @@
         const json = JSON.stringify(part), h = hash(json);
         if (sentHashes['cards_' + i] === h) continue;
         if (json.length > 900000) console.warn('chunk lớn', i, json.length);
-        batch.set(ref().doc('cards_' + i), { json }); pending['cards_' + i] = h; writes++;
+        batch.set(ref().doc('cards_' + i), await docBody(json)); pending['cards_' + i] = h; writes++;
       }
+      const hs = {}; for (let i = 0; i < chunks; i++) hs['cards_' + i] = pending['cards_' + i] || sentHashes['cards_' + i] || '';
       const game = await Game.get();
       const meta = JSON.stringify({ stats: await Core.Stats.get(), game: { ...game, questsDone: {} }, settings: await Store.get('settings', {}), settingsAt: await Store.get('settingsAt', 0), deleted: pruneDel(await Store.get('deleted', {})) });
       const mh = hash(meta + chunks);
-      if (sentHashes.meta !== mh) { batch.set(ref().doc('meta'), { chunks, updated: Date.now(), json: meta }); pending.meta = mh; writes++; }
+      if (sentHashes.meta !== mh || writes) { batch.set(ref().doc('meta'), { chunks, updated: Date.now(), hs, ...(await docBody(meta)) }); pending.meta = mh; writes++; }
       if (writes) await batch.commit();
-      if (extReady) extCall('set', { cards: await Cards.all(), deleted: await Store.get('deleted', {}) });
+      // Ghi nhớ trạng thái đã khớp với cloud → lần sau chỉ tải gói thay đổi
+      if (writes) { const all = await Store.get('pulledHashes', {}); all[Sync.user.uid] = hs; await Store.set('pulledHashes', all); }
+      if (extReady) { extCall('set', { cards: await Cards.all(), deleted: await Store.get('deleted', {}) }); extCall('linked', { email: Sync.user.email, name: Sync.user.displayName || '' }); }
       Object.assign(sentHashes, pending); // chỉ ghi nhận "đã gửi" khi commit thành công
       dirty = false;
       Sync.lastSync = Date.now();
@@ -220,6 +249,20 @@
       if (e && e.code !== 'auth/popup-closed-by-user') toast('Không đăng nhập được: ' + (e.message || e));
     }
   };
+  // Mời đăng nhập khi đã có dữ liệu đáng giữ (≥ 10 thẻ) – tối đa 3 ngày nhắc 1 lần, không chặn việc học
+  async function nudgeLogin() {
+    const n = Object.keys(App.state.cards || {}).length, last = await Store.get('loginNudgeAt', 0);
+    if (n < 10 || Date.now() - last < 3 * 864e5 || /welcome|mock|toeic-test|listen-test/.test(location.hash)) return;
+    await Store.set('loginNudgeAt', Date.now());
+    setTimeout(() => {
+      if (Sync.user) return;
+      UI.modal(`<div style="text-align:center"><div style="font-size:2.6rem">☁️</div><h2 style="margin:.3rem 0">Bảo vệ ${n} thẻ bạn đã học</h2>
+        <p class="muted">Dữ liệu đang chỉ nằm trên trình duyệt này. Đăng nhập Google để <b>sao lưu tự động</b> và <b>học tiếp trên máy khác, điện thoại, tiện ích Chrome</b> – cùng một tài khoản, không trùng lặp.</p>
+        <div class="row center" style="margin-top:1rem"><button class="btn primary lg" id="nudgeIn">Đăng nhập với Google</button><button class="btn ghost" data-close>Để sau</button></div>
+        <p class="tiny muted" style="margin-top:.6rem">Miễn phí · chỉ lưu dữ liệu học của bạn · có thể đăng xuất bất cứ lúc nào</p></div>`);
+      const b = document.getElementById('nudgeIn'); if (b) b.onclick = () => { UI.closeModal(); Sync.signIn(); };
+    }, 4000);
+  }
   Sync.signOut = async () => { await push(); sentHashes = {}; await firebase.auth().signOut(); toast('Đã đăng xuất – dữ liệu vẫn còn trên máy này'); };
   Sync.now = () => pullMerge();
 
@@ -230,7 +273,8 @@
   function render() {
     if (!box || !document.body.contains(box)) return;
     if (!supported) {
-      box.innerHTML = `<h2>☁️ Tài khoản & đồng bộ</h2><p class="muted">Đăng nhập và đồng bộ có trên bản web <a href="https://vocaband.web.app" target="_blank" rel="noopener">vocaband.web.app</a>. Trong add-on, dùng <b>Xuất / Nhập sao lưu</b> để chuyển dữ liệu.</p>`;
+      box.innerHTML = Store.isExtension ? `<h2>☁️ Tài khoản & đồng bộ</h2><p class="muted small">Tiện ích tự đồng bộ với tài khoản Google qua web app: mở <b>vocaband.web.app</b> và đăng nhập một lần – từ lưu bằng tiện ích sẽ tự gộp vào tài khoản (và ngược lại) mỗi khi bạn mở web app. Trên máy khác: cài tiện ích + đăng nhập cùng tài khoản trên web app là có đủ dữ liệu.</p><a class="btn primary" href="https://vocaband.web.app/#/settings" target="_blank" rel="noopener">☁️ Mở web app để đăng nhập & đồng bộ</a>`
+        : `<h2>☁️ Tài khoản & đồng bộ</h2><p class="muted">Đăng nhập và đồng bộ có trên bản web <a href="https://vocaband.web.app" target="_blank" rel="noopener">vocaband.web.app</a>.</p>`;
       return;
     }
     const u = Sync.user;

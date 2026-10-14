@@ -8,6 +8,7 @@
       try { if (!chrome.runtime.id) return; } catch (x) { return; } // bản add-on cũ đã bị thay thế
       try {
         if (e.data.op === 'get') { const data = await chrome.storage.local.get(KEYS); window.postMessage({ vbBridge: 'res', id: e.data.id, data }, location.origin); }
+        else if (e.data.op === 'linked') { const d = e.data.data || {}; await chrome.storage.local.set({ linked: { email: String(d.email || '').slice(0, 120), name: String(d.name || '').slice(0, 80), at: Date.now() } }); window.postMessage({ vbBridge: 'res', id: e.data.id, data: { ok: true } }, location.origin); }
         else if (e.data.op === 'aiKeyGet') { const { aiKey } = await chrome.storage.local.get('aiKey'); window.postMessage({ vbBridge: 'res', id: e.data.id, data: { aiKey: aiKey || '' } }, location.origin); }
         else if (e.data.op === 'aiKeySet') { const k = String((e.data.data || {}).aiKey || ''); if (!k || /^AIza[\w-]{20,}$/.test(k)) await chrome.storage.local.set({ aiKey: k }); window.postMessage({ vbBridge: 'res', id: e.data.id, data: { ok: true } }, location.origin); }
         else if (e.data.op === 'set') { const d = e.data.data || {}; const put = {}; KEYS.forEach(k => { if (d[k]) put[k] = d[k]; }); await chrome.storage.local.set(put); window.postMessage({ vbBridge: 'res', id: e.data.id, ok: true }, location.origin); }
