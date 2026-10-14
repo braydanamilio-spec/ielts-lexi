@@ -1,0 +1,2 @@
+/* Danh sách câu thoại đã có file âm thanh Kokoro (tự sinh bởi scripts/gen-audio.mjs) */
+(function (g) { g.LISTEN_AUDIO = new Set("10edz0i 14csmms 18tblqi 1bvs8f7 1feh217 1fq3t8t 1kjyckg 1kl0q46 1lv9ixs 1m296mm 1qdtyk3 1qszbxr 1smtq65 1vsnf2q 1wsnstr 37b93w 5el53p bb25qi fja5vj iil0wx jm5k2k ku0wri lpx1e7 qjv8y8 vkn76e xaruko yvm75z zwke3b".split(' ').filter(Boolean)); })(typeof self !== 'undefined' ? self : this);

@@ -47,12 +47,17 @@
 
   // ================= TRÌNH PHÁT =================
   // Hàng đợi: mỗi phần tử là 1 dòng thoại / lời dẫn / khoảng lặng; onLine(i) để tô sáng transcript
+  // Giọng Kokoro tạo sẵn (js/listen/kvoice.js + audio-index.js): ưu tiên file mp3 chất lượng cao, thiếu file/lỗi mạng → giọng của máy
+  const AUDIO_BASE = 'https://braydanamilio-spec.github.io/ielts-lexi/'; // file âm thanh lớn → GitHub Pages (miễn phí), không tốn băng thông Firebase
+  let audioDown = 0;
+  const hqOn = () => state.settings.hqVoice !== false && window.KVoice && window.LISTEN_AUDIO && audioDown < 3;
   function Player(p, opts = {}) {
-    const cast = castVoices(p);
+    const cast = castVoices(p), kv = window.KVoice ? KVoice.voices(p) : null;
     const q = p.script.map((l, i) => ({ ...l, i }));
-    let pos = 0, playing = false, seq = 0, timer = null;
+    let pos = 0, playing = false, seq = 0, timer = null, el = null;
     const rate = () => opts.rate ? opts.rate() : (state.settings.listenRate || 0.95);
-    const stopNow = () => { seq++; clearTimeout(timer); if ('speechSynthesis' in window) speechSynthesis.cancel(); };
+    const stopNow = () => { seq++; clearTimeout(timer); if ('speechSynthesis' in window) speechSynthesis.cancel(); if (el) { el.onended = el.onerror = null; el.pause(); el = null; } };
+    const hqKey = l => { if (!kv || !hqOn()) return null; const k = KVoice.lineKey(l.say ? kv._narrator : (kv[l.s] || kv._narrator), l.say || l.t); return LISTEN_AUDIO.has(k) ? k : null; };
     function step(my) {
       if (my !== seq) return;
       if (pos >= q.length) { playing = false; opts.onLine && opts.onLine(-1); opts.onEnd && opts.onEnd(); return; }
@@ -61,6 +66,22 @@
       const next = () => { if (my !== seq) return; pos++; step(my); };
       if (l.pause != null) { timer = setTimeout(next, Math.min(8, l.pause) * 1000); return; }
       if (l.say && opts.skipNarrator) { next(); return; }
+      const key = hqKey(l);
+      if (key) {
+        el = new Audio(AUDIO_BASE + 'audio/l/' + key + '.mp3'); el.preservesPitch = true; el.playbackRate = l.say ? 1 : Math.min(1.3, Math.max(0.6, rate() / 0.95));
+        const me = el; let ok = false;
+        el.onplaying = () => { ok = true; audioDown = 0; };
+        el.onended = () => { if (el === me) timer = setTimeout(next, l.say ? 600 : 280); };
+        el.onerror = () => { if (el !== me) return; el = null; if (!ok) audioDown++; ttsLine(); };
+        let pr; try { pr = el.play(); } catch (e) { pr = Promise.reject(e); }
+        if (pr && pr.catch) pr.catch(() => { if (el === me && !ok) { el = null; ttsLine(); } });
+        // tải trước câu kế tiếp → không bị khựng giữa các câu
+        const nx = q.slice(pos + 1).find(x => x.t || x.say), nk = nx && hqKey(nx); if (nk) { const pre = new Audio(); pre.preload = 'auto'; pre.src = AUDIO_BASE + 'audio/l/' + nk + '.mp3'; }
+        return;
+      }
+      ttsLine();
+      function ttsLine() {
+      if (!('speechSynthesis' in window)) { timer = setTimeout(next, 300); return; }
       const c = l.say ? cast._narrator : (cast[l.s] || cast._narrator);
       const parts = UI.splitSentences(l.say || l.t);
       parts.forEach((t, k) => {
@@ -69,9 +90,10 @@
         if (k === parts.length - 1) u.onend = u.onerror = () => { timer = setTimeout(next, l.say ? 600 : 280); };
         speechSynthesis.speak(u);
       });
+      }
     }
     return {
-      play(from) { if (!('speechSynthesis' in window)) { toast(t('Trình duyệt không hỗ trợ đọc giọng nói – hãy dùng Chrome/Edge/Safari')); return; } stopNow(); if (from != null) pos = Math.max(0, q.findIndex(x => x.i === from)); playing = true; opts.onState && opts.onState(true); step(seq); },
+      play(from) { if (!('speechSynthesis' in window) && !(window.LISTEN_AUDIO && LISTEN_AUDIO.size)) { toast(t('Trình duyệt không hỗ trợ đọc giọng nói – hãy dùng Chrome/Edge/Safari')); return; } stopNow(); if (from != null) pos = Math.max(0, q.findIndex(x => x.i === from)); playing = true; opts.onState && opts.onState(true); step(seq); },
       pause() { stopNow(); playing = false; opts.onState && opts.onState(false); },
       stop() { stopNow(); playing = false; pos = 0; opts.onState && opts.onState(false); },
       back() { const was = playing; stopNow(); let k = pos - 1; while (k > 0 && (q[k].pause != null || q[k].say)) k--; pos = Math.max(0, k); if (was) { playing = true; step(seq); } else opts.onLine && opts.onLine(q[pos].i); },
