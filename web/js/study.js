@@ -174,7 +174,7 @@
         </div>
       </div>
       <div id="actions" style="margin-top:1rem"><button class="btn primary lg block" id="flipBtn">${t('Lật thẻ')}</button></div>
-      <p class="muted tiny center" style="margin-top:1rem">${t('Phím tắt: <span class="kbd">Space</span> lật · <span class="kbd">1</span>–<span class="kbd">4</span> chấm điểm · <span class="kbd">P</span> phát âm')}</p>
+      <p class="muted tiny center" style="margin-top:1rem">${t('Phím tắt: <span class="kbd">Space</span> lật · <span class="kbd">1</span>–<span class="kbd">4</span> chấm điểm · <span class="kbd">P</span> phát âm')} · <span class="kbd">Z</span> ${t('hoàn tác')}</p>
     </div>`;
     App.bindCommon();
     const say = () => speak(c.word, accent(), c.audio);
