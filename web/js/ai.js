@@ -130,6 +130,63 @@ Criteria to use: ${kind === 'task1' ? 'Task Achievement, Coherence and Cohesion,
     return cache[id];
   }
 
+  // ---------- T1: chấm Writing theo quy tắc (miễn phí, tức thì, chạy trên máy) ----------
+  // Ước lượng 4 tiêu chí IELTS từ các chỉ số đo được; kết quả cùng định dạng với AI nên dùng chung giao diện.
+  const LINKERS = ['however', 'moreover', 'furthermore', 'in addition', 'additionally', 'therefore', 'consequently', 'as a result', 'thus', 'hence', 'nevertheless', 'nonetheless', 'on the other hand', 'in contrast', 'whereas', 'while', 'although', 'despite', 'for example', 'for instance', 'such as', 'firstly', 'secondly', 'finally', 'in conclusion', 'to sum up', 'overall', 'in general', 'similarly', 'likewise', 'meanwhile', 'subsequently', 'in particular', 'to begin with'];
+  const BASIC = { good: 'beneficial / favourable', bad: 'detrimental / harmful', big: 'substantial / considerable', 'a lot of': 'a considerable amount of / numerous', very: '(dùng tính từ mạnh hơn: crucial, remarkable…)', thing: 'factor / aspect / issue', things: 'factors / aspects', get: 'obtain / acquire / gain', nice: 'pleasant / appealing', important: 'crucial / vital / pivotal', show: 'illustrate / indicate / demonstrate', 'think that': 'argue / contend / maintain that', help: 'facilitate / assist', many: 'numerous / a wide range of', 'lots of': 'a great deal of' };
+  const COMPLEX = /\b(which|who|whom|whose|that|although|though|whereas|while|because|since|unless|if|when|whether|so that|in order to|not only)\b|\b\w+ing\b,|\b(is|are|was|were|been|be)\s+\w+ed\b/gi;
+  const roundBand = x => Math.max(4, Math.min(8, Math.round(x * 2) / 2));
+  async function localGrade({ kind, task, text }) {
+    const words = text.match(/[A-Za-z][A-Za-z'’-]*/g) || [], n = words.length, low = words.map(w => w.toLowerCase());
+    const sents = text.split(/(?<=[.!?])\s+/).filter(x => x.trim().split(/\s+/).length > 2);
+    const paras = text.split(/\n\s*\n|\n/).filter(p => p.trim().split(/\s+/).length > 8).length;
+    const lc = ' ' + text.toLowerCase() + ' ';
+    const linkUsed = LINKERS.filter(l => lc.includes(' ' + l + ' ') || lc.includes(' ' + l + ','));
+    const ttr = new Set(low.slice(0, 250)).size / Math.max(1, Math.min(250, n));
+    const AWL = new Set(((window.IELTS_DATA && IELTS_DATA.TOPICS) || []).filter(t => t.group === 'awl').flatMap(t => t.words.map(w => w.word.toLowerCase())));
+    const awl = low.filter(w => AWL.has(w) || AWL.has(w.replace(/(s|es|ed|ing|ly)$/, ''))).length / Math.max(1, n);
+    const basicHits = Object.keys(BASIC).filter(b => (lc.match(new RegExp('[^a-z]' + b + '[^a-z]', 'g')) || []).length);
+    const basicCount = basicHits.reduce((a, b) => a + (lc.match(new RegExp('[^a-z]' + b + '[^a-z]', 'g')) || []).length, 0);
+    const complex = sents.filter(x => x.match(COMPLEX)).length / Math.max(1, sents.length), avgLen = n / Math.max(1, sents.length);
+    let errs = []; try { if (window.Assist && Assist.check) errs = (await Assist.check(text)).filter(m => m.type !== 'style').slice(0, 12); } catch (e) { /* không có mạng → bỏ qua */ }
+    const errRate = errs.length / Math.max(1, n) * 100;
+    const min = kind === 'task1' ? 150 : kind === 'speaking' ? 0 : 250;
+    const t1 = kind === 'task1', sp = kind === 'speaking';
+    const hasOverview = /\b(overall|in general|it is clear|it is evident|generally)\b/i.test(text), nums = (text.match(/\d+(\.\d+)?\s?%?/g) || []).length;
+    const hasPosition = /\b(i (strongly )?(believe|think|agree|disagree)|in my (opinion|view)|this essay (will )?(argue|discuss))/i.test(text), hasConcl = /\b(in conclusion|to (sum up|conclude)|overall,)/i.test(text);
+    let tr = 6; if (min && n < min * 0.8) tr -= 1.5; else if (min && n < min) tr -= 0.5;
+    if (t1) tr += (hasOverview ? 0.5 : -1) + (nums >= 4 ? 0.5 : -0.5); else if (!sp) tr += (hasPosition ? 0.5 : -0.5) + (hasConcl ? 0.5 : -0.5);
+    if (!sp && paras < 3) tr -= 0.5;
+    let cc = 5 + (linkUsed.length >= 6 ? 1.5 : linkUsed.length >= 3 ? 1 : linkUsed.length ? 0.5 : 0) + (sp ? 0.5 : paras >= 4 ? 0.5 : 0);
+    let lr = 5 + (ttr >= 0.55 ? 1 : ttr >= 0.48 ? 0.5 : 0) + (awl >= 0.06 ? 1 : awl >= 0.03 ? 0.5 : 0) - (basicCount >= 6 ? 0.5 : 0);
+    let gr = 5 + (complex >= 0.5 ? 1 : complex >= 0.3 ? 0.5 : 0) + (avgLen >= 14 && avgLen <= 28 ? 0.5 : 0) - (errRate >= 4 ? 1 : errRate >= 2 ? 0.5 : 0);
+    if (n < 40) { tr = Math.min(tr, 4); cc = Math.min(cc, 4.5); lr = Math.min(lr, 4.5); gr = Math.min(gr, 4.5); }
+    if (min && n < min * 0.6) { tr = Math.min(tr, 4.5); cc = Math.min(cc, 5); lr = Math.min(lr, 5); gr = Math.min(gr, 5); } // bài quá ngắn: không đủ dữ liệu chứng minh trình độ cao
+    const names = sp ? ['Fluency and Coherence', 'Lexical Resource', 'Grammatical Range and Accuracy'] : [t1 ? 'Task Achievement' : 'Task Response', 'Coherence and Cohesion', 'Lexical Resource', 'Grammatical Range and Accuracy'];
+    const bands = (sp ? [cc, lr, gr] : [tr, cc, lr, gr]).map(roundBand);
+    const avg = bands.reduce((a, b) => a + b, 0) / bands.length, fl = Math.floor(avg), fr = avg - fl, overall = fr < 0.25 ? fl : fr < 0.75 ? fl + 0.5 : fl + 1; // làm tròn chính thức IELTS: .25 → .5, .75 → lên 1
+    const comments = sp ? [t('Dùng {n} từ nối khác nhau.', { n: linkUsed.length }), t('Độ đa dạng từ {p}%, từ học thuật {a}%.', { p: Math.round(ttr * 100), a: (awl * 100).toFixed(1) }), t('{c}% câu có cấu trúc phức · {e} lỗi phát hiện.', { c: Math.round(complex * 100), e: errs.length })]
+      : [min ? t('{n}/{min} từ · {p} đoạn.', { n, min, p: paras }) + ' ' + (t1 ? (hasOverview ? t('Có câu tổng quan (overview).') : t('Thiếu câu tổng quan (overview) – lỗi nặng ở Task 1.')) + ' ' + t('{k} số liệu được dẫn.', { k: nums }) : (hasPosition ? t('Nêu rõ quan điểm.') : t('Chưa nêu rõ quan điểm.')) + ' ' + (hasConcl ? t('Có kết luận.') : t('Thiếu đoạn kết luận.'))) : '',
+        t('Dùng {n} từ nối khác nhau: {list}.', { n: linkUsed.length, list: linkUsed.slice(0, 6).join(', ') || '–' }), t('Độ đa dạng từ {p}%, từ học thuật {a}%.', { p: Math.round(ttr * 100), a: (awl * 100).toFixed(1) }), t('{c}% câu có cấu trúc phức · {e} lỗi phát hiện.', { c: Math.round(complex * 100), e: errs.length })];
+    const improvements = [];
+    if (min && n < min) improvements.push(t('Viết đủ tối thiểu {min} từ – thiếu từ bị trừ điểm Task.', { min }));
+    if (t1 && !hasOverview) improvements.push(t('Thêm câu tổng quan bắt đầu bằng “Overall, …” nêu 2 xu hướng/đặc điểm nổi bật nhất.'));
+    if (!t1 && !sp && !hasPosition) improvements.push(t('Nêu rõ quan điểm ngay mở bài và nhắc lại ở kết bài.'));
+    if (linkUsed.length < 4) improvements.push(t('Dùng đa dạng từ nối hơn: however, moreover, as a result, for instance, in contrast…'));
+    if (complex < 0.3) improvements.push(t('Thêm câu phức: mệnh đề quan hệ (which/who), câu điều kiện, “Although…”, mệnh đề rút gọn V-ing.'));
+    if (basicHits.length) improvements.push(t('Thay từ quá cơ bản bằng từ chính xác hơn (xem gợi ý bên dưới).'));
+    if (awl < 0.03) improvements.push(t('Dùng thêm từ học thuật (AWL) đã học trong thư viện Vocaband.'));
+    return {
+      overall, criteria: names.map((name, i) => ({ name, band: bands[i], comment: comments[i] })),
+      summary: t('Ước lượng nhanh theo các chỉ số đo được (độ dài, bố cục, từ nối, từ vựng, câu phức, lỗi ngữ pháp). Để có nhận xét chi tiết như giám khảo, bật chấm bằng AI.'),
+      strengths: [linkUsed.length >= 4 && t('Liên kết ý tốt với nhiều từ nối.'), ttr >= 0.5 && t('Vốn từ đa dạng, ít lặp từ.'), awl >= 0.04 && t('Dùng từ học thuật phù hợp.'), complex >= 0.4 && t('Có nhiều câu phức.'), (!min || n >= min) && t('Đủ độ dài yêu cầu.')].filter(Boolean),
+      improvements: improvements.slice(0, 5),
+      errors: errs.slice(0, 8).map(m => ({ quote: m.bad || m.ctx, fix: (m.reps || [])[0] || '', why: m.msg })),
+      vocab: basicHits.slice(0, 6).map(b => ({ from: b, to: BASIC[b], note: t('Từ cơ bản – nên thay để tăng điểm Lexical Resource.') })),
+      _model: t('Vocaband – chấm nhanh theo quy tắc'), _local: true,
+    };
+  }
+
   // ---------- Hướng dẫn lấy khóa ----------
   function keyDialog(onSaved) {
     modal(`<h2 style="margin-top:0">🤖 ${t('Bật chấm bài bằng AI')}</h2>
@@ -172,11 +229,15 @@ Criteria to use: ${kind === 'task1' ? 'Task Achievement, Coherence and Cohesion,
     box.appendChild(wrap);
     const go = async () => {
       const inp = getInput(); if (!inp || !inp.text || inp.text.split(/\s+/).length < 20) return toast(t('Bài quá ngắn để chấm (cần ≥ 20 từ)'));
-      if (!(await getKey())) { const st = await nanoStatus(); if (st === 'none' || st === 'unavailable') return keyDialog(go); }
+      // Chưa có AI (khóa / AI Chrome đã tải) → chấm nhanh theo quy tắc ngay, kèm nút bật AI để chấm sâu – không bao giờ để người học chờ hay kẹt
+      const st = (await getKey()) ? 'key' : await nanoStatus(), aiReady = st === 'key' || st === 'available';
       const out = $('[data-ai-out]', wrap), b = $('[data-ai]', wrap);
       b.disabled = true; out.innerHTML = '<div class="small muted" style="margin-top:.6rem">⏳ ' + t('AI đang chấm bài (10–30 giây)…') + '</div>';
       nanoProgress = p => { out.innerHTML = `<div class="small muted" style="margin-top:.6rem">⬇️ ${t('Chrome đang tải AI trên máy lần đầu ({pct}%) – chỉ tải một lần…', { pct: Math.round(p * 100) })}</div>`; };
-      try { const r = await grade(inp); out.innerHTML = render(r, inp.kind); b.textContent = '↻ ' + t('Chấm lại'); }
+      const showLocal = async note => { const r = await localGrade(inp); out.innerHTML = (note ? `<div class="tip small" style="margin:.6rem 0">${note}</div>` : '') + render(r, inp.kind) + `<div class="row" style="margin-top:.6rem"><button class="btn sm primary" data-k>🤖 ${t('Chấm sâu như giám khảo bằng AI (miễn phí)')}</button></div>`; const k = $('[data-k]', out); if (k) k.onclick = () => keyDialog(go); };
+      if (!aiReady) { await showLocal(''); b.disabled = false; b.textContent = '↻ ' + t('Chấm lại'); return; }
+      try { try { const r = await grade(inp); out.innerHTML = render(r, inp.kind); b.textContent = '↻ ' + t('Chấm lại'); }
+      catch (e) { if (e.message === 'QUOTA' || e.message === 'FAILED' || e.message === 'TIMEOUT') { await showLocal('⚠️ ' + esc(errText(e)) + ' ' + t('Đây là kết quả chấm nhanh theo quy tắc:')); b.disabled = false; return; } throw e; } }
       catch (e) { out.innerHTML = `<div class="small" style="margin-top:.6rem">❌ ${esc(errText(e))} ${e.message === 'BAD_KEY' || e.message === 'NO_KEY' ? `<button class="btn sm" data-k>${t('Nhập khóa')}</button>` : ''}</div>`; const k = $('[data-k]', out); if (k) k.onclick = () => keyDialog(go); }
       b.disabled = false;
     };
@@ -219,5 +280,5 @@ Return ONLY JSON: {"meaning": string (Vietnamese meaning in THIS context), "stru
       ${x.tip ? `<div class="small" style="margin-top:.35rem">💡 ${esc(x.tip)}</div>` : ''}</div>`;
   }
 
-  window.AI = { ask: p => call(p), nanoStatus, onNanoProgress: f => { nanoProgress = f; nanoOptIn = true; }, explain, renderExplain, errText: e => errText(e), getKey, grade, attach, keyDialog, settingsHtml, bindSettings };
+  window.AI = { localGrade, ask: p => call(p), nanoStatus, onNanoProgress: f => { nanoProgress = f; nanoOptIn = true; }, explain, renderExplain, errText: e => errText(e), getKey, grade, attach, keyDialog, settingsHtml, bindSettings };
 })();
