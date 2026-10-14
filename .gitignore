@@ -5,3 +5,5 @@ node_modules/
 firebase-debug.log
 .claude/
 store/.claude/
+qa/
+*.pdf

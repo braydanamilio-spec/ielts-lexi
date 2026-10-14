@@ -282,7 +282,7 @@
           <div class="row between"><h3 style="margin:0">Tuần này</h3><span class="muted small">${gd.xp || 0} XP hôm nay</span></div>
           <div class="week" style="margin-top:1rem">${week.map((d, i) => `<div>${dn[i]}<i class="${days.has(todayKey(d)) ? 'on' : ''} ${todayKey(d) === k ? 'today' : ''}">${days.has(todayKey(d)) ? '🔥' : d.getDate()}</i></div>`).join('')}</div>
         </div>
-        <div class="card wotd" style="grid-template-columns:96px 1fr">
+        <div class="card wotd" style="grid-template-columns:96px minmax(0,1fr)">
           ${pic(w)}
           <div>
             <div class="tiny muted" style="font-weight:700;text-transform:uppercase;letter-spacing:.06em">Từ của ngày</div>
@@ -355,7 +355,8 @@
       ['listen', '🎧', 'Nghe & chép', 'Nghe phát âm, gõ lại', '#e6f0ff'],
       ['test', '📝', 'Bài kiểm tra', '20 câu tổng hợp, chấm điểm', '#f3e8ff'],
       ['write', '✍️', 'Phòng viết', 'Viết Task 2, phân tích từ vựng', '#fff1e6'],
-    ].map(([id, em, name, desc, bg]) => `<a class="mode" href="${id === 'write' ? '#/write' : '#/practice/' + id}"><span class="em" style="background:${bg}">${em}</span><b>${name}</b><span class="muted small">${desc}</span></a>`);
+      ['speaking', '🗣️', 'Phòng Speaking', 'Part 1–3, ghi âm, chấm từ vựng', '#e0f2fe'],
+    ].map(([id, em, name, desc, bg]) => `<a class="mode" href="${id === 'write' || id === 'speaking' ? '#/' + id : '#/practice/' + id}"><span class="em" style="background:${bg}">${em}</span><b>${name}</b><span class="muted small">${desc}</span></a>`);
   }
   App.modeTiles = modeTiles;
 
@@ -1063,6 +1064,29 @@
   }
   App.bindCommon = bindCommon;
 
+  // ---------- Cài app (PWA) & trạng thái mạng ----------
+  let installEvt = null;
+  const isStandalone = () => matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+  const isIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent) && !/crios|fxios/i.test(navigator.userAgent);
+  function showInstallBtn() {
+    if (Store.isExtension || isStandalone() || $('#installBtn')) return;
+    if (!installEvt && !isIOS()) return;
+    const b = document.createElement('button');
+    b.id = 'installBtn'; b.className = 'pill'; b.style.cursor = 'pointer'; b.style.color = 'var(--primary)';
+    b.innerHTML = '📲 <span class="hide-sm">Cài app</span>';
+    b.title = 'Cài Vocaband lên màn hình chính';
+    b.onclick = async () => {
+      if (installEvt) { installEvt.prompt(); const r = await installEvt.userChoice; if (r.outcome === 'accepted') { b.remove(); toast('🎉 Đã cài Vocaband!'); } installEvt = null; return; }
+      modal(`<h2>📲 Cài Vocaband lên iPhone</h2><ol style="line-height:2;padding-left:1.2rem"><li>Bấm nút <b>Chia sẻ</b> <span style="font-size:1.2rem">⎋</span> ở thanh dưới của Safari</li><li>Chọn <b>“Thêm vào MH chính”</b> (Add to Home Screen)</li><li>Bấm <b>Thêm</b> – biểu tượng Vocaband sẽ xuất hiện như một app</li></ol><button class="btn primary block" data-close>Đã hiểu</button>`);
+    };
+    $('.top-stats').prepend(b);
+  }
+  window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvt = e; showInstallBtn(); });
+  window.addEventListener('appinstalled', () => { const b = $('#installBtn'); if (b) b.remove(); });
+  const netState = () => { document.body.classList.toggle('offline', !navigator.onLine); };
+  window.addEventListener('offline', () => { netState(); toast('📴 Mất kết nối – vẫn ôn tập được, tra từ mới cần mạng'); });
+  window.addEventListener('online', () => { netState(); toast('✅ Đã có mạng trở lại'); });
+
   // ---------- Khởi động ----------
   App.ready = (async function init() {
     if (/[?&]demo=1/.test(location.search)) await seedDemo();
@@ -1076,6 +1100,7 @@
     }
     if (!Store.isExtension && 'serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(() => {});
     checkReminder(); setInterval(checkReminder, 60 * 1000);
+    netState(); setTimeout(showInstallBtn, 1500);
     document.addEventListener('visibilitychange', async () => { if (!document.hidden) { state.cards = await Cards.all(); state.stats = await Stats.get(); state.game = await Game.get(); updateChrome(); } });
   })();
   // Các module khác (study.js, reading.js) đăng ký route rồi mới vẽ trang đầu tiên
