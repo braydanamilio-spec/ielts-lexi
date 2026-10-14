@@ -183,7 +183,7 @@
     tsl: ['js/lib/tsl-a.js', 'js/lib/tsl-b.js', 'js/lib/domain-a.js', 'js/lib/domain-b.js', 'js/lib/exam-vocab.js'],
     speak: ['js/speak/samples.js'],
     toefl: ['js/qengine.js', 'js/toefl/data1.js', 'js/toefl.js'],
-    notes: ['js/lib/notes-awl.js'], // ghi chú học từ soạn sẵn (mẹo nhớ, lỗi hay gặp, cách dùng, họ từ)
+    notes: ['js/lib/notes-awl.js', 'js/lib/notes-toeic.js'], // ghi chú học từ soạn sẵn (mẹo nhớ, lỗi hay gặp, cách dùng, họ từ)
     toeic: ['js/qengine.js', 'js/toeic/reading1.js', 'js/toeic/reading2.js', 'js/toeic/listening1.js', 'js/toeic/listening2.js', 'js/toeic/reading3.js', 'js/toeic/listening3.js', 'js/toeic.js'],
   };
   const ROUTE_BUNDLE = { grammar: 'grammar', placement: 'grammar', pron: 'pron', listening: 'listening', listen: ['listening', 'toeic'], 'listen-test': 'listening', dictation: ['listening', 'toeic'],
