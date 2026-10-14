@@ -17,6 +17,10 @@
         return raw ? JSON.parse(raw) : fallback;
       } catch (e) { return fallback; }
     },
+    async remove(key) {
+      if (hasChrome) return chrome.storage.local.remove(key);
+      localStorage.removeItem(PREFIX + key);
+    },
     async set(key, value) {
       if (hasChrome) return chrome.storage.local.set({ [key]: value });
       localStorage.setItem(PREFIX + key, JSON.stringify(value));
@@ -220,6 +224,7 @@
       const s = await Stats.get();
       const k = todayKey();
       s.days[k] = (s.days[k] || 0) + 1;
+      const ks = Object.keys(s.days).sort(); while (ks.length > 400) delete s.days[ks.shift()];
       if (isNew) {
         if (s.newToday.day !== k) s.newToday = { day: k, n: 0 };
         s.newToday.n += 1;

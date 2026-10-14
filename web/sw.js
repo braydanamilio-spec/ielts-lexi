@@ -1,5 +1,5 @@
 /* Service worker: cache giao diện để dùng offline + mở app khi bấm thông báo. */
-const CACHE = 'vocaband-v3';
+const CACHE = 'vocaband-v4';
 const SHELL = ['./', 'index.html', 'css/style.css', 'js/data.js', 'js/lib/topics-more.js', 'js/lib/skills.js', 'js/lib/awl.js', 'js/readings.js', 'js/core.js', 'js/dictionary.js', 'js/game.js', 'js/ui.js', 'js/app.js', 'js/study.js', 'js/reading.js', 'js/firebase-config.js', 'js/sync.js', 'manifest.webmanifest', 'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png'];
 
 self.addEventListener('install', e => {
@@ -11,11 +11,13 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => {
   const url = new URL(e.request.url);
   if (e.request.method !== 'GET' || url.origin !== location.origin) return; // API từ điển luôn đi mạng
-  // Network-first để luôn nhận bản mới, rơi về cache khi offline
-  e.respondWith(
-    fetch(e.request).then(r => { const copy = r.clone(); caches.open(CACHE).then(c => c.put(e.request, copy)); return r; })
-      .catch(() => caches.match(e.request).then(r => r || caches.match('index.html')))
-  );
+  // Trả ngay bản trong cache (mở app tức thì, không tốn băng thông), đồng thời cập nhật bản mới ở nền
+  e.respondWith(caches.open(CACHE).then(async cache => {
+    const hit = await cache.match(e.request, { ignoreSearch: url.pathname.endsWith('/') || url.pathname.endsWith('.html') });
+    const net = fetch(e.request).then(r => { if (r.ok) cache.put(e.request, r.clone()); return r; }).catch(() => hit || cache.match('index.html'));
+    if (hit) { e.waitUntil(net); return hit; }
+    return net;
+  }));
 });
 self.addEventListener('notificationclick', e => {
   e.notification.close();

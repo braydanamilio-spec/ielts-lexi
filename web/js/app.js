@@ -486,14 +486,23 @@
       return;
     }
     $('#result').innerHTML = `<div class="card empty"><div class="em">⏳</div>Đang tra “${esc(q)}”…</div>`;
-    const e = await Dict.lookup(q);
+    // Hiện kết quả nhanh trước (nghĩa, phiên âm), rồi bổ sung âm thanh, hình, câu ví dụ
+    let spoke = false;
+    const fast = await Dict.quick(q);
     if (parseHash().arg !== q) return;
-    if (!e || !e.found) {
-      $('#result').innerHTML = `<div class="card empty"><div class="em">🤔</div><p>Không tìm thấy “${esc(q)}”.${e && e.vi ? ` Gợi ý dịch: <b>${esc(e.vi)}</b>` : ''}</p><p class="small">Kiểm tra chính tả hoặc kết nối mạng.</p></div>`;
+    if (fast) paint(fast, false);
+    const full = await Dict.lookup(q);
+    if (parseHash().arg !== q) return;
+    if (!full || !full.found) {
+      if (!fast) $('#result').innerHTML = `<div class="card empty"><div class="em">🤔</div><p>Không tìm thấy “${esc(q)}”.${full && full.vi ? ` Gợi ý dịch: <b>${esc(full.vi)}</b>` : ''}</p><p class="small">Kiểm tra chính tả hoặc kết nối mạng.</p></div>`;
       return;
     }
-    Store.set('recent', [e.word, ...recent.filter(r => r !== e.word)].slice(0, 8));
+    Store.set('recent', [full.word, ...recent.filter(r => r !== full.word)].slice(0, 8));
     reward({ lookups: 1 });
+    paint(full, true);
+
+    function paint(e, final) {
+    const keep = $('#ctx') ? $('#ctx').value : '';
     const card = state.cards[e.word];
 
     $('#result').innerHTML = `
@@ -504,6 +513,7 @@
             <div class="pron">
               <span><b class="small">🇬🇧 UK</b> <span class="ipa">${esc(e.ipa || '—')}</span><button class="icon-btn sm" data-speak="${esc(e.word)}" data-accent="en-GB" data-url="${esc(e.audio && /-uk/.test(e.audio) ? e.audio : '')}">🔊</button></span>
               <span><b class="small">🇺🇸 US</b> <span class="ipa">${esc(e.ipaUS || '—')}</span><button class="icon-btn sm" data-speak="${esc(e.word)}" data-accent="en-US" data-url="${esc(e.audioUS || '')}">🔊</button></span>
+              <span><b class="small">🐢 Chậm</b><button class="icon-btn sm" data-slow="${esc(e.word)}" title="Nghe chậm">🔊</button></span>
             </div>
             <div class="vi">${esc(e.vi)}</div>
             ${e.def ? `<div style="margin-top:.4rem">${esc(e.def)}</div>` : ''}
@@ -546,8 +556,9 @@
         </div>
       </div>`;
     bindCommon();
-    if (state.settings.autoSpeak) speak(e.word, state.settings.accent, state.settings.accent === 'en-US' ? e.audioUS : e.audio);
-    loadRelated(e);
+    if (!spoke && state.settings.autoSpeak) { spoke = true; speak(e.word, state.settings.accent, state.settings.accent === 'en-US' ? e.audioUS : e.audio); }
+    if (final) loadRelated(e);
+    if (keep) { $('#ctx').value = keep; }
 
     let ctxVi = '';
     const trCtx = async () => {
@@ -574,6 +585,7 @@
     };
     $('#saveWord').onclick = save;
     const qs = $('#quickSave'); if (qs) qs.onclick = save;
+    }
   };
 
   // Từ liên quan (Datamuse): tính từ hay đi kèm, danh từ hay đi kèm, trái nghĩa, gần nghĩa
@@ -1010,6 +1022,7 @@
   function bindCommon(after) {
     $$('[data-speak]').forEach(b => b.onclick = e => { e.preventDefault(); e.stopPropagation(); speak(b.dataset.speak, b.dataset.accent || state.settings.accent, b.dataset.url || ''); });
     $$('[data-speak-text]').forEach(b => b.onclick = e => { e.stopPropagation(); speak(b.dataset.speakText, state.settings.accent); });
+    $$('[data-slow]').forEach(b => b.onclick = e => { e.stopPropagation(); UI.tts(b.dataset.slow, state.settings.accent, 0.55); });
     $$('[data-add-seed]').forEach(b => b.onclick = async e => {
       e.preventDefault();
       const w = INDEX[b.dataset.addSeed.toLowerCase()];

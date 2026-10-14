@@ -26,8 +26,12 @@
     .chip { display: inline-block; padding: 0 7px; margin-left: 4px; border-radius: 99px; background: #f1f2f8; color: #6b6f85; font-size: 11px; vertical-align: middle; }
     .lv { background: #eceafe; color: #4f46e5; font-weight: 700; }
     .ipa { color: #6b6f85; font-family: "Lucida Sans Unicode", "Arial Unicode MS", sans-serif; }
-    .spk { border: 0; background: #f1f2f8; border-radius: 50%; width: 26px; height: 26px; cursor: pointer; font-size: 12px; vertical-align: middle; }
-    .spk:hover { background: #eceafe; }
+    .spks { display: flex; gap: 6px; margin: 4px 0 2px; flex-wrap: wrap; }
+    .spk { border: 0; background: #eceafe; color: #4f46e5; border-radius: 999px; height: 26px; padding: 0 10px; cursor: pointer; font: 700 12px/26px -apple-system, "Segoe UI", sans-serif; vertical-align: middle; }
+    .spk:hover { background: #4f46e5; color: #fff; }
+    .spk.mini { height: 22px; padding: 0 6px; line-height: 22px; font-size: 11px; }
+    .sk { height: 11px; border-radius: 6px; margin: 7px 0; background: linear-gradient(90deg, #eef0f6 25%, #f8f9fc 50%, #eef0f6 75%); background-size: 200% 100%; animation: sh 1s infinite linear; }
+    @keyframes sh { to { background-position: -200% 0; } }
     .vi { color: #0e8f8e; font-weight: 700; font-size: 15px; margin-top: 2px; }
     .body { padding: 0 14px 12px; max-height: 340px; overflow: auto; }
     .def { margin: 4px 0; }
@@ -113,9 +117,9 @@
     return new RegExp(`\\b(${stem}[a-z]*)\\b`, 'gi');
   }
 
-  function speak(word, url, accent) {
-    const tts = () => { const u = new SpeechSynthesisUtterance(word); u.lang = accent || 'en-GB'; u.rate = .9; speechSynthesis.cancel(); speechSynthesis.speak(u); };
-    if (url) { const a = new Audio(url); a.play().catch(tts); } else tts();
+  function speak(text, url, accent, rate) {
+    const tts = () => { if (!window.speechSynthesis) return; const u = new SpeechSynthesisUtterance(text); u.lang = accent || 'en-GB'; u.rate = rate || .9; speechSynthesis.cancel(); speechSynthesis.speak(u); };
+    if (url) { try { const a = new Audio(url); a.play().catch(tts); } catch (e) { tts(); } } else tts();
   }
 
   async function show(word, rect, context, meta) {
@@ -124,64 +128,73 @@
     hideFab();
     const b = box();
     b.hidden = false;
-    b.innerHTML = `<div class="muted">⏳ Đang tra “${esc(word)}”…</div>`;
+    b.innerHTML = `<div class="head"><div class="pic">📘</div><div style="flex:1"><div class="w">${esc(word)}</div><div class="sk" style="width:60%"></div><div class="sk" style="width:40%"></div></div></div><div class="body"><div class="sk"></div><div class="sk" style="width:80%"></div></div>`;
     position(rect);
     current = word;
-    let res;
-    try { res = await chrome.runtime.sendMessage({ type: 'lookup', word }); }
-    catch (e) { b.innerHTML = '<div class="muted">Add-on vừa được cập nhật – hãy tải lại trang.</div>'; return; }
-    if (current !== word) return;
-    const e = res && res.entry;
-    if (!e || !e.found) {
-      b.innerHTML = `<div class="muted">Không tìm thấy “${esc(word)}”.${e && e.vi ? `<br>Dịch: <b>${esc(e.vi)}</b>` : ''}</div>`;
-      return;
-    }
-    const settings = (await chrome.storage.local.get('settings')).settings || {};
-    const accent = settings.accent || 'en-GB';
-    const audioFor = acc => acc === 'en-US' ? (e.audioUS || e.audio) : e.audio;
-    const defs = (e.meanings || []).slice(0, 2).map(m => `<div class="def"><span class="chip">${esc(m.pos)}</span> ${esc(m.defs[0] && m.defs[0].def)}</div>`).join('');
-    const ctxHtml = context ? esc(context).replace(wordRegex(word), '<mark>$1</mark>') : '';
+    const st = (await chrome.storage.local.get('settings')).settings || {};
+    const accent = st.accent || 'en-GB';
+    let e = null, saved = false, ctxVi = '', didSave = false, spoke = false;
 
-    b.innerHTML = `
-      <div class="head">
-        <div class="pic">${e.image ? `<img src="${esc(e.image)}" alt="" referrerpolicy="no-referrer">` : esc(e.emoji || '📘')}</div>
-        <div>
-          <div><span class="w">${esc(e.word)}</span>${e.pos ? `<span class="chip">${esc(e.pos)}</span>` : ''}${e.level ? `<span class="chip lv">${esc(e.level)}</span>` : ''}</div>
-          <div><span class="ipa">${esc(e.ipa)}</span> <button class="spk" data-acc="en-GB" title="Anh–Anh">🇬🇧</button> <button class="spk" data-acc="en-US" title="Anh–Mỹ">🇺🇸</button></div>
-          <div class="vi">${esc(e.vi)}</div>
+    const audioFor = acc => !e ? '' : acc === 'en-US' ? (e.audioUS || e.audio) : (e.audio && !/-us\.mp3$/.test(e.audio) ? e.audio : '');
+    const sayWord = (acc, rate) => speak(e ? e.word : word, rate ? '' : audioFor(acc), acc, rate);
+    const paintCtx = () => { const el = b.querySelector('.ctxvi'); if (el && current === word) el.textContent = ctxVi ? '🇻🇳 ' + ctxVi : ''; };
+
+    function render() {
+      const defs = (e.oxford && e.oxford.length ? e.oxford : e.meanings || []).slice(0, 2).map(m => `<div class="def"><span class="chip">${esc(m.pos)}</span> ${esc(m.defs[0] && m.defs[0].def)}</div>`).join('');
+      const ctxHtml = context ? esc(context).replace(wordRegex(word), '<mark>$1</mark>') : '';
+      b.innerHTML = `
+        <div class="head">
+          <div class="pic">${e.image ? `<img src="${esc(e.image)}" alt="" referrerpolicy="no-referrer">` : esc(e.emoji || '📘')}</div>
+          <div style="min-width:0">
+            <div><span class="w">${esc(e.word)}</span>${e.pos ? `<span class="chip">${esc(e.pos)}</span>` : ''}${e.level ? `<span class="chip lv">${esc(e.level)}</span>` : ''}</div>
+            <div class="ipa">${esc(e.ipa || '')}${e.ipaUS && e.ipaUS !== e.ipa ? ` · <span title="Anh–Mỹ">${esc(e.ipaUS)}</span>` : ''}</div>
+            <div class="spks"><button class="spk" data-acc="en-GB" title="Nghe giọng Anh–Anh (phím P)">🔊 UK</button><button class="spk" data-acc="en-US" title="Nghe giọng Anh–Mỹ">🔊 US</button><button class="spk" data-slow title="Nghe chậm">🐢</button></div>
+            <div class="vi">${esc(e.vi)}</div>
+          </div>
         </div>
-      </div>
-      <div class="body">
-        ${e.def && !defs ? `<div class="def">${esc(e.def)}</div>` : defs}
-        ${e.ex ? `<div class="ex">“${esc(e.ex)}”</div>` : ''}
-        ${(e.senses || []).length ? `<div class="def">${e.senses.slice(0, 3).map(x => `<span class="chip">${esc(x.pos)}</span> ${esc(x.terms.slice(0, 4).join(', '))}`).join('<br>')}</div>` : ''}
-        ${ctxHtml ? `<div class="ctx"><b>📌 Ngữ cảnh sẽ lưu:</b><br>${ctxHtml}<div class="ctxvi ex" style="margin-top:4px">⏳ Đang dịch câu…</div></div>` : ''}
-      </div>
-      <div class="foot">
-        <button class="btn p" id="save" ${res.saved && !context ? 'disabled' : ''}>${res.saved ? (context ? '+ Thêm ngữ cảnh' : '✓ Đã lưu') : '+ Lưu flashcard'}</button>
-        <button class="btn" id="more">Chi tiết</button>
-        <button class="x" id="close" title="Đóng (Esc)">×</button>
-      </div>`;
-    const img = b.querySelector('.pic img');
-    if (img) img.onerror = () => { img.parentElement.textContent = e.emoji || '📘'; };
-    b.querySelectorAll('.spk').forEach(s => s.onclick = () => speak(e.word, audioFor(s.dataset.acc), s.dataset.acc));
-    b.querySelector('#close').onclick = hide;
-    b.querySelector('#more').onclick = () => chrome.runtime.sendMessage({ type: 'openApp', hash: '#/dict/' + encodeURIComponent(e.word) });
-    b.querySelector('#save').onclick = async ev => {
-      const btn = ev.currentTarget;
-      btn.disabled = true;
-      const { meanings, oxford, senses, found, audioUS, ...entry } = e;
-      await chrome.runtime.sendMessage({ type: 'save', entry: { ...entry, audio: audioFor(accent) }, context: context ? { text: context, vi: ctxVi, source: meta.source, title: meta.title } : null });
-      btn.textContent = '✓ Đã lưu vào flashcard';
-    };
-    let ctxVi = '';
-    if (context) chrome.runtime.sendMessage({ type: 'translate', text: context }).then(r => {
-      ctxVi = (r && r.vi) || '';
-      const el = b.querySelector('.ctxvi');
-      if (el && current === word) el.textContent = ctxVi ? '🇻🇳 ' + ctxVi : '';
+        <div class="body">
+          ${(e.senses || []).length ? `<div class="def">${e.senses.slice(0, 3).map(x => `<span class="chip">${esc(x.pos)}</span> ${esc(x.terms.slice(0, 4).join(', '))}`).join('<br>')}</div>` : ''}
+          ${defs || (e.def ? `<div class="def">${esc(e.def)}</div>` : '')}
+          ${e.ex ? `<div class="ex">“${esc(e.ex)}” <button class="spk mini" data-text="${esc(e.ex)}" title="Nghe câu ví dụ">🔊</button></div>` : ''}
+          ${ctxHtml ? `<div class="ctx"><b>📌 Ngữ cảnh sẽ lưu</b> <button class="spk mini" data-text="${esc(context)}" title="Nghe cả câu">🔊</button><br>${ctxHtml}<div class="ctxvi ex" style="margin-top:4px">${ctxVi ? '🇻🇳 ' + esc(ctxVi) : '⏳ Đang dịch câu…'}</div></div>` : ''}
+          ${e.partial ? '<div class="sk" style="width:50%;margin-top:8px"></div>' : ''}
+        </div>
+        <div class="foot">
+          <button class="btn p" id="save" ${didSave || (saved && !context) ? 'disabled' : ''}>${didSave ? '✓ Đã lưu vào flashcard' : saved ? (context ? '+ Thêm ngữ cảnh' : '✓ Đã lưu') : '+ Lưu flashcard'}</button>
+          <button class="btn" id="more">Chi tiết</button>
+          <button class="x" id="close" title="Đóng (Esc)">×</button>
+        </div>`;
+      const img = b.querySelector('.pic img');
+      if (img) img.onerror = () => { img.parentElement.textContent = e.emoji || '📘'; };
+      b.querySelectorAll('.spk[data-acc]').forEach(x => x.onclick = () => sayWord(x.dataset.acc));
+      b.querySelector('.spk[data-slow]').onclick = () => sayWord(accent, 0.55);
+      b.querySelectorAll('.spk[data-text]').forEach(x => x.onclick = () => speak(x.dataset.text, '', accent, 0.95));
+      b.querySelector('#close').onclick = hide;
+      b.querySelector('#more').onclick = () => chrome.runtime.sendMessage({ type: 'openApp', hash: '#/dict/' + encodeURIComponent(e.word) });
+      b.querySelector('#save').onclick = async ev => {
+        const btn = ev.currentTarget;
+        btn.disabled = true;
+        const { meanings, oxford, senses, found, audioUS, partial, ...entry } = e;
+        await chrome.runtime.sendMessage({ type: 'save', entry: { ...entry, audio: audioFor(accent) }, context: context ? { text: context, vi: ctxVi, source: meta.source, title: meta.title } : null });
+        didSave = true;
+        btn.textContent = '✓ Đã lưu vào flashcard';
+      };
+      position(rect);
+      if (!spoke && st.autoSpeak !== false) { spoke = true; sayWord(accent); }
+    }
+
+    if (context) chrome.runtime.sendMessage({ type: 'translate', text: context }).then(r => { ctxVi = (r && r.vi) || ''; paintCtx(); }).catch(() => {});
+    const full = chrome.runtime.sendMessage({ type: 'lookup', word });
+    let q;
+    try { q = await chrome.runtime.sendMessage({ type: 'quick', word }); }
+    catch (err) { b.innerHTML = '<div class="muted">Add-on vừa được cập nhật – hãy tải lại trang.</div>'; return; }
+    if (current !== word) return;
+    if (q && q.entry && q.entry.found) { e = q.entry; saved = q.saved; render(); }
+    full.then(r => {
+      if (current !== word || !r) return;
+      if (r.entry && r.entry.found) { e = r.entry; saved = r.saved || saved; render(); }
+      else if (!e) b.innerHTML = `<div class="muted">Không tìm thấy “${esc(word)}”.${r.entry && r.entry.vi ? `<br>Dịch: <b>${esc(r.entry.vi)}</b>` : ''}</div>`;
     }).catch(() => {});
-    position(rect);
-    if (settings.autoSpeak !== false) speak(e.word, audioFor(accent), accent);
   }
 
   function fromSelection() {
@@ -280,7 +293,11 @@
     if (!alive() || fromHost(e)) return;
     if (root) { hideFab(); if (!box().hidden) hide(); }
   });
-  document.addEventListener('keydown', e => { if (e.key === 'Escape' && root) { hide(); hideFab(); } });
+  document.addEventListener('keydown', e => {
+    if (!root) return;
+    if (e.key === 'Escape') { hide(); hideFab(); return; }
+    if ((e.key === 'p' || e.key === 'P') && !box().hidden && !inEditable(e.target)) { const sp = root.querySelector('.spk[data-acc]'); if (sp) { e.preventDefault(); sp.click(); } }
+  });
   window.addEventListener('scroll', () => { if (root) { hideFab(); } }, { passive: true });
 
 

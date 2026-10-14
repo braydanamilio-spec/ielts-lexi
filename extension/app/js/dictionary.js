@@ -22,7 +22,7 @@
   const GTX = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=vi&hl=vi&dj=1';
 
   async function fromGoogle(word) {
-    const d = await fetchJSON(`${GTX}&dt=t&dt=bd&dt=md&dt=ex&dt=ss&q=${encodeURIComponent(word)}`);
+    const d = await fetchJSON(`${GTX}&dt=t&dt=bd&dt=md&dt=ex&dt=ss&q=${encodeURIComponent(word)}`, 4000);
     if (!d) return null;
     const vi = (d.sentences || []).map(s => s.trans || '').join('').trim();
     const senses = (d.dict || []).map(x => ({ pos: x.pos, terms: (x.terms || []).slice(0, 6) }));
@@ -38,7 +38,7 @@
   }
 
   async function fromFreeDict(word) {
-    const data = await fetchJSON(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`, 3500);
+    const data = await fetchJSON(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`, 3000);
     if (!Array.isArray(data) || !data.length) return null;
     const out = { ipa: '', ipaUS: '', audio: '', audioUS: '', meanings: [], syn: [] };
     for (const entry of data) {
@@ -63,7 +63,7 @@
 
   // Câu ví dụ song ngữ từ Tatoeba (ưu tiên câu dài vừa phải, giống văn phong IELTS hơn)
   async function sentences(word, limit = 4) {
-    const d = await fetchJSON(`https://api.tatoeba.org/unstable/sentences?lang=eng&q=${encodeURIComponent(word)}&trans:lang=vie&sort=relevance&limit=20&showtrans=matching`, 5000);
+    const d = await fetchJSON(`https://api.tatoeba.org/unstable/sentences?lang=eng&q=${encodeURIComponent(word)}&trans:lang=vie&sort=relevance&limit=20&showtrans=matching`, 3500);
     if (!d || !Array.isArray(d.data)) return [];
     return d.data
       .map(x => ({ en: x.text, vi: ((x.translations || []).flat().find(t => t && t.lang === 'vie') || (x.translations || []).flat()[0] || {}).text || '' }))
@@ -74,7 +74,7 @@
 
   // Phiên âm UK/US từ Wiktionary (khi dictionaryapi.dev thiếu); đổi ɹ → r theo quy ước từ điển Oxford
   async function wiktIPA(word) {
-    const d = await fetchJSON(`https://en.wiktionary.org/w/api.php?action=parse&page=${encodeURIComponent(word)}&prop=wikitext&format=json&formatversion=2&origin=*`);
+    const d = await fetchJSON(`https://en.wiktionary.org/w/api.php?action=parse&page=${encodeURIComponent(word)}&prop=wikitext&format=json&formatversion=2&origin=*`, 3500);
     const text = d && d.parse && d.parse.wikitext;
     if (!text) return null;
     const en = text.split(/\n==(?!=)/).find(sec => /^English==/.test(sec)) || text;
@@ -106,7 +106,7 @@
   }
 
   async function wikiImage(word) {
-    const d = await fetchJSON(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(word.replace(/ /g, '_'))}`);
+    const d = await fetchJSON(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(word.replace(/ /g, '_'))}`, 3500);
     if (!d || d.type === 'disambiguation') return '';
     return (d.thumbnail && d.thumbnail.source) || '';
   }
@@ -115,50 +115,31 @@
     'danh từ': 'n', 'động từ': 'v', 'tính từ': 'adj', 'trạng từ': 'adv', 'giới từ': 'prep', 'liên từ': 'conj', 'đại từ': 'pron', 'thán từ': 'excl' };
   const POS_SHORT = Object.fromEntries(Object.entries(POS_SHORT_RAW).map(([k, v]) => [k.normalize('NFC'), v]));
 
-  /* Trả về entry chuẩn hóa:
-   * {word, found, ipa, ipaUS, audio, audioUS, pos, vi, def, ex, col, syn, level, emoji, image, topic,
-   *  senses[{pos, terms}], oxford[{pos, defs[{def, ex}]}], meanings[...], sentences[{en, vi}]}
-   */
-  async function lookup(raw, { image = true, examples = true } = {}) {
-    const word = String(raw || '').trim().toLowerCase().replace(/[^a-z\s'-]/g, '').replace(/\s+/g, ' ');
-    if (!word) return null;
-    if (cache.has(word)) return cache.get(word);
+  // ---------- Bộ nhớ đệm bền (giữ kết quả tra qua các lần mở trang / khởi động lại add-on) ----------
+  const persist = {
+    async get(w) { try { return g.Core ? await g.Core.Store.get('dc:' + w, null) : null; } catch (e) { return null; } },
+    async set(w, e) {
+      try {
+        if (!g.Core) return;
+        await g.Core.Store.set('dc:' + w, { ...e, _t: Date.now() });
+        const idx = (await g.Core.Store.get('dcIndex', [])).filter(x => x !== w);
+        idx.push(w);
+        while (idx.length > 300) { const old = idx.shift(); if (g.Core.Store.remove) await g.Core.Store.remove('dc:' + old); }
+        await g.Core.Store.set('dcIndex', idx);
+      } catch (e) { /* hết dung lượng: bỏ qua */ }
+    },
+  };
+  const FRESH = 14 * 86400000;
 
-    const local = (g.IELTS_DATA && g.IELTS_DATA.INDEX[word]) || null;
-    let [gg, fd, wk, img, sents] = await Promise.all([
-      fromGoogle(word),
-      fromFreeDict(word),
-      local && local.ipa ? null : wiktIPA(word),
-      image ? wikiImage(word) : '',
-      examples ? sentences(word) : [],
-    ]);
-    // Từ biến đổi (vd. "recruited") → lấy phiên âm của dạng gốc
-    const base = gg && gg.base && gg.base !== word ? gg.base : '';
-    if (base && (!fd || (!wk && !(local && local.ipa)))) {
-      const [fb, wb] = await Promise.all([fd ? fd : fromFreeDict(base), wk ? wk : wiktIPA(base)]);
-      fd = fb; wk = wb;
-    }
-    // Thiếu câu song ngữ → dịch các câu ví dụ Oxford sang tiếng Việt
-    if (examples && sents.length < 2 && gg) {
-      const exs = gg.defs.flatMap(m => m.defs).map(d => d.ex).filter(Boolean).filter(x => !sents.some(s => s.en === x)).slice(0, 3 - sents.length);
-      if (exs.length) {
-        const vi = (await translateVi(exs.join('\n'))).split('\n');
-        exs.forEach((en, i) => { if (vi[i]) sents.push({ en: en[0].toUpperCase() + en.slice(1), vi: vi[i].trim().replace(/^./, c => c.toUpperCase()), auto: true }); });
-      }
-    }
+  const normWord = raw => String(raw || '').trim().toLowerCase().replace(/[’]/g, "'").replace(/[^a-z\s'-]/g, '').replace(/\s+/g, ' ');
 
-    const hasGoogle = gg && (gg.senses.length || gg.defs.length);
-    if (!local && !fd && !hasGoogle) {
-      return { word, found: false, vi: (gg && gg.vi !== word && gg.vi) || await myMemory(word) };
-    }
-
+  function build(word, local, gg, fd, wk, img, sents) {
     const gFirst = gg && gg.defs[0] && gg.defs[0].defs[0];
     const fFirst = fd && fd.meanings[0];
     const anyEx = (gg && gg.defs.flatMap(m => m.defs).find(d => d.ex)) || (fd && fd.meanings.flatMap(m => m.defs).find(d => d.ex));
     const senseVi = gg && gg.senses.length ? gg.senses.map(s => s.terms.slice(0, 3).join(', ')).join('; ') : '';
     const posRaw = ((gg && gg.senses[0] && gg.senses[0].pos) || (gg && gg.defs[0] && gg.defs[0].pos) || (fFirst && fFirst.pos) || '').normalize('NFC').toLowerCase();
-
-    const entry = {
+    return {
       word,
       found: true,
       ipa: (local && local.ipa) || (wk && wk.ipa) || (fd && fd.ipa) || '',
@@ -168,7 +149,7 @@
       pos: (local && local.pos) || POS_SHORT[posRaw] || posRaw,
       vi: (local && local.vi) || (gg && gg.vi && gg.vi.toLowerCase() !== word ? gg.vi : '') || senseVi || '',
       def: (local && local.def) || (gFirst && gFirst.def) || (fFirst && fFirst.defs[0] && fFirst.defs[0].def) || '',
-      ex: (local && local.ex) || (anyEx && anyEx.ex) || (sents[0] && sents[0].en) || '',
+      ex: (local && local.ex) || (anyEx && anyEx.ex) || (sents && sents[0] && sents[0].en) || '',
       col: (local && local.col) || [],
       syn: (local && local.syn && local.syn.length ? local.syn : (gg && gg.syn.length ? gg.syn : (fd ? fd.syn : []))),
       level: (local && local.level) || '',
@@ -178,11 +159,66 @@
       senses: gg ? gg.senses : [],
       oxford: gg ? gg.defs : [],
       meanings: fd ? fd.meanings : [],
-      sentences: sents,
+      sentences: sents || [],
     };
+  }
+
+  /* Tra nhanh (~0,2–0,5 giây): nghĩa, phiên âm, định nghĩa – để hiện ngay; chi tiết bổ sung sau bằng lookup(). */
+  const quickCache = new Map();
+  async function quick(raw) {
+    const word = normWord(raw);
+    if (!word) return null;
+    if (cache.has(word)) return cache.get(word);
+    if (quickCache.has(word)) return quickCache.get(word);
+    const saved = await persist.get(word);
+    if (saved && Date.now() - saved._t < FRESH) { cache.set(word, saved); return saved; }
+    const local = (g.IELTS_DATA && g.IELTS_DATA.INDEX[word]) || null;
+    const [gg, wk] = await Promise.all([fromGoogle(word), local && local.ipa ? null : wiktIPA(word)]);
+    const hasGoogle = gg && (gg.senses.length || gg.defs.length);
+    if (!local && !hasGoogle) return null;
+    const e = { ...build(word, local, gg, null, wk, '', []), partial: true };
+    quickCache.set(word, e);
+    return e;
+  }
+
+  /* Tra đầy đủ: thêm âm thanh, hình ảnh, câu song ngữ, định nghĩa bổ sung. */
+  async function lookup(raw, { image = true, examples = true } = {}) {
+    const word = normWord(raw);
+    if (!word) return null;
+    if (cache.has(word)) return cache.get(word);
+    const saved = await persist.get(word);
+    if (saved && Date.now() - saved._t < FRESH) { cache.set(word, saved); return saved; }
+
+    const local = (g.IELTS_DATA && g.IELTS_DATA.INDEX[word]) || null;
+    let [gg, fd, wk, img, sents] = await Promise.all([
+      fromGoogle(word),
+      fromFreeDict(word),
+      local && local.ipa ? null : wiktIPA(word),
+      image ? wikiImage(word) : '',
+      examples ? sentences(word) : [],
+    ]);
+    const base = gg && gg.base && gg.base !== word ? gg.base : '';
+    if (base && (!fd || (!wk && !(local && local.ipa)))) {
+      const [fb, wb] = await Promise.all([fd ? fd : fromFreeDict(base), wk ? wk : wiktIPA(base)]);
+      fd = fb; wk = wb;
+    }
+    const hasGoogle = gg && (gg.senses.length || gg.defs.length);
+    if (!local && !fd && !hasGoogle) {
+      return { word, found: false, vi: (gg && gg.vi !== word && gg.vi) || await myMemory(word) };
+    }
+    // Thiếu câu song ngữ → dịch các câu ví dụ Oxford sang tiếng Việt
+    if (examples && sents.length < 2 && gg) {
+      const exs = gg.defs.flatMap(m => m.defs).map(d => d.ex).filter(Boolean).filter(x => !sents.some(s => s.en === x)).slice(0, 3 - sents.length);
+      if (exs.length) {
+        const vi = (await translateVi(exs.join('\n'))).split('\n');
+        exs.forEach((en, i) => { if (vi[i]) sents.push({ en: en[0].toUpperCase() + en.slice(1), vi: vi[i].trim().replace(/^./, c => c.toUpperCase()), auto: true }); });
+      }
+    }
+    const entry = build(word, local, gg, fd, wk, img, sents);
     cache.set(word, entry);
+    if (image && examples) persist.set(word, entry);
     return entry;
   }
 
-  g.Dict = { lookup, translateVi, wikiImage, sentences };
+  g.Dict = { lookup, quick, translateVi, wikiImage, sentences, normWord };
 })(typeof self !== 'undefined' ? self : this);

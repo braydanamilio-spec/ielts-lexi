@@ -61,6 +61,32 @@
 
   const ref = () => db.collection('users').doc(Sync.user.uid).collection('data');
 
+  // Thẻ thuộc thư viện có sẵn: chỉ lưu phần riêng của người học (lịch ôn, ngữ cảnh, ghi chú…)
+  const LIB_FIELDS = ['ipa', 'pos', 'vi', 'def', 'ex', 'col', 'syn', 'level', 'emoji', 'topic'];
+  function slim(c) {
+    const lib = IELTS_DATA.INDEX[c.word.toLowerCase()];
+    const o = { ...c };
+    delete o.sentences; delete o.ipaUS; // tra lại được khi cần
+    if (lib) {
+      for (const k of LIB_FIELDS) if (JSON.stringify(o[k]) === JSON.stringify(lib[k])) delete o[k];
+      o.L = 1;
+    }
+    if (!o.contexts || !o.contexts.length) delete o.contexts;
+    if (!o.note) delete o.note;
+    if (!o.image) delete o.image;
+    if (!o.audio) delete o.audio;
+    return o;
+  }
+  function fat(o) {
+    const lib = o.L ? IELTS_DATA.INDEX[o.word.toLowerCase()] : null;
+    const c = { ...Cards.make(lib || o), ...o };
+    delete c.L;
+    c.contexts = c.contexts || [];
+    return c;
+  }
+  const hash = str => { let h = 0; for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) | 0; return h + ':' + str.length; };
+  let sentHashes = {};
+
   async function pullMerge() {
     setStatus('syncing');
     try {
@@ -69,7 +95,11 @@
       const local = { cards: await Cards.all(), stats: await Core.Stats.get(), game: await Game.get(), settings: await Store.get('settings', {}) };
       if (docs.meta) {
         let remoteCards = {};
-        for (let i = 0; i < (docs.meta.chunks || 0); i++) if (docs['cards_' + i]) Object.assign(remoteCards, JSON.parse(docs['cards_' + i].json || '{}'));
+        for (let i = 0; i < (docs.meta.chunks || 0); i++) if (docs['cards_' + i]) {
+          const part = JSON.parse(docs['cards_' + i].json || '{}');
+          for (const [k, v] of Object.entries(part)) remoteCards[k] = fat(v);
+          sentHashes['cards_' + i] = hash(docs['cards_' + i].json || '');
+        }
         const remote = JSON.parse(docs.meta.json || '{}');
         await Cards.save(mergeCards(local.cards, remoteCards));
         await Store.set('stats', mergeStats(local.stats, remote.stats || { days: {} }));
@@ -92,25 +122,34 @@
       const keys = Object.keys(cards).sort();
       const chunks = Math.ceil(keys.length / CHUNK);
       const batch = db.batch();
+      let writes = 0;
       for (let i = 0; i < chunks; i++) {
-        const part = {}; keys.slice(i * CHUNK, (i + 1) * CHUNK).forEach(k => { part[k] = cards[k]; });
-        batch.set(ref().doc('cards_' + i), { json: JSON.stringify(part) });
+        const part = {}; keys.slice(i * CHUNK, (i + 1) * CHUNK).forEach(k => { part[k] = slim(cards[k]); });
+        const json = JSON.stringify(part), h = hash(json);
+        if (sentHashes['cards_' + i] === h) continue;
+        batch.set(ref().doc('cards_' + i), { json }); sentHashes['cards_' + i] = h; writes++;
       }
-      batch.set(ref().doc('meta'), {
-        chunks, updated: Date.now(),
-        json: JSON.stringify({ stats: await Core.Stats.get(), game: await Game.get(), settings: await Store.get('settings', {}), settingsAt: await Store.get('settingsAt', 0) }),
-      });
-      await batch.commit();
+      const game = await Game.get();
+      const meta = JSON.stringify({ stats: await Core.Stats.get(), game: { ...game, questsDone: {} }, settings: await Store.get('settings', {}), settingsAt: await Store.get('settingsAt', 0) });
+      const mh = hash(meta + chunks);
+      if (sentHashes.meta !== mh) { batch.set(ref().doc('meta'), { chunks, updated: Date.now(), json: meta }); sentHashes.meta = mh; writes++; }
+      if (writes) await batch.commit();
+      dirty = false;
       Sync.lastSync = Date.now();
       setStatus('ok');
     } catch (e) { console.warn('push', e); setStatus('error', e.message); }
   }
 
+  let dirty = false;
   Sync.schedule = () => {
     if (!Sync.user) return;
-    clearTimeout(timer);
-    timer = setTimeout(push, 4000);
+    dirty = true;
+    if (timer) return;
+    timer = setTimeout(() => { timer = null; if (dirty) push(); }, 60000);
   };
+  const flush = () => { if (Sync.user && dirty) { clearTimeout(timer); timer = null; push(); } };
+  document.addEventListener('visibilitychange', () => { if (document.hidden) flush(); });
+  window.addEventListener('pagehide', flush);
   Sync.signIn = async () => {
     try {
       await init();
@@ -122,7 +161,7 @@
       if (e && e.code !== 'auth/popup-closed-by-user') toast('Không đăng nhập được: ' + (e.message || e));
     }
   };
-  Sync.signOut = async () => { await push(); await firebase.auth().signOut(); toast('Đã đăng xuất – dữ liệu vẫn còn trên máy này'); };
+  Sync.signOut = async () => { await push(); sentHashes = {}; await firebase.auth().signOut(); toast('Đã đăng xuất – dữ liệu vẫn còn trên máy này'); };
   Sync.now = () => pullMerge();
 
   function setStatus(s, msg) { Sync.status = s; Sync.msg = msg || ''; render(); }

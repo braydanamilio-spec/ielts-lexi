@@ -107,6 +107,11 @@ chrome.runtime.onMessage.addListener((msg, sender, reply) => {
         const cards = await Cards.all();
         return reply({ entry: e, saved: !!(e && cards[e.word]) });
       }
+      case 'quick': {
+        const e = await Dict.quick(msg.word);
+        const cards = await Cards.all();
+        return reply({ entry: e, saved: !!(e && cards[e.word]) });
+      }
       case 'save': {
         const card = await Cards.add(msg.entry, msg.context);
         return reply({ ok: true, card });
