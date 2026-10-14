@@ -12,7 +12,7 @@ const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(
 const plain = s => s.replace(/<<[^>]*>>\s*/g, '').replace(/\[\[([^|\]]*)\|[^\]]*\]\]/g, '$1').replace(/\{\{([^}]*)\}\}/g, '$1');
 const rich = s => esc(s).replace(/&lt;&lt;([^&]*)&gt;&gt;\s*/g, '<span class="lb">$1</span> ').replace(/\[\[([^|\]]*)\|([^\]]*)\]\]/g, '<mark title="$2">$1</mark>').replace(/\{\{([^}]*)\}\}/g, '<b class="ln">$1</b>');
 const css = `body{font:17px/1.7 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;margin:0;background:#f5f6fb;color:#1c1d2b}main{max-width:760px;margin:0 auto;padding:20px 16px 60px}a{color:#5b4cf0}.top{display:flex;justify-content:space-between;align-items:center;gap:8px;font-weight:800}.q{background:#fff;border-left:4px solid #5b4cf0;padding:14px 16px;border-radius:12px;font-weight:600}.ess p{background:#fff;padding:14px 16px;border-radius:12px}mark{background:#ede9ff;border-radius:4px;padding:0 2px}.ln{color:#0e8f8e}.lb{display:inline-block;font-size:12px;font-weight:700;color:#fff;background:#8b85ff;border-radius:6px;padding:0 6px;margin-right:4px}table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;overflow:hidden}td{border-bottom:1px solid #eee;padding:6px 10px;vertical-align:top}.cta{display:inline-block;background:#5b4cf0;color:#fff;padding:12px 18px;border-radius:12px;text-decoration:none;font-weight:700;margin:12px 0}ul.l{padding-left:18px}@media(prefers-color-scheme:dark){body{background:#0f1017;color:#eceef7}.q,.ess p,table{background:#181a24}mark{background:#2a2850;color:#eceef7}td{border-color:#2a2c3b}}`;
-const page = (title, desc, canon, body) => `<!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title><meta name="description" content="${esc(desc)}"><link rel="canonical" href="${canon}"><meta property="og:title" content="${esc(title)}"><meta property="og:description" content="${esc(desc)}"><meta property="og:image" content="${SITE}icons/icon-512.png"><link rel="icon" href="/icons/icon.svg"><script type="application/ld+json">${JSON.stringify({ "@context": "https://schema.org", "@type": "LearningResource", name: title, description: desc, url: canon, inLanguage: "vi", isAccessibleForFree: true, educationalLevel: "IELTS / TOEIC", provider: { "@type": "Organization", name: "Vocaband", url: SITE } }).replace(/</g, "\\u003c")}</script><style>${css}</style></head><body><main><div class="top"><a href="/" style="text-decoration:none">Vocaband</a><span style="font-weight:600;font-size:15px"><a href="/samples/">Writing</a> · <a href="/speaking/">Speaking</a> · <a href="/tu-vung/">Từ vựng</a> · <a href="/ngu-phap/">Ngữ pháp</a></span></div>${body}<p class="small" style="color:#888;font-size:13px">© Vocaband – bài mẫu tự biên soạn, miễn phí cho người học.</p></main></body></html>`;
+const page = (title, desc, canon, body) => `<!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title><meta name="description" content="${esc(desc)}"><link rel="canonical" href="${canon}"><meta property="og:title" content="${esc(title)}"><meta property="og:description" content="${esc(desc)}"><meta property="og:image" content="${SITE}icons/icon-512.png"><link rel="icon" href="/icons/icon.svg"><script type="application/ld+json">${JSON.stringify({ "@context": "https://schema.org", "@type": "LearningResource", name: title, description: desc, url: canon, inLanguage: "vi", isAccessibleForFree: true, educationalLevel: "IELTS / TOEIC", provider: { "@type": "Organization", name: "Vocaband", url: SITE } }).replace(/</g, "\\u003c")}</script><style>${css}</style></head><body><main><div class="top"><a href="/" style="text-decoration:none">Vocaband</a><span style="font-weight:600;font-size:15px"><a href="/samples/">Writing</a> · <a href="/speaking/">Speaking</a> · <a href="/tu-vung/">Từ vựng</a> · <a href="/ngu-phap/">Ngữ pháp</a> · <a href="/viet-thu/">Viết thư</a></span></div>${body}<p class="small" style="color:#888;font-size:13px">© Vocaband – bài mẫu tự biên soạn, miễn phí cho người học.</p></main></body></html>`;
 fs.mkdirSync('dist/samples', { recursive: true });
 const done = [];
 for (const p of PROMPTS) {
@@ -120,4 +120,29 @@ ${bl.map((b, i) => (i === firstMistake ? '<h2>Lỗi hay gặp</h2>' : '') + blk(
   const urls = [`${SITE}ngu-phap/`, ...G.map(l => `${SITE}ngu-phap/${l.id}.html`)].map(u => `  <url><loc>${u}</loc><changefreq>monthly</changefreq></url>`).join('\n');
   fs.writeFileSync(sm, fs.readFileSync(sm, 'utf8').replace('</urlset>', urls + '\n</urlset>'));
   console.log(`✓ SEO: ${G.length} trang ngữ pháp + mục lục`);
+}
+
+// ===== IELTS General – thư mẫu: 1 trang / đề =====
+{
+  const c5 = { self: {} }; c5.self = c5; vm.createContext(c5);
+  vm.runInContext(fs.readFileSync('web/js/write/gt-letters.js', 'utf8'), c5);
+  const LT = c5.GT_LETTERS || [], MD = c5.MODELS || [], TONE = { formal: 'Thư trang trọng', 'semi-formal': 'Thư bán trang trọng', informal: 'Thư thân mật' };
+  fs.mkdirSync('dist/viet-thu', { recursive: true });
+  const made = [];
+  for (const x of LT) {
+    const m = MD.find(y => y.id === 'gt-' + x.id); if (!m) continue;
+    const gl = [...m.text.matchAll(/\[\[([^|\]]*)\|([^\]]*)\]\]/g)].map(z => [z[1], z[2]]);
+    const body = `<h1 style="font-size:24px;line-height:1.3">✉️ ${esc(x.titleVi || x.topic)} – thư mẫu IELTS General Task 1</h1><p>${esc(TONE[x.tone] || '')} · ${m.words} từ · Band ${esc(m.band)}</p>
+<div class="q">${esc(x.situation)}<ul class="l">${x.bullets.map(b => `<li>${esc(b)}</li>`).join('')}</ul><div style="font-weight:400;font-size:15px">Begin your letter: <b>${esc(x.open)}</b></div></div>
+<a class="cta" href="/#/letters/${x.id}">✍️ Luyện viết thư này (đếm từ, tự kiểm, chấm AI) →</a>
+<h2>Thư mẫu</h2><div class="ess">${rich(m.text).split(/\n\s*\n|\n/).filter(p => p.trim()).map(p => `<p>${p.trim()}</p>`).join('')}</div>
+<h2>Cụm từ hay (${gl.length})</h2><table>${gl.map(([e, v]) => `<tr><td><b>${esc(e)}</b></td><td>${esc(v)}</td></tr>`).join('')}</table>`;
+    fs.writeFileSync(`dist/viet-thu/${x.id}.html`, page(`Thư mẫu IELTS General Task 1: ${x.titleVi || x.topic} (${(TONE[x.tone] || '').toLowerCase()}) – band ${m.band}`, `Thư mẫu IELTS General Training Writing Task 1 band ${m.band} – ${TONE[x.tone] || ''}: ${x.situation.slice(0, 120)}… Có chú thích cụm từ hay tiếng Việt.`, `${SITE}viet-thu/${x.id}.html`, body));
+    made.push(x);
+  }
+  fs.writeFileSync('dist/viet-thu/index.html', page(`${made.length} thư mẫu IELTS General Writing Task 1 (trang trọng, bán trang trọng, thân mật) – Vocaband`, `${made.length} thư mẫu IELTS General Task 1 band 8 theo 3 giọng văn, có chú thích cụm từ tiếng Việt, luyện viết thư miễn phí.`, `${SITE}viet-thu/`,
+    `<h1>${made.length} thư mẫu IELTS General Task 1</h1>${Object.keys(TONE).map(k => `<h2>${TONE[k]}</h2><ul class="l">${made.filter(x => x.tone === k).map(x => `<li><a href="/viet-thu/${x.id}.html">${esc(x.titleVi || x.topic)}</a></li>`).join('')}</ul>`).join('')}`));
+  const urls = [`${SITE}viet-thu/`, ...made.map(x => `${SITE}viet-thu/${x.id}.html`)].map(u => `  <url><loc>${u}</loc><changefreq>monthly</changefreq></url>`).join('\n');
+  fs.writeFileSync(sm, fs.readFileSync(sm, 'utf8').replace('</urlset>', urls + '\n</urlset>'));
+  console.log(`✓ SEO: ${made.length} trang thư mẫu IELTS General + mục lục`);
 }
