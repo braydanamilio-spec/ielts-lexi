@@ -207,12 +207,14 @@
   const POS_SHORT = Object.fromEntries(Object.entries(POS_SHORT_RAW).map(([k, v]) => [k.normalize('NFC'), v]));
 
   // ---------- Bộ nhớ đệm bền (giữ kết quả tra qua các lần mở trang / khởi động lại add-on) ----------
+  const DV = 3;
   const persist = {
-    async get(w) { try { return g.Core ? fixDeep(await g.Core.Store.get('dc2:' + w, null)) : null; } catch (e) { return null; } },
+    // _v: phiên bản dữ liệu tra từ – tăng khi đổi cách xử lý (vd. phiên âm theo từ loại) để kết quả cũ trên máy tự tra lại
+    async get(w) { try { const x = g.Core ? await g.Core.Store.get('dc2:' + w, null) : null; return x && x._v === DV ? fixDeep(x) : null; } catch (e) { return null; } },
     async set(w, e) {
       try {
         if (!g.Core) return;
-        await g.Core.Store.set('dc2:' + w, { ...e, _t: Date.now() });
+        await g.Core.Store.set('dc2:' + w, { ...e, _t: Date.now(), _v: DV });
         const idx = (await g.Core.Store.get('dcIndex', [])).filter(x => x !== w);
         idx.push(w);
         while (idx.length > 150) { const old = idx.shift(); if (g.Core.Store.remove) await g.Core.Store.remove('dc2:' + old); }
