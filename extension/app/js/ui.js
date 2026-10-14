@@ -109,8 +109,25 @@
   }
   let speakSeq = 0;
   // opts: { rate, onSentence(i, text), onEnd() }
+  // Giọng Kokoro tạo sẵn cho câu đọc đơn (câu hỏi giám khảo, TOEFL…): có file thì phát mp3, không thì giọng máy
+  let hqEl = null;
+  const stopHq = () => { if (hqEl) { hqEl.onended = hqEl.onerror = null; hqEl.pause(); hqEl = null; } };
   function tts(text, accent = 'en-GB', rate, opts = {}) {
-    if (!('speechSynthesis' in g) || !text) return;
+    if (!text) return;
+    stopHq();
+    if (!opts.onSentence && g.KVoice && g.LISTEN_AUDIO && prefs().hqVoice !== false) {
+      const key = g.KVoice.lineKey(accent === 'en-US' ? 'af_heart' : 'bf_emma', text);
+      if (g.LISTEN_AUDIO.has(key)) {
+        const my = ++speakSeq; if ('speechSynthesis' in g) speechSynthesis.cancel();
+        const el = hqEl = new Audio('https://braydanamilio-spec.github.io/ielts-lexi/audio/l/' + key + '.mp3'); el.preservesPitch = true;
+        el.playbackRate = Math.min(1.3, Math.max(0.55, (rate || prefs().ttsRate || 0.92) / 0.95));
+        el.onended = () => { if (my === speakSeq && opts.onEnd) opts.onEnd(); };
+        el.onerror = () => { if (hqEl === el) { hqEl = null; tts(text, accent, rate, { ...opts, onSentence: opts.onSentence || (() => {}) }); } };
+        try { const pr = el.play(); if (pr && pr.catch) pr.catch(() => el.onerror && el.onerror()); } catch (e) { el.onerror(); }
+        return;
+      }
+    }
+    if (!('speechSynthesis' in g)) return;
     const my = ++speakSeq;
     speechSynthesis.cancel();
     const voice = pickVoice(accent);
@@ -127,7 +144,7 @@
       speechSynthesis.speak(u);
     });
   }
-  const stopSpeak = () => { speakSeq++; if ('speechSynthesis' in g) speechSynthesis.cancel(); if (audioEl) audioEl.pause(); };
+  const stopSpeak = () => { speakSeq++; stopHq(); if ('speechSynthesis' in g) speechSynthesis.cancel(); if (audioEl) audioEl.pause(); };
   // Từ đơn: ưu tiên bản ghi giọng người thật; câu: giọng tổng hợp tốt nhất
   let audioEl = null;
   // Bộ nhớ đệm bản ghi giọng người thật (Cache Storage, tối đa 400 file gần nhất): lần sau phát tức thì, nghe được cả khi offline

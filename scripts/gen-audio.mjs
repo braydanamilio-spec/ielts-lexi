@@ -10,7 +10,8 @@ const c = { self: {} }; c.self = c; vm.createContext(c);
 vm.runInContext(fs.readFileSync('web/js/listen/kvoice.js', 'utf8'), c);
 for (const f of fs.readdirSync('web/js/listen').filter(f => /^test\d+\.js$/.test(f))) vm.runInContext(fs.readFileSync('web/js/listen/' + f, 'utf8'), c);
 for (const f of fs.readdirSync('web/js/toeic').filter(f => /^listening\d+\.js$/.test(f))) vm.runInContext(fs.readFileSync('web/js/toeic/' + f, 'utf8'), c);
-const parts = [...(c.LISTENING || []), ...((c.TOEIC || {}).listening || [])];
+for (const f of fs.readdirSync('web/js/toefl').filter(f => /^data\d+\.js$/.test(f))) vm.runInContext(fs.readFileSync('web/js/toefl/' + f, 'utf8'), c);
+const parts = [...(c.LISTENING || []), ...((c.TOEIC || {}).listening || []), ...((c.TOEFL || {}).listening || [])];
 const jobs = new Map();
 for (const p of parts) {
   const v = c.KVoice.voices(p);
@@ -19,6 +20,18 @@ for (const p of parts) {
     const voice = l.say ? v._narrator : (v[l.s] || v._narrator), key = c.KVoice.lineKey(voice, text);
     if (!fs.existsSync(`${OUT}/${key}.mp3`)) jobs.set(key, { voice, text: String(text).trim() });
   }
+}
+// Câu đọc đơn (UI.tts): giọng chung theo accent – câu hỏi giám khảo Speaking (Anh & Mỹ), TOEFL Listen & Repeat / Interview
+const GEN = { 'en-GB': 'bf_emma', 'en-US': 'af_heart' };
+const addOne = (voice, text) => { const key = c.KVoice.lineKey(voice, text); if (!fs.existsSync(`${OUT}/${key}.mp3`)) jobs.set(key, { voice, text: String(text).trim() }); };
+for (const u of (c.TOEFL || {}).speaking || []) { const v = GEN[u.accent] || GEN['en-GB']; for (const x of u.sentences || []) x.t && addOne(v, x.t); for (const x of u.questions || []) x.q && addOne(v, x.q); }
+{
+  const sp = fs.readFileSync('web/js/speaking.js', 'utf8'), i0 = sp.indexOf('const BANK = [') + 13;
+  const BANK = vm.runInNewContext(sp.slice(i0, sp.indexOf('\n  ];', i0) + 4), { t: x => x });
+  vm.runInContext(fs.readFileSync('web/js/speak/more.js', 'utf8'), c);
+  for (const f of ['more2', 'more3']) if (fs.existsSync(`web/js/speak/${f}.js`)) vm.runInContext(fs.readFileSync(`web/js/speak/${f}.js`, 'utf8'), c);
+  for (const x of c.SPEAK_MORE || []) if (!BANK.some(b => b.title === x.title)) BANK.push(x);
+  for (const b of BANK) for (const v of Object.values(GEN)) { for (const q of [...b.p1, ...b.p3]) addOne(v, q); addOne(v, `${b.p2.q} You should say: ${b.p2.points.join(', ')}.`); }
 }
 const writeIndex = () => { const keys = fs.readdirSync(OUT).filter(f => f.endsWith('.mp3')).map(f => f.slice(0, -4)).sort(); fs.writeFileSync(IDX, `/* Danh sách câu thoại đã có file âm thanh Kokoro (tự sinh bởi scripts/gen-audio.mjs) */\n(function (g) { g.LISTEN_AUDIO = new Set(${JSON.stringify(keys.join(' '))}.split(' ').filter(Boolean)); })(typeof self !== 'undefined' ? self : this);\n`); return keys.length; };
 console.log(`${parts.length} phần nghe · cần tạo ${jobs.size} câu`);
