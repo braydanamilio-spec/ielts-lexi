@@ -28,11 +28,11 @@
       const perm = await LN.checkPermissions();
       if (perm.display !== 'granted') { const r = await LN.requestPermissions(); if (r.display !== 'granted') return; }
       const [hh, mm] = String(s.reminderTime || '20:00').split(':').map(Number);
-      const vi = (g.I18N && g.I18N.lang && g.I18N.lang()) === 'vi';
+      const tt = (k, en) => (typeof g.t === 'function' ? g.t(k) : en); // đúng ngôn ngữ giao diện (15 ngôn ngữ)
       await LN.schedule({ notifications: [{
         id: 1,
-        title: vi ? 'Vocaband – đến giờ học rồi! 📚' : 'Vocaband – time to study! 📚',
-        body: vi ? 'Ôn vài thẻ để giữ chuỗi ngày học 🔥' : 'Review a few cards to keep your streak 🔥',
+        title: tt('Vocaband – đến giờ học rồi!', 'Vocaband – time to study!') + ' 📚',
+        body: tt('Học vài từ mới để giữ chuỗi ngày học nhé', 'Review a few cards to keep your streak') + ' 🔥',
         schedule: { on: { hour: hh || 20, minute: mm || 0 }, repeats: true, allowWhileIdle: true },
         extra: { route: '#/review' },
       }] });
