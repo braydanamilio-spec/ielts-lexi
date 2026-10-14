@@ -111,21 +111,86 @@
     });
   }
 
-  // Lấy câu chứa từ được chọn → ngữ cảnh
+  // Lấy câu chứa từ được chọn → ngữ cảnh.
+  // Đi qua từng text node thay vì textContent: bỏ phần tử ẩn, bỏ chú thích tiếng Việt chèn giữa câu
+  // (Study4, sách điện tử…) và thêm khoảng trắng giữa các phần tử để chữ không bị dính ("salesdoanh số").
+  const VI = /[ăâđêôơưạảấầẩẫậắằẳẵặẹẻẽếềểễệỉĩịọỏốồổỗộớờởỡợụủũứừửữựỳỷỹỵ]/i;
+  const SKIP_TAG = /^(SCRIPT|STYLE|NOSCRIPT|TEMPLATE|RT|RP|SUP|BUTTON|SELECT|TEXTAREA|SVG)$/;
+  // Có ranh giới khối (block, inline-block, flex…) giữa hai phần tử không? → cần chèn khoảng trắng
+  const isInline = x => /^(inline|contents|)$/.test(getComputedStyle(x).display);
+  function boundary(a, b) {
+    if (!a || !b || a === b) return false;
+    const up = (x, stop) => { for (; x && x !== stop && !x.contains(stop); x = x.parentElement) if (!isInline(x)) return true; return false; };
+    return up(a, b) || up(b, a);
+  }
+  function visibleText(block, stopNode, stopOffset) {
+    const hidden = new Map();
+    const isHidden = el => {
+      if (!el || el === block) return false;
+      if (hidden.has(el)) return hidden.get(el);
+      let h = SKIP_TAG.test(el.tagName) || el.id === 'vocaband-root' || el.hasAttribute('hidden') || el.getAttribute('aria-hidden') === 'true';
+      if (!h) { const cs = getComputedStyle(el); h = cs.display === 'none' || cs.visibility === 'hidden' || (cs.position === 'absolute' && cs.opacity === '0'); }
+      h = h || isHidden(el.parentElement);
+      hidden.set(el, h); return h;
+    };
+    const startVi = stopNode && VI.test(stopNode.textContent || '');
+    const tw = document.createTreeWalker(block, NodeFilter.SHOW_TEXT);
+    let out = '', offset = -1, prevEl = null, n;
+    while ((n = tw.nextNode())) {
+      const el = n.parentElement;
+      let t = n.nodeValue;
+      if (n !== stopNode) {
+        if (!t.trim() || isHidden(el)) { if (t && /\s/.test(t) && !isHidden(el)) out += ' '; continue; }
+        if (!startVi && VI.test(t)) { out += ' '; prevEl = el; continue; } // chú thích tiếng Việt chèn trong câu tiếng Anh
+      }
+      // Thêm khoảng trắng khi chuyển sang phần tử khác mà hai phía đều là chữ
+      if (prevEl && el !== prevEl && /\w$/.test(out) && /^\w/.test(t)) {
+        if (boundary(prevEl, el)) out += ' ';
+      }
+      if (n === stopNode) offset = out.length + stopOffset;
+      out += t; prevEl = el;
+    }
+    return { text: out, offset };
+  }
+  // Chữ đã bôi đen nhưng bỏ chú thích tiếng Việt/phần ẩn chèn giữa câu tiếng Anh (trừ khi cả đoạn là tiếng Việt)
+  function rangeText(range, selStr) {
+    // Selection.toString() của Chrome tự xuống dòng giữa các khối; Range.toString() thì không
+    const raw = (selStr != null ? selStr : range.toString()).replace(/\s+/g, ' ').trim();
+    if (!VI.test(raw) || !/[A-Za-z]{3,}\s+[A-Za-z]{3,}/.test(raw)) return raw;
+    const root = range.commonAncestorContainer.nodeType === 1 ? range.commonAncestorContainer : range.commonAncestorContainer.parentElement;
+    const tw = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    const parts = []; let n, en = 0, vi = 0;
+    while ((n = tw.nextNode())) {
+      if (!range.intersectsNode(n)) continue;
+      let t = n.nodeValue;
+      if (n === range.endContainer) t = t.slice(0, range.endOffset);
+      if (n === range.startContainer) t = t.slice(range.startOffset);
+      if (!t.trim()) { parts.push({ t, v: false }); continue; }
+      const cs = n.parentElement && getComputedStyle(n.parentElement);
+      if (cs && (cs.display === 'none' || cs.visibility === 'hidden')) continue;
+      const v = VI.test(t); v ? vi += t.length : en += t.length;
+      parts.push({ t, v, el: n.parentElement });
+    }
+    if (vi > en) return raw; // đoạn chủ yếu tiếng Việt → giữ nguyên
+    let out = '', prev = null;
+    parts.forEach(p => { if (p.v) { out += ' '; return; } if (prev && p.el && /\w$/.test(out) && /^\w/.test(p.t) && boundary(prev, p.el)) out += ' '; out += p.t; if (p.el) prev = p.el; });
+    return out.replace(/\s+/g, ' ').replace(/\s+([,.;:!?])/g, '$1').trim();
+  }
   function sentenceAround(range) {
     try {
       let node = range.startContainer;
       let el = node.nodeType === 1 ? node : node.parentElement;
       const block = el.closest('p,li,td,th,dd,dt,blockquote,figcaption,caption,h1,h2,h3,h4,h5,h6,article,section,div') || el;
-      const pre = document.createRange();
-      pre.setStart(block, 0);
-      pre.setEnd(range.startContainer, range.startOffset);
-      const offset = pre.toString().length;
-      const text = block.textContent;
+      let text, offset;
+      if (node.nodeType === 3) ({ text, offset } = visibleText(block, node, range.startOffset));
+      if (!text || offset < 0) {
+        const pre = document.createRange(); pre.setStart(block, 0); pre.setEnd(range.startContainer, range.startOffset);
+        offset = pre.toString().length; text = block.textContent;
+      }
       let s = offset, e = offset;
       while (s > 0 && !/[.!?\n]/.test(text[s - 1])) s--;
       while (e < text.length && !/[.!?\n]/.test(text[e])) e++;
-      let sent = text.slice(s, Math.min(text.length, e + 1)).replace(/\s+/g, ' ').trim();
+      let sent = text.slice(s, Math.min(text.length, e + 1)).replace(/\s+/g, ' ').replace(/\s+([,.;:!?])/g, '$1').trim();
       if (sent.length > 320) {
         const local = offset - s;
         sent = '…' + sent.slice(Math.max(0, local - 150), local + 150).trim() + '…';
@@ -308,7 +373,7 @@
   function fromSelection() {
     const sel = window.getSelection();
     if (!sel || sel.rangeCount === 0) return null;
-    const text = sel.toString().trim();
+    const text = rangeText(sel.getRangeAt(0), sel.toString());
     if (!text || text.length > 40 || !/^[A-Za-z][A-Za-z'\- ]*[A-Za-z]$/.test(text) || text.split(/\s+/).length > 3) return null;
     const range = sel.getRangeAt(0);
     return { word: text.toLowerCase(), rect: range.getBoundingClientRect(), context: sentenceAround(range) };
@@ -321,7 +386,7 @@
   function selectionInfo() {
     const sel = window.getSelection();
     if (!sel || sel.rangeCount === 0 || sel.isCollapsed) return null;
-    const text = sel.toString().replace(/\s+/g, ' ').trim();
+    const text = rangeText(sel.getRangeAt(0), sel.toString());
     if (!text || text.length > 3000 || !/[A-Za-z]{2}/.test(text)) return null;
     const range = sel.getRangeAt(0);
     return { text, range, rect: range.getBoundingClientRect() };

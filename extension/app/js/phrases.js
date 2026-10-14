@@ -16,12 +16,14 @@
   }
   App.renderAnnotated = renderAnnotated;
   const plain = t => t.replace(/<<[^>]*>>/g, '').replace(/\[\[([^|\]]*)\|[^\]]*\]\]/g, '$1').replace(/\{\{([^}]*)\}\}/g, '$1');
+  // Chữ "sạch" của một vùng: bỏ chú thích tiếng Việt, nhãn vai trò, nút bấm → không bị dính chữ hay lẫn Việt – Anh
+  const NOISE = '.an-gl, .an-role, button, .ctxvi, .vi, .tiny, sup, [hidden], .kbd';
+  const cleanText = node => { const c = node.cloneNode(true); if (c.querySelectorAll) c.querySelectorAll(NOISE).forEach(x => x.remove()); return (c.textContent || '').replace(/🔊/g, '').replace(/\s+/g, ' ').replace(/\s+([,.;:!?])/g, '$1').trim(); };
   const sentenceOf = (el) => {
     // câu chứa phần tử (để làm ngữ cảnh khi lưu)
     const p = el.closest('p'); if (!p) return '';
     const text = p.innerText.replace(/\n/g, ' ');
-    const clone = p.cloneNode(true); clone.querySelectorAll('.an-gl, .an-role').forEach(x => x.remove());
-    const t = clone.textContent.replace(/\s+/g, ' ').trim();
+    const t = cleanText(p);
     const sents = t.match(/[^.!?]+[.!?]+/g) || [t];
     const ph = el.dataset.ph || el.textContent;
     return (sents.find(s => s.includes(ph)) || text).trim();
@@ -190,13 +192,16 @@
   document.addEventListener('mouseup', e => setTimeout(() => {
     if (e.target === fab) return;
     const sel = getSelection();
-    const t = sel && !sel.isCollapsed ? sel.toString().replace(/\s+/g, ' ').trim() : '';
+    const t = sel && !sel.isCollapsed && sel.rangeCount ? cleanText(sel.getRangeAt(0).cloneContents()) : '';
     const inView = sel && sel.anchorNode && view.contains(sel.anchorNode) && !(sel.anchorNode.parentElement || {}).closest?.('input, textarea, .cbt');
     const n = t.split(' ').length;
     if (!t || !inView || n < 2 || n > 14 || !/[A-Za-z]/.test(t) || /[À-ỹ]/.test(t)) { fab.hidden = true; return; }
     const r = sel.getRangeAt(0).getBoundingClientRect();
     const block = (sel.anchorNode.parentElement.closest('p, li, .example-box, .ex, .meaning, .sent, div') || {});
-    selInfo = { phrase: t.replace(/^[^A-Za-z]+|[^A-Za-z)]+$/g, ''), sentence: (block.innerText || '').replace(/\s+/g, ' ').replace(/🔊/g, '').trim().slice(0, 300) };
+    const full = block.nodeType ? cleanText(block) : '';
+    const sents = full.match(/[^.!?]+[.!?]+["”’)]*|[^.!?]+$/g) || [full];
+    const sentence = (sents.find(x => x.toLowerCase().includes(t.toLowerCase())) || full).trim();
+    selInfo = { phrase: t.replace(/^[^A-Za-z]+|[^A-Za-z)]+$/g, ''), sentence: sentence.length > 300 ? sentence.slice(0, 297) + '…' : sentence };
     fab.style.left = Math.min(innerWidth - 150, r.left + r.width / 2 - 60) + 'px';
     fab.style.top = (r.bottom + 8) + 'px';
     fab.hidden = false;

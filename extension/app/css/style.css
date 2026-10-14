@@ -569,3 +569,9 @@ mark.cbt-hl { background: #fde047; color: #111; cursor: pointer; }
 .gsel { padding: .05rem .2rem; }
 .line { padding: .7rem 0; border-bottom: 1px dashed var(--line); } .line .lin { margin-top: .4rem; } .lhint { font-family: var(--ipa); letter-spacing: .02em; }
 .bankw.used { opacity: .38; text-decoration: line-through; }
+.dr-part { background: none; border: 0; padding: .1rem .2rem; font: inherit; cursor: pointer; border-radius: 6px; color: inherit; }
+.dr-part:hover { background: var(--soft, rgba(109,93,252,.08)); }
+.dr-part sub { font-size: .65rem; font-weight: 700; color: var(--brand, #6d5dfc); margin-left: 1px; }
+.dr-part.right { background: rgba(22,163,74,.15); } .dr-part.wrong { background: rgba(229,72,77,.15); }
+.dr textarea.dr-in { width: 100%; border: 2px solid var(--line); border-radius: 10px; padding: .6rem .7rem; font: inherit; background: var(--card, #fff); color: inherit; resize: vertical; }
+.dr .dr-in.ok { border-color: #16a34a; } .dr .dr-in.no { border-color: #e5484d; }

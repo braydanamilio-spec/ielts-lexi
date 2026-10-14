@@ -15,19 +15,19 @@
   ];
   const CHAPTERS = [
     { n: 1, name: 'Các thì', emoji: '⏳', color: '#6d5dfc', desc: '12 thì từ cơ bản đến nâng cao và cách diễn đạt tương lai',
-      ids: ['present-simple', 'present-continuous', 'present-perfect', 'present-perfect-continuous', 'past-simple', 'past-continuous', 'past-perfect', 'past-perfect-continuous', 'future-forms', 'future-continuous-perfect', 'used-to-would', 'stative-dynamic'] },
+      ids: ['present-simple', 'present-continuous', 'present-perfect', 'present-perfect-continuous', 'past-simple', 'past-continuous', 'past-perfect', 'past-perfect-continuous', 'future-forms', 'future-continuous-perfect', 'used-to-would', 'stative-dynamic', 'ed-s-endings'] },
     { n: 2, name: 'Sự phối hợp các thì', emoji: '🔗', color: '#7c3aed', desc: 'Phối hợp thì trong câu phức, mệnh đề thời gian, chọn thì cho IELTS',
       ids: ['sequence-of-tenses', 'future-in-past', 'tenses-ielts'] },
     { n: 3, name: 'Mệnh đề & cụm từ', emoji: '🧩', color: '#0ea5a4', desc: 'Câu điều kiện, wish, mệnh đề quan hệ, danh từ, trạng ngữ, phân từ, mục đích – kết quả',
-      ids: ['conditionals-0-1', 'conditionals-2-3', 'mixed-conditionals-wish', 'alternatives-to-if', 'relative-clauses', 'noun-clauses', 'adverbial-clauses', 'participle-clauses', 'so-such-too-enough', 'gerund-infinitive'] },
+      ids: ['conditionals-0-1', 'conditionals-2-3', 'mixed-conditionals-wish', 'alternatives-to-if', 'relative-clauses', 'noun-clauses', 'adverbial-clauses', 'participle-clauses', 'purpose-result', 'reason-contrast', 'as-if-unreal-past', 'so-such-too-enough', 'gerund-infinitive'] },
     { n: 4, name: 'Diễn tả số lượng', emoji: '🔢', color: '#f59e0b', desc: 'Danh từ đếm được, lượng từ, từ hạn định, số liệu, hòa hợp chủ – vị',
       ids: ['countable-uncountable', 'determiners', 'quantity-advanced', 'numbers-data-language', 'subject-verb-agreement'] },
     { n: 5, name: 'Văn phong & viết lại câu', emoji: '🖋️', color: '#16a34a', desc: 'Diễn đạt một ý bằng nhiều cách – paraphrase, hedging, danh từ hóa, liên kết, dấu câu',
-      ids: ['paraphrase-structures', 'paraphrase-ielts', 'hedging', 'nominalisation', 'parallel-structure', 'reference-substitution', 'punctuation'] },
+      ids: ['paraphrase-structures', 'paraphrase-ielts', 'hedging', 'nominalisation', 'parallel-structure', 'reference-substitution', 'punctuation', 'idioms-style'] },
     { n: 6, name: 'Dạng nhấn mạnh', emoji: '📣', color: '#e5484d', desc: 'Đảo ngữ, câu chẻ, nhấn mạnh với do/does/did (nhấn mạnh khi nói: xem Thư viện phát âm)',
       ids: ['emphasis-variety', 'inversion-cleft'] },
     { n: 7, name: 'Từ loại', emoji: '🧱', color: '#0369a1', desc: 'Danh từ, động từ, động từ khuyết thiếu, tính từ, trạng từ, đại từ, mạo từ, giới từ, liên từ',
-      ids: ['parts-of-speech-patterns', 'word-formation', 'nouns', 'articles', 'pronouns', 'verb-types', 'modals-ability-permission', 'modals-obligation-advice', 'modals-deduction', 'preference-advice', 'subjunctive', 'adjectives-adverbs', 'ing-ed-adjectives-prepositions', 'comparatives-superlatives', 'adverbs-position', 'prepositions', 'dependent-prepositions', 'phrasal-verbs-grammar', 'conjunctions', 'there-is-empty-it'] },
+      ids: ['parts-of-speech-patterns', 'word-formation', 'nouns', 'noun-plurals', 'possessive-case', 'articles', 'pronouns', 'verb-types', 'modals-ability-permission', 'modals-obligation-advice', 'modals-deduction', 'preference-advice', 'subjunctive', 'adjectives-adverbs', 'adjectives-special', 'ing-ed-adjectives-prepositions', 'comparatives-superlatives', 'comparison-special', 'adverbs-position', 'prepositions', 'dependent-prepositions', 'phrasal-verbs-grammar', 'conjunctions', 'there-is-empty-it'] },
     { n: 8, name: 'Lời nói gián tiếp', emoji: '💬', color: '#c026d3', desc: 'Lùi thì, câu hỏi, mệnh lệnh và các động từ tường thuật',
       ids: ['reported-speech', 'reported-advanced'] },
     { n: 9, name: 'Câu chủ động – bị động', emoji: '🔄', color: '#1d4ed8', desc: 'Bị động mọi thì, bị động tường thuật, thể sai khiến',
@@ -107,7 +107,7 @@
     const ch = query && +query.get('ch'), n = (query && +query.get('n')) || 20;
     const chap = ch && CHAPTERS.find(c => c.n === ch);
     const all = chap ? lessonsOf(chap) : L(), d = done();
-    const pool = (!chap && Object.keys(d).length >= 3 ? all.filter(x => d[x.id] != null) : all).flatMap(x => x.quiz.map(q => ({ q, x })));
+    const pool = (!chap && Object.keys(d).length >= 3 ? all.filter(x => d[x.id] != null) : all).flatMap(x => [...x.quiz.map(q => ({ q, x })), ...drillsOf(x).map(d => ({ d, x }))]);
     const qs = UI.shuffle(pool).slice(0, n);
     let i = 0, right = 0;
     const next = () => {
@@ -117,7 +117,20 @@
         view.innerHTML = `<div class="study-wrap"><div class="card celebrate empty"><div class="em">🔀</div><h2>${right}/${qs.length} câu đúng (${pct}%)</h2><p class="muted">Câu sai đã được ghi vào <a href="#/mistakes">Sổ lỗi sai</a>.</p><div class="row center"><a class="btn primary" href="#/grammar/mix">Luyện lượt mới</a><a class="btn" href="#/grammar">Về danh sách bài</a></div></div></div>`;
         return;
       }
-      const { q, x } = qs[i];
+      const { q, x, d } = qs[i];
+      if (d) {
+        view.innerHTML = `<div class="study-wrap"><div class="study-top"><a class="icon-btn" href="#/grammar">✕</a><div class="progress"><i style="width:${i / qs.length * 100}%"></i></div><span class="small muted">${i + 1}/${qs.length}</span></div>
+          <div class="card q-card"><div class="tiny muted">${x.emoji} ${esc(x.title)}</div>${drillItem(d, 0)}</div><div id="fb"></div></div>`;
+        const item = $('.dr'), done = r => {
+          if (!r) return; if (r.ok) right++;
+          if (!r.ok && App.logMistake) App.logMistake({ kind: 'grammar', q: d.t === 'error' ? d.parts.join(' ') : d.q, answer: r.answer, given: r.given, explain: d.ex || '', ref: x.id });
+          $('#fb').innerHTML = `<div class="row" style="margin-top:.8rem"><button class="btn primary" id="nx">Tiếp ↵</button><a class="btn sm ghost" href="#/grammar/${x.id}">Xem lại bài</a></div>`;
+          $('#nx').onclick = () => { i++; next(); }; $('#nx').focus();
+        };
+        if (d.t === 'error') $$('.dr-part', item).forEach(b => b.onclick = () => { if (!item.dataset.locked) done(gradeDrill(item, d, +b.dataset.j)); });
+        else { const go = () => { if (!item.dataset.locked) done(gradeDrill(item, d)); }; $('.dr-chk', item).onclick = go; const inp = $('.dr-in', item); inp.focus(); inp.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); go(); } }); }
+        return;
+      }
       view.innerHTML = `<div class="study-wrap"><div class="study-top"><a class="icon-btn" href="#/grammar">✕</a><div class="progress"><i style="width:${i / qs.length * 100}%"></i></div><span class="small muted">${i + 1}/${qs.length}</span></div>
         <div class="card q-card"><div class="tiny muted">${x.emoji} ${esc(x.title)}</div><div style="font-size:1.15rem;font-weight:700;margin-top:.5rem">${esc(q.q)}</div></div>
         <div class="options">${q.options.map((o, k) => `<button class="option" data-k="${k}"><span class="kbd">${k + 1}</span>${esc(o)}</button>`).join('')}</div><div id="fb"></div></div>`;
@@ -167,6 +180,78 @@
       }
     }));
   }
+  // ---------- Bài tập tự luận: chia động từ, dạng từ, điền từ, viết lại câu, nối câu, tìm lỗi sai ----------
+  const DKIND = { verb: '🔤 Chia động từ', form: '🧬 Dạng đúng của từ', fill: '✏️ Điền từ', rewrite: '🔁 Viết lại câu', combine: '🔗 Nối câu', error: '🕵️ Tìm lỗi sai' };
+  const dnorm = s => ' ' + String(s || '').toLowerCase().replace(/[’‘`]/g, "'").replace(/won't/g, 'will not').replace(/can't|can not/g, 'cannot').replace(/n't\b/g, ' not').replace(/'re\b/g, ' are').replace(/'ve\b/g, ' have').replace(/'ll\b/g, ' will').replace(/'m\b/g, ' am')
+    .replace(/[.,!?;:"“”()]/g, ' ').replace(/\s+/g, ' ').trim() + ' ';
+  // Chuẩn hoá thêm: chính tả Anh–Mỹ (-ize/-ise), "per cent"/"percent" → "%"
+  const dnorm2 = s => dnorm(s).replace(/(\w)iz(e|ed|es|ing|ation|ations)\b/g, '$1is$2').replace(/(\d)\s*(?:per cent|percent)\b/g, '$1%').replace(/\s+%/g, '%');
+  // Câu người học có thể viết tắt 'd (would/had) và 's (is/has/sở hữu) → thử mọi cách hiểu
+  function variants(given) {
+    let out = [given.replace(/[’‘`]/g, "'")];
+    out = out.flatMap(v => /'d\b/i.test(v) ? [v.replace(/'d\b/gi, ' would'), v.replace(/'d\b/gi, ' had')] : [v]);
+    for (let k = 0; k < 3; k++) out = out.flatMap(v => { const m = v.match(/\b(it|he|she|that|there|what|who|where|here|this)'s\b/i); return m ? [v.replace(m[0], m[1] + ' is'), v.replace(m[0], m[1] + ' has')] : [v]; });
+    return out.map(dnorm2);
+  }
+  const matchAnswer = (given, answers) => { const vs = variants(given); return answers.some(a => { const n = dnorm2(a); return vs.includes(n) || variants(a).some(x => vs.includes(x)); }); };
+  const drillsOf = x => x.drills || [];
+  function drillItem(d, k) {
+    const head = `<span class="chip" style="font-size:.75rem">${DKIND[d.t] || DKIND.fill}</span>`;
+    if (d.t === 'error') return `<div class="q-item dr" data-d="${k}">${head}<div class="dr-q" style="margin:.5rem 0;font-size:1.05rem;line-height:2">${d.parts.map((p, j) => `<button class="dr-part" data-j="${j}"><u>${esc(p)}</u><sub>${'ABCD'[j] || j + 1}</sub></button>`).join(' ')}</div><div class="small muted">Bấm vào phần sai.</div><div class="small" data-fb hidden></div></div>`;
+    const long = d.t === 'rewrite' || d.t === 'combine';
+    const q = long ? `<div style="margin:.5rem 0">${esc(d.q)}${d.hint ? ` <span class="muted small">(${esc(d.hint)})</span>` : ''}</div><textarea class="dr-in" rows="2" spellcheck="false" placeholder="Viết câu của bạn…">${esc(d.start ? d.start + ' ' : '')}</textarea>`
+      : `<div style="margin:.5rem 0;line-height:2.2">${esc(d.q).replace('___', '<input class="dr-in gap" size="14" autocomplete="off" spellcheck="false">')}</div>`;
+    return `<div class="q-item dr" data-d="${k}">${head}${q}<div class="row" style="margin-top:.4rem"><button class="btn sm primary dr-chk">Kiểm tra</button></div><div class="small" data-fb hidden></div></div>`;
+  }
+  // Chấm 1 câu, trả về true/false (null nếu chưa làm)
+  function gradeDrill(item, d, picked) {
+    const fb = $('[data-fb]', item);
+    let ok, given, answer;
+    if (d.t === 'error') {
+      if (picked == null) return null;
+      ok = picked === d.w; given = d.parts[picked]; answer = `${d.parts[d.w]} → ${d.fix}`;
+      $$('.dr-part', item).forEach((b, j) => { b.disabled = true; if (j === d.w) b.classList.add('right'); else if (j === picked) b.classList.add('wrong'); });
+    } else {
+      const inp = $('.dr-in', item); given = inp.value.trim();
+      if (!given || (d.start && dnorm(given) === dnorm(d.start))) return null;
+      ok = matchAnswer(given, d.a); answer = d.a[0];
+      inp.classList.toggle('ok', ok); inp.classList.toggle('no', !ok); inp.readOnly = true;
+      const c = $('.dr-chk', item); if (c) c.remove();
+    }
+    item.dataset.locked = 1; fb.hidden = false;
+    fb.innerHTML = `${ok ? '✅ <b>Chính xác!</b>' : `❌ Đáp án: <b>${esc(answer)}</b>`}${d.ex ? `<div class="muted">${esc(d.ex)}</div>` : ''}`;
+    ok ? Sfx.correct() : Sfx.wrong();
+    return { ok, given, answer };
+  }
+  function drillsHtml(x) {
+    const ds = drillsOf(x);
+    return `<div class="card" id="gDrill"><h2>✍️ Bài tập tự luận (${ds.length} câu)</h2><p class="small muted">Các dạng bài quen thuộc trong đề thi: chia động từ, viết lại câu, nối câu, tìm lỗi sai. Gõ đáp án rồi bấm Kiểm tra (hoặc Enter).</p>
+      <div class="stack">${ds.map(drillItem).join('')}</div><div id="dRes" style="margin-top:1rem"></div></div>`;
+  }
+  function bindDrills(x, onDone) {
+    const ds = drillsOf(x); let answered = 0, right = 0;
+    const after = async r => {
+      if (!r) return; answered++; if (r.ok) right++;
+      if (!r.ok && App.logMistake) App.logMistake({ kind: 'grammar', q: r.q, answer: r.answer, given: r.given, explain: r.ex || '', ref: x.id });
+      if (answered === ds.length) {
+        const pct = Math.round(right / ds.length * 100);
+        await App.reward({ quizzes: 1, perfect: pct === 100 ? 1 : 0, xp: 10 + right * 4 }, $('#dRes'));
+        if (pct >= 80) { Sfx.win(); confetti(); }
+        $('#dRes').innerHTML = `<div class="feedback ${pct >= 80 ? 'ok' : 'no'}" style="position:static"><b>${right}/${ds.length} câu đúng (${pct}%)</b> · +${10 + right * 4} XP${onDone ? '' : ''}</div>`;
+        if (onDone) onDone(pct);
+      }
+    };
+    $$('#gDrill .dr').forEach(item => {
+      const d = ds[+item.dataset.d];
+      const meta = r => r && Object.assign(r, { q: d.t === 'error' ? d.parts.join(' ') : d.q, ex: d.ex });
+      if (d.t === 'error') $$('.dr-part', item).forEach(b => b.onclick = () => { if (!item.dataset.locked) after(meta(gradeDrill(item, d, +b.dataset.j))); });
+      else {
+        const go = () => { if (!item.dataset.locked) after(meta(gradeDrill(item, d))); };
+        $('.dr-chk', item).onclick = go;
+        $('.dr-in', item).addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); go(); } });
+      }
+    });
+  }
   const heroHtml = (x, unit) => `<div class="card hero-main" style="margin:.7rem 0 1rem;background:linear-gradient(135deg, ${unit.color}, #1e1b4b 160%)">
       <div class="row nowrap"><div style="font-size:3rem">${x.emoji}</div><div><div class="muted small">Chương ${chapterOf(x.id).n} · ${esc(chapterOf(x.id).name)} · ${esc(x.level)}</div>
         <h1 style="margin:0;color:#fff">${esc(x.title)}</h1><div style="opacity:.9;font-weight:700">${esc(x.en)}</div></div></div>
@@ -188,9 +273,11 @@
       ${heroHtml(x, unit)}
       <div class="stack" id="gBody">${x.blocks.map(b => (R[b.type] || (() => ''))(b)).join('')}</div>
       <div style="margin-top:1rem">${quizHtml(x)}</div>
+      ${drillsOf(x).length ? `<div style="margin-top:1rem">${drillsHtml(x)}</div>` : ''}
       <div class="row between" style="margin-top:1rem">${prev ? `<a class="btn" href="#/grammar/${prev.id}?view=full">← ${esc(prev.title)}</a>` : '<span></span>'}${next ? `<a class="btn primary" href="#/grammar/${next.id}?view=full">${esc(next.title)} →</a>` : '<a class="btn primary" href="#/grammar">Hoàn thành chủ điểm 🎉</a>'}</div>`;
     App.bindCommon();
     bindQuiz(x, next, () => lessonFull(id));
+    if (drillsOf(x).length) bindDrills(x);
   }
 
   // ---------- Chế độ học từng bước (kiểu Duolingo) ----------
@@ -244,6 +331,7 @@
         $$('.wpick', pool).forEach(b => b.onclick = () => { built.push(+b.dataset.j); slot.insertAdjacentHTML('beforeend', `<span class="chip" style="font-size:.95rem;padding:.35rem .7rem">${esc(b.textContent)}</span>`); b.hidden = true; Sfx.pop(); check(); });
         $(`[data-undo="${k}"]`).onclick = () => { built = []; slot.innerHTML = ''; slot.className = 'build-slot'; msg.textContent = ''; $$('.wpick', pool).forEach(b => b.hidden = false); };
       }) });
+    if (drillsOf(x).length) steps.push({ name: 'Tự luận', em: '✍️', html: () => drillsHtml(x), bind: () => bindDrills(x) });
     steps.push({ name: 'Luyện tập', em: '✏️', html: () => quizHtml(x), bind: () => bindQuiz(x, next, () => lessonSteps(id)) });
 
     let cur = 0, gateOk = false;
