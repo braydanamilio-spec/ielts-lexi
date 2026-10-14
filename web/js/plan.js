@@ -30,6 +30,7 @@
       <div id="mList"></div>`;
     const draw = k => {
       const rows = open.filter(x => !k || x.kind === k);
+      if (retry) rows.sort((a, b) => (b.n || 1) - (a.n || 1)); // làm lại: câu sai nhiều lần nhất lên trước
       $('#mList').innerHTML = rows.length ? rows.map((x, i) => `<div class="card" style="margin-bottom:.7rem">
         <div class="row between"><span class="chip">${KIND[x.kind] ? KIND[x.kind][0] + ' ' + KIND[x.kind][1] : x.kind}</span><span class="tiny muted">${t('sai {n} lần', { n: x.n })} · ${new Date(x.at).toLocaleDateString(I18N.lang())}</span></div>
         <div style="margin-top:.4rem;font-weight:600">${esc(x.q)}</div>
@@ -153,7 +154,7 @@
     if (nextP) tasks.push({ em: '🔤', t: t('Phát âm: {title}', { title: nextP.title }), sub: t('Khẩu hình → nghe phân biệt → nói & chấm điểm'), href: `#/pron/${encodeURIComponent(nextP.id)}`, done: false });
     // Lỗi sai
     const mistakes = (await Store.get('mistakes', [])).filter(x => !x.fixed).length;
-    if (mistakes) tasks.push({ em: '📕', t: t('Xem lại {n} lỗi sai', { n: mistakes }), sub: t('Sửa lỗi = tăng điểm nhanh nhất'), href: '#/mistakes', done: false });
+    if (mistakes) tasks.splice(2, 0, { em: '📕', t: t('Làm lại {n} lỗi sai', { n: mistakes }), sub: t('Tự nhớ lại đáp án – sửa lỗi = tăng điểm nhanh nhất'), href: '#/mistakes?retry=1', done: false }); // ưu tiên cao: ngay sau ôn thẻ
     // Kỹ năng xoay vòng theo ngày: Đọc → Nói → Viết
     const dow = new Date().getDay();
     const essays = await Store.get('essays', []);
