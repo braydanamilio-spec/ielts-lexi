@@ -209,6 +209,28 @@
   const lean = () => { const c = navigator.connection || {}; return !!c.saveData || /(^|-)2g|3g/.test(c.effectiveType || '') || (navigator.deviceMemory && navigator.deviceMemory <= 2); };
   App.prefetchAll = () => { if (!Store.isExtension && lean()) return; idle(() => Object.keys(BUNDLES).reduce((p, n) => p.then(() => App.need(n)), Promise.resolve())); };
 
+
+  // Làm mới phiên âm của thẻ lưu từ bản cũ (trước khi chọn IPA theo từ loại): chạy ngầm lúc rảnh, chậm rãi, mỗi thẻ 1 lần
+  const IPA_V = 5;
+  App.refreshIPA = () => refreshIPA();
+  async function refreshIPA() {
+    if (!navigator.onLine || !window.Dict) return;
+    const map = await Cards.all(), todo = Object.values(map).filter(x => x.word && (x.ipaV || 0) < IPA_V).slice(0, 150);
+    for (const card of todo) {
+      if (!navigator.onLine || document.hidden) break;
+      const w = card.word, lib = window.IELTS_DATA && IELTS_DATA.INDEX[w.toLowerCase()];
+      let ipa = '', ipaUS = '';
+      if (lib && lib.ipa) ipa = lib.ipa;
+      else if (!/\s/.test(w)) {
+        const d = await Dict.quick(w).catch(() => null);
+        // chỉ cập nhật khi cùng từ loại (tránh đổi nhầm từ đồng tự khác âm: record n./v.)
+        if (d && d.found && d.ipa && (!card.pos || !d.pos || card.pos === d.pos)) { ipa = d.ipa; ipaUS = d.ipaUS || ''; }
+        await new Promise(r => setTimeout(r, 900));
+      }
+      await Cards.patch(w, x => { x.ipaV = IPA_V; if (ipa) { x.ipa = ipa; if (ipaUS) x.ipaUS = ipaUS; } });
+    }
+  }
+
   let routeSeq = 0;
   async function route() {
     const { name, arg, query } = parseHash();
@@ -1327,6 +1349,7 @@
     if (fresh && /^(#\/?(home)?)?$/.test(location.hash)) { location.hash = '#/welcome'; App.prefetchAll(); return; }
     route();
     App.prefetchAll();
+    setTimeout(() => idle(refreshIPA), 15000);
     if (isIOS()) setTimeout(() => App.installNudge && App.installNudge(), 25000);
   };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else setTimeout(boot, 0);
