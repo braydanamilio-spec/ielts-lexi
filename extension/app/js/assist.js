@@ -7,7 +7,19 @@
   const LT = 'https://api.languagetool.org/v2/check';
   const TYPE = { misspelling: [t('Chính tả'), '#e11d48'], grammar: [t('Ngữ pháp'), '#d97706'], typographical: [t('Dấu câu'), '#64748b'], style: [t('Văn phong'), '#2563eb'], duplication: [t('Lặp từ'), '#7c3aed'], uncategorized: [t('Khác'), '#64748b'] };
 
+  // Dự phòng khi LanguageTool quá tải/mất mạng: Proofreader API có sẵn trong Chrome (chạy trên máy, miễn phí)
+  async function chromeProofread(text) {
+    const PR = self.Proofreader; if (!PR || (await PR.availability({ expectedInputLanguages: ['en'] })) !== 'available') return null;
+    const p = await PR.create({ expectedInputLanguages: ['en'] });
+    try {
+      const r = await p.proofread(text);
+      return (r.corrections || []).map(c => ({ off: c.startIndex, len: c.endIndex - c.startIndex, msg: t('Gợi ý sửa từ AI trên máy'), short: '', reps: [c.correction], type: (c.type || 'grammar').toLowerCase().includes('spell') ? 'misspelling' : 'grammar', bad: text.slice(c.startIndex, c.endIndex), ctx: '' }));
+    } finally { try { p.destroy(); } catch (e) { /* bỏ qua */ } }
+  }
   async function check(text) {
+    try { return await ltCheck(text); } catch (e) { const local = await chromeProofread(text).catch(() => null); if (local) return local; throw e; }
+  }
+  async function ltCheck(text) {
     const body = new URLSearchParams({ text: text.slice(0, 18000), language: 'en-US', motherTongue: 'vi', level: 'picky', enabledOnly: 'false' });
     const r = await fetch(LT, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body });
     if (r.status === 429) throw new Error(t('Máy chủ kiểm tra đang bận – thử lại sau 1 phút.'));
@@ -53,8 +65,16 @@
       const a = ta.selectionStart, b = ta.selectionEnd, sel = ta.value.slice(a, b).trim();
       if (sel.split(/\s+/).length < 4) return toast(t('Bôi đen 1 câu (≥ 4 từ) trong bài để viết lại'));
       out.innerHTML = `<div class="small muted" style="margin-top:.6rem">⏳ ${t('AI đang viết lại…')}</div>`;
+      // T2: Rewriter API có sẵn trong Chrome (trên máy, miễn phí, không cần khóa) – dùng trước nếu đã sẵn sàng
+      const viaChrome = async () => {
+        const RW = self.Rewriter; if (!RW || (await RW.availability()) !== 'available') return null;
+        const modes = [['Academic', { tone: 'more-formal' }, t('Trang trọng, học thuật hơn')], ['Concise', { length: 'shorter' }, t('Gọn hơn, bỏ ý thừa')], ['Advanced structure', { length: 'longer' }, t('Diễn đạt đầy đủ, nhiều cấu trúc hơn')]];
+        const out = await Promise.all(modes.map(async ([style, o, note]) => { const r = await RW.create({ ...o, sharedContext: 'Sentences from an IELTS academic essay' }); try { return { style, text: (await r.rewrite(sel)).trim(), note }; } finally { try { r.destroy(); } catch (e) { /* bỏ qua */ } } }));
+        return { variants: out.filter(v => v.text && v.text !== sel) };
+      };
       try {
-        const r = await AI.ask(`Rewrite the following sentence from an IELTS essay in 3 different improved ways: (1) more academic and precise, (2) more concise, (3) with a more sophisticated structure (e.g. participle clause, inversion, nominalisation). Keep the meaning and facts. Sentence: "${sel}". Return ONLY JSON: {"variants":[{"style":"Academic|Concise|Advanced structure","text":"...","note":"one short Vietnamese explanation of what improved"}]}`);
+        const local = await viaChrome().catch(() => null);
+        const r = local && local.variants.length ? local : await AI.ask(`Rewrite the following sentence from an IELTS essay in 3 different improved ways: (1) more academic and precise, (2) more concise, (3) with a more sophisticated structure (e.g. participle clause, inversion, nominalisation). Keep the meaning and facts. Sentence: "${sel}". Return ONLY JSON: {"variants":[{"style":"Academic|Concise|Advanced structure","text":"...","note":"one short Vietnamese explanation of what improved"}]}`);
         const vs = (r && r.variants) || [];
         out.innerHTML = `<div class="wa-list" style="margin-top:.6rem">${vs.map((v, i) => `<div class="wa-it"><span class="wa-tag" style="background:#2563eb">${esc(v.style || '')}</span><div style="margin:.3rem 0">${esc(v.text)}</div><div class="tiny muted">${esc(v.note || '')}</div><div class="row" style="margin-top:.3rem"><button class="btn sm" data-use="${i}">${t('Dùng câu này')}</button><button class="ctx-say sm" data-saysent="${esc(v.text)}">🔊</button></div></div>`).join('') || `<div class="small muted">${t('Không có kết quả.')}</div>`}</div>`;
         $$('[data-use]', out).forEach(x => x.onclick = () => { const v = vs[+x.dataset.use].text; ta.value = ta.value.slice(0, a) + v + ta.value.slice(b); ta.dispatchEvent(new Event('input', { bubbles: true })); toast(t('Đã thay câu')); });
