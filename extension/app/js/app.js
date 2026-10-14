@@ -640,12 +640,19 @@
         ${e.syn.length ? `<div style="margin-top:.6rem"><b>≈ ${t('Đồng nghĩa:')}</b> ${e.syn.map(s => `<a class="chip" href="#/dict/${encodeURIComponent(s)}">${esc(s)}</a>`).join(' ')}</div>` : ''}
         <div id="related"></div>
         <div id="phraseBox"></div>
-        ${(e.senses || []).length ? `<div style="margin-top:1.2rem"><h3>🇻🇳 ${t('Nghĩa tiếng Việt theo từ loại')}</h3>${e.senses.map(s => `
-          <div class="meaning"><span class="chip pos">${esc(t(s.pos))}</span> ${s.terms.map(esc).join(', ')}</div>`).join('')}</div>` : ''}
-        ${(e.oxford || []).length ? `<div style="margin-top:1rem"><h3>📕 ${t('Định nghĩa')} <span class="muted small">(Oxford Languages)</span></h3>${e.oxford.map(m => `
-          <div class="meaning"><span class="chip pos">${esc(t(m.pos))}</span>
-            <ol>${m.defs.map(d => `<li>${esc(d.def)}${d.ex ? `<div class="ex small">“${highlight(d.ex, e.word)}”</div>` : ''}</li>`).join('')}</ol></div>`).join('')}</div>` : ''}
-        ${e.meanings.length ? `<details style="margin-top:.8rem"${(e.oxford || []).length ? '' : ' open'}><summary class="small"><b>${t('Định nghĩa bổ sung')}</b> <span class="muted">(Wiktionary)</span></summary>${e.meanings.map(m => `
+        ${(() => { // Gom theo từ loại như Oxford/Cambridge: mỗi từ loại = nghĩa Việt + định nghĩa Anh + ví dụ của chính nghĩa đó
+          const VIP = { 'danh từ': 'noun', 'động từ': 'verb', 'tính từ': 'adjective', 'trạng từ': 'adverb', 'giới từ': 'preposition', 'liên từ': 'conjunction', 'đại từ': 'pronoun', 'thán từ': 'interjection', 'từ hạn định': 'determiner', 'viết tắt': 'abbreviation', 'cụm từ': 'phrase' };
+          const key = p => { p = String(p || '').toLowerCase(); return VIP[p] || p; };
+          const G = [], by = {}, grp = p => by[p] || (by[p] = G[G.push({ pos: p, vi: [], defs: [] }) - 1]);
+          if (I18N.meanLang() === 'vi') (e.senses || []).forEach(x => { grp(key(x.pos)).vi = x.terms; });
+          (e.oxford || []).forEach(m => { const g2 = grp(key(m.pos)); g2.defs = g2.defs.concat(m.defs); });
+          if (!(e.oxford || []).length) (e.meanings || []).forEach(m => { const g2 = grp(key(m.pos)); g2.defs = g2.defs.concat(m.defs.slice(0, 3)); });
+          const list = G.filter(x => x.vi.length || x.defs.length);
+          return list.length ? `<div style="margin-top:1.2rem"><h3>📖 ${t('Nghĩa theo từ loại')}</h3>${list.map(x => `<div class="pos-block"><div class="pos-head"><span class="chip pos">${esc(t(x.pos))}</span>${x.vi.length ? `<b class="vi">${x.vi.map(esc).join(', ')}</b>` : ''}</div>
+            ${x.defs.length ? `<ol>${x.defs.slice(0, 4).map(d => `<li>${esc(d.def)}${d.ex ? `<div class="ex small">“${highlight(d.ex, e.word)}” <button class="ctx-say" data-saysent="${esc(d.ex)}" title="${t('Nghe cả câu')}">🔊</button></div>` : ''}</li>`).join('')}</ol>` : ''}</div>`).join('')}
+            <div class="tiny muted">${t('Nguồn: Oxford Languages (qua Google), Wiktionary')}</div></div>` : '';
+        })()}
+        ${e.meanings.length && (e.oxford || []).length ? `<details style="margin-top:.8rem"><summary class="small"><b>${t('Định nghĩa bổ sung')}</b> <span class="muted">(Wiktionary)</span></summary>${e.meanings.map(m => `
           <div class="meaning"><span class="chip pos">${esc(t(m.pos))}</span>
             <ol>${m.defs.map(d => `<li>${esc(d.def)}${d.ex ? `<div class="ex small">“${highlight(d.ex, e.word)}”</div>` : ''}</li>`).join('')}</ol></div>`).join('')}</details>` : ''}
       </div>
