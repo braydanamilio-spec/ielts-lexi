@@ -6,6 +6,20 @@ self.addEventListener('unhandledrejection', e => logErr('bg-promise', e.reason))
 // Chrome/Edge: service worker → importScripts; Firefox: manifest nạp sẵn các file này qua background.scripts
 if (typeof importScripts === 'function' && typeof Core === 'undefined') importScripts('app/js/data.js', 'app/js/core.js', 'app/js/vi-check.js', 'app/js/dictionary.js');
 const { Store, Cards, Stats, Golden, DEFAULT_SETTINGS, todayKey } = Core;
+// Ngôn ngữ giao diện (thông báo, menu chuột phải): chỉ en / vi như web app, ngôn ngữ khác → English
+const UI_LANG = (chrome.i18n && chrome.i18n.getUILanguage ? chrome.i18n.getUILanguage() : navigator.language || 'en').toLowerCase().startsWith('vi') ? 'vi' : 'en';
+const EN = {
+  'Vocaband – đến giờ học rồi! 📚': 'Vocaband – time to study! 📚',
+  'Bạn có {n} thẻ cần ôn hôm nay.': 'You have {n} cards to review today.',
+  ' Giữ chuỗi {n} ngày 🔥': ' Keep your {n}-day streak 🔥',
+  'Thêm vài từ mới để giữ chuỗi ngày học nhé 🔥': 'Add a few new words to keep your streak going 🔥',
+  'Ôn ngay': 'Review now',
+  '⏰ Thời điểm vàng!': '⏰ Golden moment!',
+  '{n} từ đang ở thời điểm sắp quên – ôn 3 phút để nhớ lâu hơn.': '{n} words are about to be forgotten – review for 3 minutes to remember them longer.',
+  'Tra từ “%s” với Vocaband': 'Look up “%s” with Vocaband',
+  'Dịch đoạn đã chọn sang tiếng Việt': 'Translate selection to Vietnamese',
+};
+const tx = (src, vars) => { let s = UI_LANG === 'vi' ? src : (EN[src] || src); if (vars) s = s.replace(/\{(\w+)\}/g, (m, k) => (vars[k] != null ? vars[k] : m)); return s; };
 
 const APP_URL = chrome.runtime.getURL('app/index.html');
 const getSettings = async () => ({ ...DEFAULT_SETTINGS, ...(await Store.get('settings', {})) });
@@ -30,9 +44,9 @@ async function sendReminder(force = false) {
   chrome.notifications.create('reminder-' + Date.now(), {
     type: 'basic',
     iconUrl: 'icons/icon-128.png',
-    title: 'Vocaband – đến giờ học rồi! 📚',
-    message: total ? `Bạn có ${total} thẻ cần ôn hôm nay.${streak ? ` Giữ chuỗi ${streak} ngày 🔥` : ''}` : 'Thêm vài từ mới để giữ chuỗi ngày học nhé 🔥',
-    buttons: [{ title: 'Ôn ngay' }],
+    title: tx('Vocaband – đến giờ học rồi! 📚'),
+    message: total ? tx('Bạn có {n} thẻ cần ôn hôm nay.', { n: total }) + (streak ? tx(' Giữ chuỗi {n} ngày 🔥', { n: streak }) : '') : tx('Thêm vài từ mới để giữ chuỗi ngày học nhé 🔥'),
+    buttons: [{ title: tx('Ôn ngay') }],
     priority: 2,
   });
 }
@@ -47,9 +61,9 @@ async function checkGolden() {
   await Store.set('lastGolden', Date.now());
   chrome.notifications.create('golden-' + Date.now(), {
     type: 'basic', iconUrl: 'icons/icon-128.png', priority: 2,
-    title: '⏰ Thời điểm vàng!',
-    message: `${n} từ đang ở thời điểm sắp quên – ôn 3 phút để nhớ lâu hơn.`,
-    buttons: [{ title: 'Ôn ngay' }],
+    title: tx('⏰ Thời điểm vàng!'),
+    message: tx('{n} từ đang ở thời điểm sắp quên – ôn 3 phút để nhớ lâu hơn.', { n }),
+    buttons: [{ title: tx('Ôn ngay') }],
   });
 }
 
@@ -70,8 +84,8 @@ async function injectIntoOpenTabs() {
 
 chrome.runtime.onInstalled.addListener(async ({ reason }) => {
   await chrome.contextMenus.removeAll(); // chờ xóa xong rồi mới tạo – tránh lỗi "duplicate id" sau mỗi lần cập nhật
-  chrome.contextMenus.create({ id: 'lexi-lookup', title: 'Tra từ “%s” với Vocaband', contexts: ['selection'] });
-  chrome.contextMenus.create({ id: 'lexi-translate', title: 'Dịch đoạn đã chọn sang tiếng Việt', contexts: ['selection'] });
+  chrome.contextMenus.create({ id: 'lexi-lookup', title: tx('Tra từ “%s” với Vocaband'), contexts: ['selection'] });
+  chrome.contextMenus.create({ id: 'lexi-translate', title: tx('Dịch đoạn đã chọn sang tiếng Việt'), contexts: ['selection'] });
   injectIntoOpenTabs();
   chrome.alarms.create('badge', { periodInMinutes: 15 });
   await scheduleReminder();

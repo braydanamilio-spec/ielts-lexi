@@ -193,7 +193,9 @@
   App.loaded = n => !!bundleP[n];
   // Rảnh thì tải trước các module còn lại → chuyển trang tức thì, dùng offline được
   const idle = cb => ('requestIdleCallback' in window ? requestIdleCallback(cb, { timeout: 4000 }) : setTimeout(cb, 2500));
-  App.prefetchAll = () => idle(() => Object.keys(BUNDLES).reduce((p, n) => p.then(() => App.need(n)), Promise.resolve()));
+  // Tải sẵn các phần còn lại khi máy rảnh – bỏ qua khi người dùng tiết kiệm dữ liệu, mạng chậm hoặc máy yếu (tải khi cần là đủ)
+  const lean = () => { const c = navigator.connection || {}; return !!c.saveData || /(^|-)2g|3g/.test(c.effectiveType || '') || (navigator.deviceMemory && navigator.deviceMemory <= 2); };
+  App.prefetchAll = () => { if (!Store.isExtension && lean()) return; idle(() => Object.keys(BUNDLES).reduce((p, n) => p.then(() => App.need(n)), Promise.resolve())); };
 
   let routeSeq = 0;
   async function route() {
@@ -217,7 +219,8 @@
   (function contentTranslate() {
     const to = I18N.learnLang(); if (to === 'vi' || !window.MutationObserver) return;
     const VI = /[ăâđêôơưạảấầẩẫậắằẳẵặẹẻẽếềểễệỉịọỏốồổỗộớờởỡợụủứừửữựỳỵỷỹ]/i;
-    const SKIP = '.vi, .svi, .ctxvi, .gap-vi, [data-keep-vi], input, textarea, script, style, code, .entry-word';
+    // Không dịch vùng học     const SKIP = '.vi, .svi, .ctxvi, .gap-vi, [data-keep-vi], input, textarea, script, style, code, .entry-word'; làm bài (phương án trắc nghiệm, thẻ, câu hỏi) – tránh lộ đáp án
+    const SKIP = '.vi, .svi, .ctxvi, .gap-vi, [data-keep-vi], input, textarea, script, style, code, .entry-word, .study-wrap, .options, .option, .flash, .lq-group, .toeic-u, .mk-qs, .sheet';
     const KEY = 'vb.cx.' + to; let mem = {}; try { mem = JSON.parse(localStorage.getItem(KEY) || '{}'); } catch (e) { mem = {}; }
     const save = () => { try { const ks = Object.keys(mem); if (ks.length > 4000) ks.slice(0, ks.length - 4000).forEach(k => delete mem[k]); localStorage.setItem(KEY, JSON.stringify(mem)); } catch (e) { /* đầy bộ nhớ */ } };
     let timer = 0, busy = false;
