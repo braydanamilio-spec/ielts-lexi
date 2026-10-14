@@ -187,8 +187,7 @@ chrome.runtime.onMessage.addListener((msg, sender, reply) => {
 // Bản cài từ cửa hàng (installType "normal") bỏ qua hoàn toàn.
 async function devAutoReload() {
   try {
-    const self = await chrome.management.getSelf();
-    if (self.installType !== 'development') return;
+    if (chrome.runtime.getManifest().update_url) return; // bản từ cửa hàng luôn có update_url
     const disk = await (await fetch(chrome.runtime.getURL('manifest.json'), { cache: 'no-store' })).json();
     if (disk.version && disk.version !== chrome.runtime.getManifest().version) chrome.runtime.reload();
   } catch (e) { /* bỏ qua */ }
