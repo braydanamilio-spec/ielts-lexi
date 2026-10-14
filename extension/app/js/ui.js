@@ -115,15 +115,24 @@
   function tts(text, accent = 'en-GB', rate, opts = {}) {
     if (!text) return;
     stopHq();
-    if (!opts.onSentence && g.KVoice && g.LISTEN_AUDIO && prefs().hqVoice !== false) {
-      const key = g.KVoice.lineKey(accent === 'en-US' ? 'af_heart' : 'bf_emma', text);
-      if (g.LISTEN_AUDIO.has(key)) {
+    if (g.KVoice && g.LISTEN_AUDIO && prefs().hqVoice !== false && !opts.noHq) {
+      const v = accent === 'en-US' ? 'af_heart' : 'bf_emma', whole = g.KVoice.lineKey(v, text);
+      const segs = g.LISTEN_AUDIO.has(whole) ? [[whole, text]] : splitSentences(text).map(p => [g.KVoice.lineKey(v, p), p]);
+      if (segs.length && segs.every(([k]) => g.LISTEN_AUDIO.has(k))) {
         const my = ++speakSeq; if ('speechSynthesis' in g) speechSynthesis.cancel();
-        const el = hqEl = new Audio('https://braydanamilio-spec.github.io/ielts-lexi/audio/l/' + key + '.mp3'); el.preservesPitch = true;
-        el.playbackRate = Math.min(1.3, Math.max(0.55, (rate || prefs().ttsRate || 0.92) / 0.95));
-        el.onended = () => { if (my === speakSeq && opts.onEnd) opts.onEnd(); };
-        el.onerror = () => { if (hqEl === el) { hqEl = null; tts(text, accent, rate, { ...opts, onSentence: opts.onSentence || (() => {}) }); } };
-        try { const pr = el.play(); if (pr && pr.catch) pr.catch(() => el.onerror && el.onerror()); } catch (e) { el.onerror(); }
+        const pr = Math.min(1.3, Math.max(0.55, (rate || prefs().ttsRate || 0.92) / 0.95));
+        const url = k => 'https://braydanamilio-spec.github.io/ielts-lexi/audio/l/' + k + '.mp3';
+        const play = i => {
+          if (my !== speakSeq) return;
+          if (i >= segs.length) { hqEl = null; if (opts.onEnd) opts.onEnd(); return; }
+          const el = hqEl = new Audio(url(segs[i][0])); el.preservesPitch = true; el.playbackRate = pr;
+          if (opts.onSentence) opts.onSentence(i, segs[i][1]);
+          el.onended = () => play(i + 1);
+          el.onerror = () => { if (hqEl === el) { hqEl = null; tts(segs.slice(i).map(x => x[1]).join(' '), accent, rate, { ...opts, noHq: true }); } };
+          if (segs[i + 1]) { const n = new Audio(); n.preload = 'auto'; n.src = url(segs[i + 1][0]); }
+          try { const r = el.play(); if (r && r.catch) r.catch(() => el.onerror && el.onerror()); } catch (e) { el.onerror(); }
+        };
+        play(0);
         return;
       }
     }

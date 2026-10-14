@@ -924,3 +924,24 @@ button, .btn, .option, .tabs, .bottom-nav { -webkit-user-select: none; user-sele
 html.native .topbar { padding-top: max(.6rem, env(safe-area-inset-top)); }
 html.native body { overscroll-behavior: none; }
 html:not([lang="vi"]) .vi-only { display: none !important; }
+/* ===== Mượt như app gốc ===== */
+html { -webkit-tap-highlight-color: transparent; }
+a, button, label, .option, .card.hover, [role="button"] { touch-action: manipulation; }
+.card.hover { transition: transform .15s ease, box-shadow .15s ease; }
+.card.hover:active { transform: scale(.985); }
+.bottom-nav a { transition: color .15s ease; }
+.bottom-nav a span { transition: transform .2s cubic-bezier(.2, .9, .3, 1.4); }
+.bottom-nav a.active span { transform: translateY(-2px) scale(1.12); }
+/* Chuyển trang: chỉ vùng nội dung chuyển động, thanh trên/dưới đứng yên */
+#view { view-transition-name: vb-view; }
+::view-transition-old(root), ::view-transition-new(root) { animation: none; }
+::view-transition-old(vb-view) { animation: vbOut .14s ease-in both; }
+::view-transition-new(vb-view) { animation: vbIn .22s cubic-bezier(.2, .8, .2, 1) both; }
+@keyframes vbOut { to { opacity: 0; transform: translateY(-4px); } }
+@keyframes vbIn { from { opacity: 0; transform: translateY(8px); } }
+/* Khung chờ khi tải */
+.skel-page { display: grid; gap: .9rem; padding-top: .4rem; }
+.skel { border-radius: 14px; background: linear-gradient(90deg, var(--surface-2) 25%, var(--surface-3, var(--line)) 50%, var(--surface-2) 75%); background-size: 200% 100%; animation: skel 1.2s ease-in-out infinite; }
+.skel-h { height: 2.1rem; width: 55%; } .skel-l { height: 1rem; width: 85%; }
+.skel-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: .9rem; } .skel-card { height: 130px; }
+@keyframes skel { from { background-position: 200% 0; } to { background-position: -200% 0; } }

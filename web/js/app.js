@@ -236,19 +236,28 @@
   async function route() {
     const { name, arg, query } = parseHash();
     const b = [].concat(ROUTE_BUNDLE[name] || []), my = ++routeSeq;
-    if (b.some(x => !App.loaded(x))) view.innerHTML = `<div class="card empty"><div class="em">⏳</div>${t('Đang tải…')}</div>`;
-    if (b.length) { await App.need(...b); if (my !== routeSeq) return; }
+    // Khung chờ (skeleton) chỉ hiện khi tải lâu hơn 150 ms → không nháy màn hình khi tải nhanh
+    let skel = null;
+    if (b.some(x => !App.loaded(x))) skel = setTimeout(() => { view.innerHTML = `<div class="skel-page" aria-busy="true" aria-label="${t('Đang tải…')}"><div class="skel skel-h"></div><div class="skel skel-l"></div><div class="skel-grid">${'<div class="skel skel-card"></div>'.repeat(4)}</div></div>`; }, 150);
+    if (b.length) { await App.need(...b); clearTimeout(skel); if (my !== routeSeq) return; }
     const fn = routes[name] || routes.home;
     const navKey = name === 'topic' ? 'library' : name === 'practice' && arg === 'speak' ? 'speak' : name === 'read' ? 'reading' : /^(listen|listen-test|dictation)$/.test(name) ? 'listening' : /^toefl/.test(name) ? 'toefl' : /^toeic/.test(name) ? 'toeic' : name === 'ideas' ? 'write' : name;
     $$('#nav a, #bnav a').forEach(a => a.classList.toggle('active', a.dataset.route === navKey));
     UI.stopSpeak(); UI.clearRecs();
     document.onkeydown = null;
     if (App.cleanup) { App.cleanup(); App.cleanup = null; }
+    // Chuyển trang mượt (View Transitions – Chrome/Edge/Safari mới); máy cũ: hiệu ứng mờ dần sẵn có
+    const render = () => { fn(arg, query); window.scrollTo(0, 0); };
+    if (document.startViewTransition && !matchMedia('(prefers-reduced-motion: reduce)').matches && !document.hidden) {
+      try { document.startViewTransition(render); return; } catch (e) { /* trình duyệt không hỗ trợ */ }
+    }
     view.style.animation = 'none'; void view.offsetWidth; view.style.animation = '';
-    fn(arg, query);
-    window.scrollTo(0, 0);
+    render();
   }
   App.route = route;
+  // Tải trước gói của trang khi người dùng sắp bấm (rê chuột/chạm vào liên kết) → mở trang gần như tức thì
+  const prefetchFor = a => { const h = a && a.getAttribute && a.getAttribute('href'); if (!h || !h.startsWith('#/')) return; const n = h.slice(2).split(/[/?]/)[0]; const b = [].concat(ROUTE_BUNDLE[n] || []); if (b.some(x => !App.loaded(x))) App.need(...b).catch(() => {}); };
+  ['pointerdown', 'mouseover', 'focusin'].forEach(ev => document.addEventListener(ev, e => prefetchFor(e.target.closest && e.target.closest('a[href^="#/"]')), { passive: true }));
   // Ghi chú học từ soạn sẵn (AI tầng T0 – không cần mạng/khóa): mẹo nhớ, lỗi người Việt hay mắc, cách dùng khi thi, họ từ.
   // Chia theo chữ cái đầu (js/notes/a.json…) → chỉ tải phần cần; chỗ hiển thị là ô trống được điền khi dữ liệu về.
   const notesCache = {};

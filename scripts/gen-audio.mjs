@@ -33,6 +33,13 @@ for (const u of (c.TOEFL || {}).speaking || []) { const v = GEN[u.accent] || GEN
   for (const x of c.SPEAK_MORE || []) if (!BANK.some(b => b.title === x.title)) BANK.push(x);
   for (const b of BANK) for (const v of Object.values(GEN)) { for (const q of [...b.p1, ...b.p3]) addOne(v, q); addOne(v, `${b.p2.q} You should say: ${b.p2.points.join(', ')}.`); }
 }
+// Đọc dài theo từng câu (UI.tts tách câu): câu trả lời mẫu Speaking + 30 bài đọc – giọng Anh (bf_emma)
+{
+  for (const f of ['readings', 'readings-more']) vm.runInContext(fs.readFileSync(`web/js/${f}.js`, 'utf8'), c);
+  vm.runInContext(fs.readFileSync('web/js/speak/samples.js', 'utf8'), c);
+  const longs = [...(c.READINGS || []).map(r => r.text), ...Object.values(c.SPEAK_SAMPLES || {}).map(x => x.a)];
+  for (const txt of longs) for (const sen of c.KVoice.split(txt)) addOne(GEN['en-GB'], sen);
+}
 const writeIndex = () => { const keys = fs.readdirSync(OUT).filter(f => f.endsWith('.mp3')).map(f => f.slice(0, -4)).sort(); fs.writeFileSync(IDX, `/* Danh sách câu thoại đã có file âm thanh Kokoro (tự sinh bởi scripts/gen-audio.mjs) */\n(function (g) { g.LISTEN_AUDIO = new Set(${JSON.stringify(keys.join(' '))}.split(' ').filter(Boolean)); })(typeof self !== 'undefined' ? self : this);\n`); return keys.length; };
 console.log(`${parts.length} phần nghe · cần tạo ${jobs.size} câu`);
 if (jobs.size && limit > 0) {

@@ -20,5 +20,16 @@
   // FNV-1a 32-bit → base36: khóa file theo giọng + nội dung câu (đổi chữ là tự tạo file mới)
   const hash = s => { let h = 0x811c9dc5; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; } return h.toString(36); };
   const lineKey = (voice, text) => hash(voice + '|' + String(text).trim());
-  g.KVoice = { voices, lineKey, NARRATOR };
+  // Tách câu giống hệt UI.splitSentences (ui.js) → mỗi câu 1 file, tô sáng đúng câu đang đọc
+  function splitSentences(text) {
+    const parts = String(text).replace(/\s+/g, ' ').match(/[^.!?;:]+[.!?;:]+["”’)]*|[^.!?;:]+$/g) || [text];
+    const out = [];
+    for (let p of parts) {
+      p = p.trim(); if (!p) continue;
+      while (p.length > 220) { const cut = p.lastIndexOf(',', 200) > 60 ? p.lastIndexOf(',', 200) + 1 : p.lastIndexOf(' ', 200); out.push(p.slice(0, cut).trim()); p = p.slice(cut).trim(); }
+      out.push(p);
+    }
+    return out;
+  }
+  g.KVoice = { voices, lineKey, NARRATOR, split: splitSentences };
 })(typeof self !== 'undefined' ? self : this);
