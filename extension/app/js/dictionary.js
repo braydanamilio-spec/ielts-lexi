@@ -38,7 +38,7 @@
   }
 
   async function fromFreeDict(word) {
-    const data = await fetchJSON(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`);
+    const data = await fetchJSON(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`, 3500);
     if (!Array.isArray(data) || !data.length) return null;
     const out = { ipa: '', ipaUS: '', audio: '', audioUS: '', meanings: [], syn: [] };
     for (const entry of data) {
@@ -63,7 +63,7 @@
 
   // Câu ví dụ song ngữ từ Tatoeba (ưu tiên câu dài vừa phải, giống văn phong IELTS hơn)
   async function sentences(word, limit = 4) {
-    const d = await fetchJSON(`https://api.tatoeba.org/unstable/sentences?lang=eng&q=${encodeURIComponent(word)}&trans:lang=vie&sort=relevance&limit=20&showtrans=matching`);
+    const d = await fetchJSON(`https://api.tatoeba.org/unstable/sentences?lang=eng&q=${encodeURIComponent(word)}&trans:lang=vie&sort=relevance&limit=20&showtrans=matching`, 5000);
     if (!d || !Array.isArray(d.data)) return [];
     return d.data
       .map(x => ({ en: x.text, vi: ((x.translations || []).flat().find(t => t && t.lang === 'vie') || (x.translations || []).flat()[0] || {}).text || '' }))
@@ -125,18 +125,19 @@
     if (cache.has(word)) return cache.get(word);
 
     const local = (g.IELTS_DATA && g.IELTS_DATA.INDEX[word]) || null;
-    let [gg, fd, img, sents] = await Promise.all([
+    let [gg, fd, wk, img, sents] = await Promise.all([
       fromGoogle(word),
       fromFreeDict(word),
+      local && local.ipa ? null : wiktIPA(word),
       image ? wikiImage(word) : '',
       examples ? sentences(word) : [],
     ]);
     // Từ biến đổi (vd. "recruited") → lấy phiên âm của dạng gốc
     const base = gg && gg.base && gg.base !== word ? gg.base : '';
-    if (!fd && base) fd = await fromFreeDict(base);
-    // Thiếu phiên âm → Wiktionary
-    let wk = null;
-    if (!(local && local.ipa) && !(fd && fd.ipa && fd.ipaUS)) wk = await wiktIPA(word) || (base ? await wiktIPA(base) : null);
+    if (base && (!fd || (!wk && !(local && local.ipa)))) {
+      const [fb, wb] = await Promise.all([fd ? fd : fromFreeDict(base), wk ? wk : wiktIPA(base)]);
+      fd = fb; wk = wb;
+    }
     // Thiếu câu song ngữ → dịch các câu ví dụ Oxford sang tiếng Việt
     if (examples && sents.length < 2 && gg) {
       const exs = gg.defs.flatMap(m => m.defs).map(d => d.ex).filter(Boolean).filter(x => !sents.some(s => s.en === x)).slice(0, 3 - sents.length);
@@ -160,8 +161,8 @@
     const entry = {
       word,
       found: true,
-      ipa: (local && local.ipa) || (fd && fd.ipa) || (wk && wk.ipa) || '',
-      ipaUS: (fd && fd.ipaUS) || (wk && wk.ipaUS) || '',
+      ipa: (local && local.ipa) || (wk && wk.ipa) || (fd && fd.ipa) || '',
+      ipaUS: (wk && wk.ipaUS) || (fd && fd.ipaUS) || '',
       audio: (fd && fd.audio) || '',
       audioUS: (fd && fd.audioUS) || '',
       pos: (local && local.pos) || POS_SHORT[posRaw] || posRaw,

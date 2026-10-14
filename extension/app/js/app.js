@@ -296,8 +296,8 @@
       </div>
 
       ${(e.sentences || []).length ? `<div class="card" style="margin-top:1rem">
-        <h3>💬 Câu ví dụ song ngữ <span class="muted small">(Tatoeba)</span></h3>
-        ${e.sentences.map(s => `<div class="meaning"><div>${highlight(s.en, e.word)} <button class="icon-btn" data-speak-text="${esc(s.en)}">🔊</button></div><div class="muted small">${esc(s.vi)}</div>
+        <h3>💬 Câu ví dụ song ngữ</h3>
+        ${e.sentences.map(s => `<div class="meaning"><div>${highlight(s.en, e.word)} <button class="icon-btn" data-speak-text="${esc(s.en)}">🔊</button></div><div class="muted small">${esc(s.vi)} <span class="chip">${s.auto ? 'Oxford · dịch máy' : 'Tatoeba'}</span></div>
           <button class="btn sm ghost" data-use-sent="${esc(s.en)}">📌 Dùng làm ngữ cảnh</button></div>`).join('')}
       </div>` : ''}
 
