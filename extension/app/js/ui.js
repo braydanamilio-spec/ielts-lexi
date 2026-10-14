@@ -145,6 +145,55 @@
   }
   if ('speechSynthesis' in g) { speechSynthesis.getVoices(); speechSynthesis.addEventListener && speechSynthesis.addEventListener('voiceschanged', () => speechSynthesis.getVoices()); }
 
+  // ---------- Nhận dạng & chấm phát âm (dùng chung) ----------
+  let activeRec = null;
+  const REC_ERR = {
+    'not-allowed': '⚠️ Cần cho phép dùng micro – bấm biểu tượng 🎙️/🔒 trên thanh địa chỉ và chọn “Cho phép”.',
+    'service-not-allowed': '⚠️ Trình duyệt đang chặn nhận dạng giọng nói trên trang này.',
+    'no-speech': '🤫 Không nghe thấy gì – bấm micro rồi đọc to, rõ ràng nhé.',
+    'audio-capture': '🎙️ Không tìm thấy micro – kiểm tra tai nghe/micro của máy.',
+    network: '📶 Không kết nối được dịch vụ nhận dạng giọng nói (cần Internet).',
+    unsupported: 'Trình duyệt không hỗ trợ nhận dạng giọng nói – hãy dùng Chrome hoặc Edge.',
+    busy: 'Micro đang bận – thử lại sau 1 giây.',
+  };
+  const recErrorText = err => REC_ERR[err] || `Lỗi nhận dạng: ${err}`;
+  /* recognize(target, accent, { start, result({heard, score, audio, alts}), error(code), end }) → { stop } */
+  function recognize(target, accent, cb = {}) {
+    const SR = g.SpeechRecognition || g.webkitSpeechRecognition;
+    if (!SR) { cb.error && cb.error('unsupported'); return null; }
+    if (activeRec) { const old = activeRec; activeRec = null; old._stale = true; try { old.abort(); } catch (e) { /* đã dừng */ } }
+    stopSpeak();
+    const r = new SR();
+    activeRec = r;
+    r.lang = accent || 'en-GB'; r.maxAlternatives = 5; r.interimResults = false; r.continuous = false;
+    // Ghi âm giọng người học song song để nghe lại so với giọng mẫu
+    let media = null, chunks = [], stream = null, audioP = null;
+    if (navigator.mediaDevices && g.MediaRecorder) {
+      navigator.mediaDevices.getUserMedia({ audio: true }).then(st => {
+        if (r._stale || r._ended) { st.getTracks().forEach(t => t.stop()); return; }
+        stream = st;
+        try { media = new MediaRecorder(st); media.ondataavailable = e => e.data.size && chunks.push(e.data); media.start(); } catch (e) { media = null; }
+      }).catch(() => {});
+    }
+    const finishAudio = () => audioP || (audioP = new Promise(res => {
+      const done = () => { if (stream) stream.getTracks().forEach(t => t.stop()); res(chunks.length ? URL.createObjectURL(new Blob(chunks, { type: (media && media.mimeType) || 'audio/webm' })) : ''); };
+      if (media && media.state !== 'inactive') { media.onstop = done; try { media.stop(); } catch (e) { done(); } } else done();
+    }));
+    r.onresult = async e => {
+      if (r._stale) return;
+      const alts = [...e.results[0]].map(a => a.transcript.trim()).filter(Boolean);
+      const best = alts.map(a => ({ a, s: similarity(a, target) })).sort((x, y) => y.s - x.s)[0] || { a: '', s: 0 };
+      const audio = await finishAudio();
+      cb.result && cb.result({ heard: best.a, score: Math.round(best.s * 100), audio, alts });
+    };
+    r.onerror = e => { if (r._stale || e.error === 'aborted') return; cb.error && cb.error(e.error); };
+    r.onend = () => { r._ended = true; if (activeRec === r) activeRec = null; finishAudio(); if (!r._stale) cb.end && cb.end(); };
+    try { r.start(); } catch (e) { cb.error && cb.error('busy'); return null; }
+    cb.start && cb.start();
+    return { stop: () => { try { r.stop(); } catch (e) { /* đã dừng */ } } };
+  }
+  const stopRecognize = () => { if (activeRec) { activeRec._stale = true; try { activeRec.abort(); } catch (e) { /* đã dừng */ } activeRec = null; } };
+
   const pic = (c, cls = 'pic') => `<div class="${cls}">${c.image ? `<img src="${esc(c.image)}" alt="${esc(c.word)}" loading="lazy" referrerpolicy="no-referrer">` : esc(c.emoji || '📘')}</div>`;
   const levelChip = l => l ? `<span class="chip lv ${esc(l)}">${esc(l)}</span>` : '';
   const posChip = p => p ? `<span class="chip pos">${esc(p)}</span>` : '';
@@ -158,5 +207,5 @@
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   }
 
-  g.UI = { $, $$, esc, shuffle, wordRegex, highlight, cloze, clozeAnswer, similarity, toast, modal, closeModal, xpFloat, speak, tts, stopSpeak, voicesFor, pickVoice, splitSentences, pic, levelChip, posChip, masteryDots, ring, download };
+  g.UI = { $, $$, esc, shuffle, wordRegex, highlight, cloze, clozeAnswer, similarity, toast, modal, closeModal, xpFloat, speak, tts, stopSpeak, recognize, stopRecognize, recErrorText, voicesFor, pickVoice, splitSentences, pic, levelChip, posChip, masteryDots, ring, download };
 })(typeof self !== 'undefined' ? self : this);

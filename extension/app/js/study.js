@@ -223,6 +223,7 @@
     let answered = false;
     const finish = (ok, given) => {
       if (answered) return; answered = true;
+      if (!ok && App.logMistake) App.logMistake({ kind: 'vocab', q: q.type.startsWith('mcq-en') || q.type === 'type-vi' ? `Từ tiếng Anh nghĩa là “${w.vi}”?` : q.type === 'type-cloze' && w.ex ? `Điền từ: ${w.ex.replace(UI.wordRegex(w.word), '___')}` : `Nghĩa của “${w.word}”?`, answer: q.type === 'mcq-vi' ? w.vi : (q.answer || w.word), given: given || '', explain: `${w.word} ${w.ipa || ''} = ${w.vi}`, ref: w.word });
       ok ? Sfx.correct() : Sfx.wrong();
       const fb = $('#fb', box);
       fb.innerHTML = `<div class="feedback ${ok ? 'ok' : 'no'}">
@@ -468,7 +469,7 @@
     if (!items.length) return emptySource(src);
     let i = 0, good = 0, rec = null, total = 0;
     const title = `🎙️ Luyện phát âm · ${one ? esc(one) : esc(srcName(src))}`;
-    App.cleanup = () => { try { rec && rec.abort(); } catch (e) { /* đã dừng */ } };
+    App.cleanup = () => UI.stopRecognize();
     const show = () => {
       if (i >= items.length) return finish();
       const w = items[i];
@@ -490,31 +491,27 @@
       $('#nextW').onclick = () => { i++; show(); };
       setTimeout(() => speak(w.word, accent(), w.audio), 300);
       let scored = false;
+      let listening = null;
       $('#mic').onclick = () => {
-        if (!SR) return toast('Trình duyệt không hỗ trợ nhận dạng giọng nói');
-        try { rec && rec.abort(); } catch (e) { /* bỏ qua */ }
-        if (window.speechSynthesis) speechSynthesis.cancel();
-        rec = new SR();
-        rec.lang = accent(); rec.maxAlternatives = 5; rec.interimResults = false;
-        $('#mic').classList.add('rec'); $('#hint').textContent = '🔴 Đang nghe… hãy đọc to và rõ';
-        rec.onresult = e => {
-          const alts = [...e.results[0]].map(a => a.transcript.trim());
-          const best = alts.map(a => ({ a, s: similarity(a, w.word) })).sort((x, y) => y.s - x.s)[0];
-          const score = Math.round(best.s * 100);
-          total++;
-          const color = score >= 85 ? 'var(--good)' : score >= 65 ? 'var(--hard)' : 'var(--again)';
-          $('#result').innerHTML = `<div class="score-ring" style="--p:${score};--c:${color}"><b>${score}</b></div>
-            <p style="margin-top:.6rem"><b>${score >= 85 ? '🌟 Xuất sắc!' : score >= 65 ? '👍 Khá tốt, thử lại cho chuẩn hơn' : '🔁 Chưa đúng, nghe mẫu rồi thử lại'}</b></p>
-            <p class="muted small">Máy nghe được: “${esc(best.a)}”</p>`;
-          if (score >= 65 && !scored) { scored = true; good++; App.reward({ spoken: 1, xp: score >= 85 ? 5 : 3 }, $('#mic')); score >= 85 ? Sfx.win() : Sfx.correct(); }
-          else if (score < 65) Sfx.wrong();
-          $('#nextW').hidden = false;
-        };
-        rec.onerror = e => {
-          $('#hint').textContent = e.error === 'not-allowed' ? '⚠️ Bạn cần cho phép dùng micro (biểu tượng 🎙️ trên thanh địa chỉ).' : e.error === 'no-speech' ? 'Không nghe thấy gì – thử lại nhé.' : `Lỗi nhận dạng: ${e.error}`;
-        };
-        rec.onend = () => { const m = $('#mic'); if (m) m.classList.remove('rec'); const h = $('#hint'); if (h && /Đang nghe/.test(h.textContent)) h.textContent = 'Bấm micro để thử lại'; };
-        rec.start();
+        if (listening) { listening.stop(); return; } // bấm lần nữa để dừng
+        listening = UI.recognize(w.word, accent(), {
+          start: () => { $('#mic').classList.add('rec'); $('#hint').textContent = '🔴 Đang nghe… đọc to và rõ (bấm lần nữa để dừng)'; },
+          result: ({ heard, score, audio }) => {
+            total++;
+            const color = score >= 85 ? 'var(--good)' : score >= 65 ? 'var(--hard)' : 'var(--again)';
+            const el = $('#result'); if (!el) return;
+            el.innerHTML = `<div class="score-ring" style="--p:${score};--c:${color}"><b>${score}</b></div>
+              <p style="margin-top:.6rem"><b>${score >= 85 ? '🌟 Xuất sắc!' : score >= 65 ? '👍 Khá tốt – nghe mẫu và thử lại cho chuẩn hơn' : '🔁 Chưa đúng – nghe chậm từng âm rồi thử lại'}</b></p>
+              <p class="muted small">Máy nghe được: “${esc(heard || '…')}”</p>
+              ${audio ? `<div class="row center" style="margin-top:.4rem"><button class="btn sm" id="playMine">▶️ Giọng của bạn</button><button class="btn sm" id="playModel">🔊 Giọng mẫu</button></div>` : ''}`;
+            if (audio) { const a = new Audio(audio); $('#playMine').onclick = () => { UI.stopSpeak(); a.currentTime = 0; a.play(); }; $('#playModel').onclick = () => speak(w.word, accent(), w.audio); }
+            if (score >= 65 && !scored) { scored = true; good++; App.reward({ spoken: 1, xp: score >= 85 ? 5 : 3 }, $('#mic')); score >= 85 ? Sfx.win() : Sfx.correct(); }
+            else if (score < 65) Sfx.wrong();
+            const nb = $('#nextW'); if (nb) nb.hidden = false;
+          },
+          error: code => { const h = $('#hint'); if (h) h.textContent = UI.recErrorText(code); },
+          end: () => { listening = null; const m = $('#mic'); if (m) m.classList.remove('rec'); const h = $('#hint'); if (h && /Đang nghe/.test(h.textContent)) h.textContent = 'Bấm micro để thử lại'; },
+        });
       };
     };
     const finish = () => {

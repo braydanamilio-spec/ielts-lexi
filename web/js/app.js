@@ -262,6 +262,8 @@
         </div>
       </div>
 
+      <div class="card" id="todayPlan" style="margin-top:1rem"></div>
+
       <div class="grid g4 stats" style="margin-top:1rem">
         <div class="card stat"><div class="em">🔥</div><div><b>${st} ngày</b><span class="muted small">Chuỗi học</span></div></div>
         <div class="card stat"><div class="em">⭐</div><div><b>Cấp ${L.level}</b><span class="muted small">${esc(L.title)}</span></div></div>
@@ -330,6 +332,13 @@
       }
     };
     drawGolden();
+    if (App.todayPlan) App.todayPlan().then(tasks => {
+      const el = $('#todayPlan'); if (!el) return;
+      const n = tasks.filter(t => t.done).length;
+      const pl = state.settings.placement;
+      el.innerHTML = `<div class="row between"><h3 style="margin:0">📋 Kế hoạch hôm nay <span class="muted small">· cá nhân hóa${pl ? ` theo band ${esc(pl.band)}` : ''}</span></h3><span class="chip ${n === tasks.length ? 'ok' : ''}">${n}/${tasks.length}</span></div>
+        <div class="plan">${tasks.map((t, i) => `<a class="plan-item ${t.done ? 'done' : ''}" href="${t.href}"><span class="pi-num">${t.done ? '✓' : i + 1}</span><span class="pi-em">${t.em}</span><div class="grow"><b>${esc(t.t)}</b><div class="tiny muted">${esc(t.sub)}</div></div><span class="muted">→</span></a>`).join('')}</div>`;
+    });
     const gt = setInterval(drawGolden, 30000);
     App.cleanup = () => clearInterval(gt);
   };
@@ -961,7 +970,10 @@
       ['📌', 'Từ gắn ngữ cảnh', 'Lưu từ kèm câu gốc từ bài đọc, báo, YouTube… nhớ lâu gấp nhiều lần'],
       ['🎙️', 'Luyện phát âm có chấm điểm', 'Nói vào micro, AI nhận dạng giọng và chấm điểm ngay'],
       ['⚡', 'Trò chơi & bài kiểm tra', 'Ghép thẻ tính giờ, điền từ, nghe chép, test ước tính band'],
-      ['🧩', 'Add-on Chrome', 'Bấm đúp tra từ, bôi đen dịch câu trên mọi trang web'],
+      ['🧩', 'Add-on Chrome', 'Bấm đúp tra từ, bôi đen dịch câu, tra từ trong phụ đề YouTube'],
+      ['📐', '34 bài ngữ pháp trực quan', 'Dòng thời gian, công thức tô màu, lỗi người Việt hay mắc'],
+      ['🔤', 'Thư viện phát âm 44 âm IPA', 'Khẩu hình, cặp từ dễ nhầm, trọng âm & ngữ điệu'],
+      ['🖥️', 'Thi thử trên máy & Phòng viết', 'Giao diện thi thật, phân tích từ vựng bài viết miễn phí'],
     ];
     view.innerHTML = `
       <div style="max-width:980px;margin:0 auto">
@@ -973,6 +985,7 @@
             <h1 style="font-size:clamp(2rem,5vw,3.2rem);line-height:1.1;margin:1rem 0">Từ vựng vững,<br><span style="background:linear-gradient(90deg,#6D5DFC,#C026D3);-webkit-background-clip:text;background-clip:text;color:transparent">band điểm bứt phá.</span></h1>
             <p class="muted" style="font-size:1.1rem">Học 15 phút mỗi ngày với flashcard thông minh, trò chơi, bài đọc và luyện phát âm. Mọi từ đều có phiên âm chuẩn Anh–Anh, nghĩa tiếng Việt và câu ví dụ IELTS.</p>
             <div class="row" style="margin-top:1.5rem"><a class="btn primary lg" href="#/welcome/setup">Bắt đầu miễn phí →</a><button class="btn lg" id="loginW">Tôi đã có tài khoản</button></div>
+            <a class="small" href="#/placement" style="display:inline-block;margin-top:.7rem;font-weight:700">🧭 Kiểm tra trình độ trước (5 phút) →</a>
             <p class="small muted" style="margin-top:.8rem">Miễn phí · Không quảng cáo · Dữ liệu học thuộc về bạn</p>
           </div>
           <div class="card" style="padding:0;overflow:hidden;box-shadow:var(--shadow-lg)">

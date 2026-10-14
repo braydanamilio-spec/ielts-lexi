@@ -168,6 +168,7 @@
         const right = String(q.answer);
         const ok = answers[i] === right;
         if (ok) score++;
+        else if (App.logMistake) App.logMistake({ kind: 'reading', q: `${r.title}: ${q.q}`, answer: q.type === 'tfng' ? right : q.options[+right], given: answers[i] == null ? '(bỏ trống)' : q.type === 'tfng' ? answers[i] : q.options[+answers[i]], explain: q.explain, ref: r.id });
         $$('.opts button', item).forEach(b => { if (b.dataset.v === right) b.classList.add('right'); else if (b.classList.contains('sel')) b.classList.add('wrong'); });
         const ex = $('[data-explain]', item); ex.hidden = false; ex.innerHTML = `${ok ? '✅' : '❌'} ${esc(q.explain)}`;
       });

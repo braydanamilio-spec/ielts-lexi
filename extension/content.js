@@ -46,6 +46,12 @@
     .btn { border: 1px solid #e3e5ef; background: #fff; border-radius: 10px; padding: 7px 12px; font: 600 13px/1 inherit; font-family: inherit; cursor: pointer; color: #1c1d2b; }
     .btn.p { background: #4f46e5; border-color: #4f46e5; color: #fff; }
     .btn[disabled] { opacity: .6; cursor: default; }
+    .lw { cursor: pointer; border-radius: 3px; }
+    .lw:hover { background: #eceafe; color: #4f46e5; }
+    .lw.hlw { background: #fde68a; font-weight: 700; }
+    .lw.chipw { display: inline-block; padding: 1px 8px; margin: 2px; border-radius: 999px; background: #f1f2f8; font-weight: 600; }
+    .back { border: 0; background: #f1f2f8; border-radius: 8px; width: 26px; height: 26px; margin-right: 6px; cursor: pointer; font-weight: 800; vertical-align: middle; }
+    .back:hover { background: #4f46e5; color: #fff; }
     .x { margin-left: auto; border: 0; background: none; font-size: 18px; cursor: pointer; color: #6b6f85; }
     .muted { color: #6b6f85; padding: 18px 14px; }
     .fab { position: fixed; z-index: 2147483647; width: 34px; height: 34px; border-radius: 50%; border: 0; cursor: pointer;
@@ -76,7 +82,7 @@
   }
   const box = () => root.querySelector('.box');
   let onHide = null;
-  const hide = () => { if (root) box().hidden = true; current = null; if (onHide) { const f = onHide; onHide = null; f(); } };
+  const hide = () => { if (root) box().hidden = true; current = null; hist = []; cur = null; if (onHide) { const f = onHide; onHide = null; f(); } };
   const hideFab = () => { if (root) root.querySelector('.fab').hidden = true; };
 
   function position(rect) {
@@ -153,8 +159,19 @@
     if (url) { try { const a = new Audio(url); a.play().catch(tts); } catch (e) { tts(); } } else tts();
   }
 
-  async function show(word, rect, context, meta) {
+  // Tra lồng nhau: bấm vào từ trong ví dụ/định nghĩa để tra tiếp, có nút quay lại
+  let hist = [], cur = null;
+  const linkify = (text, hl) => String(text).split(/(\s+)/).map(tok => {
+    const m = tok.match(/^([^A-Za-z]*)([A-Za-z][A-Za-z'’-]*[A-Za-z]|[A-Za-z])([^A-Za-z]*)$/);
+    if (!m) return esc(tok);
+    const w = m[2].toLowerCase().replace(/’/g, "'");
+    const isHl = hl && wordRegex(hl).test(m[2]);
+    return `${esc(m[1])}<span class="lw${isHl ? ' hlw' : ''}" data-w="${esc(w)}">${esc(m[2])}</span>${esc(m[3])}`;
+  }).join('');
+  async function show(word, rect, context, meta, mode) {
     meta = meta || { source: location.href, title: document.title };
+    if (mode === 'nested' && cur) hist.push(cur); else if (mode !== 'back') hist = [];
+    cur = { word, rect, context, meta };
     ensureHost();
     hideFab();
     const b = box();
@@ -171,13 +188,13 @@
     const paintCtx = () => { const el = b.querySelector('.ctxvi'); if (el && current === word) el.textContent = ctxVi ? '🇻🇳 ' + ctxVi : ''; };
 
     function render() {
-      const defs = (e.oxford && e.oxford.length ? e.oxford : e.meanings || []).slice(0, 2).map(m => `<div class="def"><span class="chip">${esc(m.pos)}</span> ${esc(m.defs[0] && m.defs[0].def)}</div>`).join('');
-      const ctxHtml = context ? esc(context).replace(wordRegex(word), '<mark>$1</mark>') : '';
+      const defs = (e.oxford && e.oxford.length ? e.oxford : e.meanings || []).slice(0, 2).map(m => `<div class="def"><span class="chip">${esc(m.pos)}</span> ${linkify((m.defs[0] && m.defs[0].def) || '')}</div>`).join('');
+      const ctxHtml = context ? linkify(context, word) : '';
       b.innerHTML = H(`
         <div class="head">
           <div class="pic">${e.image ? `<img src="${esc(e.image)}" alt="" referrerpolicy="no-referrer">` : esc(e.emoji || '📘')}</div>
           <div style="min-width:0">
-            <div><span class="w">${esc(e.word)}</span>${e.pos ? `<span class="chip">${esc(e.pos)}</span>` : ''}${e.level ? `<span class="chip lv">${esc(e.level)}</span>` : ''}</div>
+            <div>${hist.length ? '<button class="back" title="Quay lại từ trước">←</button>' : ''}<span class="w">${esc(e.word)}</span>${e.pos ? `<span class="chip">${esc(e.pos)}</span>` : ''}${e.level ? `<span class="chip lv">${esc(e.level)}</span>` : ''}</div>
             <div class="ipa">${esc(e.ipa || '')}${e.ipaUS && e.ipaUS !== e.ipa ? ` · <span title="Anh–Mỹ">${esc(e.ipaUS)}</span>` : ''}</div>
             <div class="spks"><button class="spk" data-acc="en-GB" title="Nghe giọng Anh–Anh (phím P)">🔊 UK</button><button class="spk" data-acc="en-US" title="Nghe giọng Anh–Mỹ">🔊 US</button><button class="spk" data-slow title="Nghe chậm">🐢</button></div>
             <div class="vi">${esc(e.vi)}</div>
@@ -185,8 +202,8 @@
         </div>
         <div class="body">
           ${(e.senses || []).length ? `<div class="def">${e.senses.slice(0, 3).map(x => `<span class="chip">${esc(x.pos)}</span> ${esc(x.terms.slice(0, 4).join(', '))}`).join('<br>')}</div>` : ''}
-          ${defs || (e.def ? `<div class="def">${esc(e.def)}</div>` : '')}
-          ${e.ex ? `<div class="ex">“${esc(e.ex)}” <button class="spk mini" data-text="${esc(e.ex)}" title="Nghe câu ví dụ">🔊</button></div>` : ''}
+          ${defs || (e.def ? `<div class="def">${linkify(e.def)}</div>` : '')}
+          ${e.ex ? `<div class="ex">“${linkify(e.ex, e.word)}” <button class="spk mini" data-text="${esc(e.ex)}" title="Nghe câu ví dụ">🔊</button></div>` : ''}
           ${ctxHtml ? `<div class="ctx"><b>📌 Ngữ cảnh sẽ lưu</b> <button class="spk mini" data-text="${esc(context)}" title="Nghe cả câu">🔊</button><br>${ctxHtml}<div class="ctxvi ex" style="margin-top:4px">${ctxVi ? '🇻🇳 ' + esc(ctxVi) : '⏳ Đang dịch câu…'}</div></div>` : ''}
           ${e.partial ? '<div class="sk" style="width:50%;margin-top:8px"></div>' : ''}
         </div>
@@ -201,6 +218,7 @@
       b.querySelector('.spk[data-slow]').onclick = () => sayWord(accent, 0.55);
       b.querySelectorAll('.spk[data-text]').forEach(x => x.onclick = () => speak(x.dataset.text, '', accent, 0.95));
       b.querySelector('#close').onclick = hide;
+      bindNav(b);
       b.querySelector('#more').onclick = () => chrome.runtime.sendMessage({ type: 'openApp', hash: '#/dict/' + encodeURIComponent(e.word) });
       b.querySelector('#save').onclick = async ev => {
         const btn = ev.currentTarget;
@@ -217,6 +235,37 @@
       if (!spoke && st.autoSpeak !== false) { spoke = true; sayWord(accent); }
     }
 
+    // Cụm từ không có trong từ điển: dịch cả cụm, mỗi từ bấm vào tra riêng, vẫn lưu được thành flashcard
+    async function renderPhrase(vi) {
+      if (!vi) { try { vi = ((await chrome.runtime.sendMessage({ type: 'translate', text: word })) || {}).vi || ''; } catch (x) { vi = ''; } }
+      if (current !== word) return;
+      const multi = /\s/.test(word);
+      b.innerHTML = H(`
+        <div class="head"><div class="pic">${multi ? '💬' : '📘'}</div><div style="min-width:0">
+          <div>${hist.length ? '<button class="back" title="Quay lại">←</button>' : ''}<span class="w">${esc(word)}</span><span class="chip">${multi ? 'cụm từ' : 'từ'}</span></div>
+          <div class="spks"><button class="spk" data-say="1">🔊 Nghe</button><button class="spk" data-slow>🐢</button></div>
+          <div class="vi">${esc(vi || '—')}</div></div></div>
+        <div class="body">
+          ${multi ? `<div class="def"><b>Tra từng từ:</b> ${word.split(/\s+/).map(x => `<span class="lw chipw" data-w="${esc(x)}">${esc(x)}</span>`).join(' ')}</div>` : '<div class="def">Chưa có trong từ điển – đã dịch tự động.</div>'}
+          ${context ? `<div class="ctx"><b>📌 Ngữ cảnh</b><br>${linkify(context, word)}<div class="ctxvi ex" style="margin-top:4px">${ctxVi ? '🇻🇳 ' + esc(ctxVi) : ''}</div></div>` : ''}
+        </div>
+        <div class="foot"><button class="btn p" id="save">+ Lưu ${multi ? 'cụm từ' : 'từ'}</button><button class="x" id="close" title="Đóng (Esc)">×</button></div>`);
+      b.querySelector('[data-say]').onclick = () => speak(word, '', accent);
+      b.querySelector('[data-slow]').onclick = () => speak(word, '', accent, .55);
+      b.querySelector('#close').onclick = hide;
+      bindNav(b);
+      b.querySelector('#save').onclick = async ev => {
+        const btn = ev.currentTarget; btn.disabled = true;
+        try {
+          const r = await chrome.runtime.sendMessage({ type: 'save', entry: { word, vi, pos: multi ? 'phrase' : '', emoji: '💬' }, context: context ? { text: context, vi: ctxVi, source: meta.source, title: meta.title } : null });
+          if (!r || r.error) throw new Error();
+          btn.textContent = '✓ Đã lưu vào flashcard';
+        } catch (x) { btn.disabled = false; btn.textContent = '⚠️ Thử lưu lại'; }
+      };
+      position(rect);
+      if (st.autoSpeak !== false) speak(word, '', accent);
+    }
+
     if (context) chrome.runtime.sendMessage({ type: 'translate', text: context }).then(r => { ctxVi = (r && r.vi) || ''; paintCtx(); }).catch(() => {});
     const full = chrome.runtime.sendMessage({ type: 'lookup', word });
     let q;
@@ -227,8 +276,20 @@
     full.then(r => {
       if (current !== word || !r) return;
       if (r.entry && r.entry.found) { e = r.entry; saved = r.saved || saved; render(); }
-      else if (!e) b.innerHTML = H(`<div class="muted">Không tìm thấy “${esc(word)}”.${r.entry && r.entry.vi ? `<br>Dịch: <b>${esc(r.entry.vi)}</b>` : ''}</div>`);
+      else if (!e) renderPhrase(r.entry && r.entry.vi);
     }).catch(() => {});
+  }
+
+  function bindNav(b) {
+    b.querySelectorAll('.lw').forEach(x => x.onclick = ev => {
+      ev.stopPropagation();
+      const w = x.dataset.w.replace(/^'+|'+$/g, '');
+      if (!w || !cur || w === cur.word) return;
+      const sentence = (x.closest('.ex, .ctx, .def') || x).textContent.replace(/^📌 Ngữ cảnh( sẽ lưu)?/, '').replace(/🇻🇳.*$/s, '').replace(/[“”]/g, '').replace(/🔊/g, '').trim();
+      show(w, cur.rect, sentence.split(' ').length >= 3 ? sentence : '', cur.meta, 'nested');
+    });
+    const back = b.querySelector('.back');
+    if (back) back.onclick = ev => { ev.stopPropagation(); const p = hist.pop(); if (p) show(p.word, p.rect, p.context, p.meta, 'back'); };
   }
 
   function fromSelection() {
