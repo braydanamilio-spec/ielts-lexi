@@ -1,6 +1,6 @@
 /* Học & luyện tập: ôn tập SRS, Học thông minh, Trắc nghiệm, Điền từ, Nghe & chép, Ghép thẻ, Phát âm, Kiểm tra. */
 (function () {
-  const { SRS, Cards, Stats, endOfToday } = Core;
+  const { SRS, Cards, Stats, endOfToday, DAY } = Core;
   const { TOPICS, INDEX } = IELTS_DATA;
   const { $, $$, esc, shuffle, highlight, cloze, clozeAnswer, similarity, toast, speak, tts, pic, levelChip, posChip, xpFloat } = UI;
   const App = window.App;
@@ -44,11 +44,12 @@
 
   // ================= ÔN TẬP SRS =================
   let session = null;
-  function buildQueue() {
+  // ahead > 0: ôn trước các thẻ đến hạn trong N ngày tới (như "Custom Study" của Anki) – không thêm từ mới
+  function buildQueue(ahead = 0) {
     const list = Object.values(state.cards);
-    const end = endOfToday();
+    const end = endOfToday() + ahead * DAY;
     const due = list.filter(c => (c.srs.reps > 0 || c.srs.last) && c.srs.due <= end).sort((a, b) => a.srs.due - b.srs.due);
-    const { newCount } = Cards.dueCount(state.cards, state.settings, state.stats);
+    const { newCount } = ahead ? { newCount: 0 } : Cards.dueCount(state.cards, state.settings, state.stats);
     const fresh = list.filter(c => c.srs.reps === 0 && !c.srs.last).sort((a, b) => a.added - b.added).slice(0, newCount);
     const q = [...due];
     fresh.forEach((c, i) => q.splice(Math.min(q.length, i * 3 + 1), 0, c));
@@ -56,12 +57,13 @@
     return (cap ? q.slice(0, cap) : q).map(c => c.word.toLowerCase());
   }
 
-  routes.review = function () {
+  routes.review = function (arg, query) {
+    const ahead = Math.min(7, Math.max(0, +((query && query.get && query.get('ahead')) || 0)));
     if (!Object.keys(state.cards).length) {
       view.innerHTML = `<div class="study-wrap"><div class="card empty"><div class="em">🃏</div><h2>${t('Chưa có flashcard nào')}</h2><p>${t('Thêm từ từ thư viện hoặc tra từ điển để bắt đầu.')}</p><div class="row center"><a class="btn primary" href="#/library">${t('Mở thư viện')}</a><a class="btn" href="#/dict">${t('Tra từ')}</a></div></div></div>`;
       return;
     }
-    session = { queue: buildQueue(), done: 0, again: 0, missed: [], total: 0, xp: 0, reverse: !!session && session.reverse };
+    session = { queue: buildQueue(ahead), done: 0, again: 0, missed: [], total: 0, xp: 0, reverse: !!session && session.reverse };
     session.total = session.queue.length;
     if (!session.queue.length) return reviewDone(true);
     showCard();
@@ -83,6 +85,7 @@
         return n.some(Boolean) ? `<div class="forecast" title="${t('Số thẻ đến hạn 7 ngày tới')}">${n.map((x, i) => `<div><i style="height:${Math.round(x / mx * 44) + 2}px"></i><b>${x}</b><span>${i === 0 ? t('Mai') : new Date(day0 + (i + 0.5) * 864e5).toLocaleDateString(I18N.lang(), { weekday: 'short' })}</span></div>`).join('')}</div>` : '';
       })()}
       <p>${next ? t('Thẻ tiếp theo đến hạn: <b>{date}</b>.', { date: new Date(next.srs.due).toLocaleDateString(I18N.lang()) }) : ''} ${t('Học đều mỗi ngày là bí quyết nhớ lâu.')}</p>
+      ${(() => { const soon = Object.values(state.cards).filter(c => c.srs.last && c.srs.due > endOfToday() && c.srs.due <= endOfToday() + 2 * DAY).length; return soon ? `<div class="tip small" style="margin:.6rem 0">⏩ ${t('Sắp thi hoặc muốn học thêm? Ôn trước {n} thẻ đến hạn trong 2 ngày tới.', { n: soon })} <a href="#/review?ahead=2">${t('Ôn trước →')}</a></div>` : ''; })()}
       <div class="row center"><a class="btn primary" href="#/practice/learn">🧠 ${t('Học thông minh')}</a><a class="btn" href="#/practice/match">⚡ ${t('Ghép thẻ')}</a><a class="btn" href="#/library">${t('Thêm từ mới')}</a></div>
     </div></div>`;
   }
