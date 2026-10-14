@@ -44,5 +44,19 @@
   ],
   "firestore": {
     "rules": "firestore.rules"
+  },
+  "auth": {
+    "providers": {
+      "anonymous": false,
+      "emailPassword": false,
+      "googleSignIn": {
+        "oAuthBrandDisplayName": "Vocaband",
+        "supportEmail": "braydanamilio@gmail.com",
+        "authorizedRedirectUris": [
+          "https://vocaband.web.app",
+          "https://ielts-lexi-2026.web.app"
+        ]
+      }
+    }
   }
 }
