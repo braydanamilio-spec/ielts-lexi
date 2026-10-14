@@ -195,7 +195,7 @@
   let cdnDown = false;
   const loadOne = src => new Promise(res => { const s = document.createElement('script'); s.src = src; s.async = false; s.onload = () => res(true); s.onerror = () => res(false); document.head.appendChild(s); });
   const loadScript = async src => {
-    if (CDN && !cdnDown && await loadOne(CDN + src.replace(/\.js$/, '.min.js'))) return;
+    if (CDN && !cdnDown && await loadOne(CDN + src)) return;
     if (CDN && !cdnDown) cdnDown = true; // từ giờ dùng máy chủ chính cho các file còn lại (giữ đúng thứ tự)
     await loadOne(src);
   };
