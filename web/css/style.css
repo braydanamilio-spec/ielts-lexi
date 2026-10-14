@@ -766,6 +766,8 @@ mark.cbt-hl { background: #fde047; color: #111; cursor: pointer; }
 .sheet-tr { margin-top: .3rem; opacity: .9; font-style: italic; }
 .sheet-next { margin-top: 1rem; background: #fff !important; color: #111 !important; border: 0 !important; box-shadow: 0 4px 0 rgba(0,0,0,.15); font-weight: 800; }
 .study-wrap:has(.sheet) { padding-bottom: 280px; }
+/* Màn hình rộng có thanh bên: căn khung kết quả theo vùng nội dung (không theo cả cửa sổ) để thẳng hàng với thẻ học */
+@media (min-width: 901px) { body:not(.bare) .sheet { left: var(--sidebar); } }
 @keyframes sheetUp { from { transform: translateY(100%); } to { transform: none; } }
 
 /* ===== Chấm bằng AI ===== */
