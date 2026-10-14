@@ -130,16 +130,35 @@
   const stopSpeak = () => { speakSeq++; if ('speechSynthesis' in g) speechSynthesis.cancel(); if (audioEl) audioEl.pause(); };
   // Từ đơn: ưu tiên bản ghi giọng người thật; câu: giọng tổng hợp tốt nhất
   let audioEl = null;
+  // Bộ nhớ đệm bản ghi giọng người thật (Cache Storage, tối đa 400 file gần nhất): lần sau phát tức thì, nghe được cả khi offline
+  const AUDIO_CACHE = 'vb-audio-v1';
+  async function audioSrc(url) {
+    if (!('caches' in g) || !/^https:\/\/(upload\.wikimedia\.org|api\.dictionaryapi\.dev|ssl\.gstatic\.com)\//.test(url)) return url;
+    try {
+      const c = await caches.open(AUDIO_CACHE);
+      let r = await c.match(url);
+      if (!r) {
+        r = await fetch(url, { mode: 'cors' }); if (!r.ok) return url;
+        await c.put(url, r.clone());
+        c.keys().then(ks => { if (ks.length > 400) ks.slice(0, ks.length - 400).forEach(k => c.delete(k)); });
+      }
+      return URL.createObjectURL(await r.blob());
+    } catch (e) { return url; } // máy chủ không cho tải (CORS) → phát trực tiếp
+  }
   function speak(text, accent, url) {
     accent = accent || prefs().accent || 'en-GB';
     if (url) {
-      try {
-        stopSpeak();
-        audioEl = new Audio(url);
-        audioEl.playbackRate = 1;
-        audioEl.play().catch(() => tts(text, accent));
-        return;
-      } catch (e) { /* dùng TTS */ }
+      stopSpeak();
+      const my = speakSeq;
+      audioSrc(url).then(src => {
+        if (my !== speakSeq) return; // người dùng đã bấm nghe từ khác
+        try {
+          audioEl = new Audio(src); audioEl.playbackRate = 1;
+          if (src.startsWith('blob:')) audioEl.onended = () => URL.revokeObjectURL(src);
+          audioEl.play().catch(() => tts(text, accent));
+        } catch (e) { tts(text, accent); }
+      });
+      return;
     }
     tts(text, accent);
   }

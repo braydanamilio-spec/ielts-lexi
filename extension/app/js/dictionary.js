@@ -107,6 +107,28 @@
   }
 
   // Phiên âm UK/US từ Wiktionary (khi dictionaryapi.dev thiếu); đổi ɹ → r theo quy ước từ điển Oxford
+  // MD5 gọn (chỉ dùng tính đường dẫn file trên upload.wikimedia.org – Wikimedia lưu file theo md5 của tên)
+  const md5 = str => {
+    const k = [], r = [7, 12, 17, 22, 5, 9, 14, 20, 4, 11, 16, 23, 6, 10, 15, 21];
+    for (let i = 0; i < 64; i++) k[i] = Math.floor(Math.abs(Math.sin(i + 1)) * 2 ** 32) >>> 0;
+    const bytes = [...new TextEncoder().encode(str)], len = bytes.length * 8;
+    bytes.push(0x80); while (bytes.length % 64 !== 56) bytes.push(0);
+    for (let i = 0; i < 8; i++) bytes.push(i < 4 ? (len >>> (8 * i)) & 255 : 0);
+    let [a0, b0, c0, d0] = [0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476];
+    for (let o = 0; o < bytes.length; o += 64) {
+      const M = []; for (let i = 0; i < 16; i++) M[i] = bytes[o + 4 * i] | (bytes[o + 4 * i + 1] << 8) | (bytes[o + 4 * i + 2] << 16) | (bytes[o + 4 * i + 3] << 24);
+      let [A, B, C, D] = [a0, b0, c0, d0];
+      for (let i = 0; i < 64; i++) {
+        let F, gi;
+        if (i < 16) { F = (B & C) | (~B & D); gi = i; } else if (i < 32) { F = (D & B) | (~D & C); gi = (5 * i + 1) % 16; } else if (i < 48) { F = B ^ C ^ D; gi = (3 * i + 5) % 16; } else { F = C ^ (B | ~D); gi = (7 * i) % 16; }
+        const tmp = D; D = C; C = B; const x = (A + F + k[i] + M[gi]) | 0, sh = r[(i >> 4) * 4 + (i % 4)];
+        B = (B + ((x << sh) | (x >>> (32 - sh)))) | 0; A = tmp;
+      }
+      a0 = (a0 + A) | 0; b0 = (b0 + B) | 0; c0 = (c0 + C) | 0; d0 = (d0 + D) | 0;
+    }
+    return [a0, b0, c0, d0].map(v => [0, 8, 16, 24].map(s2 => ((v >>> s2) & 255).toString(16).padStart(2, '0')).join('')).join('');
+  };
+  const commonsURL = f => { const n = f.trim().replace(/ /g, '_'), name = n[0].toUpperCase() + n.slice(1), h = md5(name); return `https://upload.wikimedia.org/wikipedia/commons/${h[0]}/${h.slice(0, 2)}/${encodeURIComponent(name)}`; };
   async function wiktIPA(word) {
     const d = await fetchJSON(`https://en.wiktionary.org/w/api.php?action=parse&page=${encodeURIComponent(word)}&prop=wikitext&format=json&formatversion=2&origin=*`, 6000);
     const text = d && d.parse && d.parse.wikitext;
@@ -146,7 +168,7 @@
     for (const m of en.matchAll(/\{\{audio\|en\|([^|}]+\.(?:ogg|oga|mp3|wav|opus))([^}]*)\}\}/gi)) {
       const f = m[1].trim(), a = (m[2].match(/a=([^|}]*)/) || [, ''])[1] + ' ' + f;
       const acc = /\b(UK|RP|British|England|London)\b|en-uk|\(eng\)/i.test(a) ? 'UK' : /\b(US|GA|General American|America)\b|en-us/i.test(a) ? 'US' : '';
-      if (acc && !aud[acc]) aud[acc] = 'https://commons.wikimedia.org/wiki/Special:FilePath/' + encodeURIComponent(f.replace(/ /g, '_'));
+      if (acc && !aud[acc]) aud[acc] = commonsURL(f); // đường dẫn trực tiếp (có CORS) → lưu được vào bộ nhớ đệm để nghe offline
     }
     if (!entries.length) return null;
     const pick = acc => (entries.find(e => e.acc.split(',').includes(acc) && !e.pos.includes('other')) || entries.find(e => !e.acc && !e.pos.includes('other')) || entries[0]).ipa;
@@ -214,7 +236,7 @@
   const POS_SHORT = Object.fromEntries(Object.entries(POS_SHORT_RAW).map(([k, v]) => [k.normalize('NFC'), v]));
 
   // ---------- Bộ nhớ đệm bền (giữ kết quả tra qua các lần mở trang / khởi động lại add-on) ----------
-  const DV = 4;
+  const DV = 5;
   const persist = {
     // _v: phiên bản dữ liệu tra từ – tăng khi đổi cách xử lý (vd. phiên âm theo từ loại) để kết quả cũ trên máy tự tra lại
     async get(w) { try { const x = g.Core ? await g.Core.Store.get('dc2:' + w, null) : null; return x && x._v === DV ? fixDeep(x) : null; } catch (e) { return null; } },
