@@ -182,9 +182,48 @@
   const recUrls = {};
   function recUrl(blob, slot = 'rec') { if (recUrls[slot]) URL.revokeObjectURL(recUrls[slot]); return (recUrls[slot] = URL.createObjectURL(blob)); }
   function clearRecs() { Object.keys(recUrls).forEach(k => { URL.revokeObjectURL(recUrls[k]); delete recUrls[k]; }); }
+  // ---------- Whisper trên máy (dự phòng khi trình duyệt không có nhận dạng giọng nói: Firefox, app Android…) ----------
+  // Mô hình mã nguồn mở whisper-tiny.en (~40 MB, tải 1 lần khi người dùng đồng ý), chạy bằng WebAssembly – âm thanh không gửi đi đâu.
+  let whisperP = null;
+  const whisperOK = () => { try { return localStorage.getItem('vb.whisper') === '1'; } catch (e) { return false; } };
+  async function whisper(onProgress) {
+    if (!whisperP) whisperP = import('https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.7.5/dist/transformers.min.js')
+      .then(m => m.pipeline('automatic-speech-recognition', 'onnx-community/whisper-tiny.en', { dtype: 'q8', device: 'wasm', progress_callback: p => { if (p && p.status === 'progress' && onProgress) onProgress(p.progress); } }))
+      .catch(e => { whisperP = null; throw e; });
+    return whisperP;
+  }
+  function recognizeWhisper(target, cb) {
+    const run = () => {
+      const words = String(target).split(/\s+/).length, ms = Math.min(12000, Math.max(2500, 1500 + words * 600));
+      let stream = null, media = null, chunks = [], stopped = false;
+      const ctl = { _whisper: true, stop: () => finish(), abort: () => { stopped = true; if (media && media.state !== 'inactive') media.stop(); if (stream) stream.getTracks().forEach(t => t.stop()); } };
+      const finish = () => { if (media && media.state !== 'inactive') media.stop(); };
+      navigator.mediaDevices.getUserMedia({ audio: true }).then(st => {
+        stream = st; media = new MediaRecorder(st); media.ondataavailable = e => e.data.size && chunks.push(e.data);
+        media.onstop = async () => {
+          st.getTracks().forEach(t => t.stop()); if (stopped) return;
+          const blob = new Blob(chunks, { type: media.mimeType || 'audio/webm' }), audio = recUrl(blob);
+          try {
+            const ac = new (g.AudioContext || g.webkitAudioContext)({ sampleRate: 16000 }), buf = await ac.decodeAudioData(await blob.arrayBuffer()); ac.close && ac.close();
+            const asr = await whisper(p => toast(t('Đang tải mô hình nhận dạng giọng nói… {p}%', { p: Math.round(p) })));
+            const out = await asr(buf.getChannelData(0)), heard = String((out && out.text) || '').trim();
+            cb.result && cb.result({ heard, score: Math.round(similarity(heard, target) * 100), audio, alts: [heard] });
+          } catch (e) { cb.error && cb.error('whisper'); }
+          cb.end && cb.end();
+        };
+        media.start(); setTimeout(finish, ms); activeRec = ctl;
+      }).catch(() => { cb.error && cb.error('not-allowed'); });
+      return ctl;
+    };
+    if (whisperOK()) return run();
+    modal(`<h2 style="margin-top:0">🎙️ ${t('Bật nhận dạng giọng nói trên máy')}</h2><p class="small">${t('Trình duyệt này chưa có nhận dạng giọng nói. Vocaband có thể dùng <b>Whisper</b> (mã nguồn mở) chạy ngay trên máy của bạn: miễn phí, riêng tư – âm thanh không gửi đi đâu.')}</p><p class="small muted">${t('Cần tải mô hình khoảng 40 MB một lần (nên dùng Wi-Fi).')}</p><div class="row"><button class="btn primary" id="wOk">${t('Tải & bật')}</button><button class="btn ghost" data-close>${t('Để sau')}</button></div>`);
+    const b = document.getElementById('wOk'); if (b) b.onclick = () => { try { localStorage.setItem('vb.whisper', '1'); } catch (e) { /* bỏ qua */ } closeModal(); whisper().catch(() => {}); toast(t('Đang chuẩn bị… bấm micro lần nữa để nói')); };
+    cb.end && cb.end();
+    return null;
+  }
   function recognize(target, accent, cb = {}) {
     const SR = g.SpeechRecognition || g.webkitSpeechRecognition;
-    if (!SR) { cb.error && cb.error('unsupported'); return null; }
+    if (!SR) { if (g.Core && g.Core.Store.isExtension || !(navigator.mediaDevices && g.MediaRecorder)) { cb.error && cb.error('unsupported'); return null; } return recognizeWhisper(target, cb); }
     if (activeRec) { const old = activeRec; activeRec = null; old._stale = true; try { old.abort(); } catch (e) { /* đã dừng */ } }
     stopSpeak();
     const r = new SR();
