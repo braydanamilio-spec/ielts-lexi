@@ -193,6 +193,7 @@
       </div>
       <div><h3>📌 Nhận xét</h3><ul style="padding-left:1.2rem;margin:.3rem 0">${notes.map(n => `<li style="margin:.3rem 0">${n}</li>`).join('')}</ul></div>
       <div><h3>📝 Bài viết được tô sáng</h3><div class="passage hl-awl hl-link hl-mine" style="font-size:1rem">${Lexis.markText(text, { mine: w => App.inDeck(w) })}</div></div></div>`;
+    if (window.AI) { const { overview, ...data } = d; AI.attach($('#t1Res'), () => ({ kind: 'task1', task: d.title, text, extra: JSON.stringify(data) })); }
     $('#t1Res').scrollIntoView({ behavior: 'smooth', block: 'start' });
     App.reward({ quizzes: 1, writes: 1, xp: 20 }, $('#go')); Sfx.win();
   }

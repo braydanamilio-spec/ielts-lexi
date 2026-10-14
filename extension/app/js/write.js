@@ -166,6 +166,7 @@
           <div class="hl-bar"><span class="hl-chip awl on">🎓 AWL</span><span class="hl-chip link on">🧷 Từ nối & cụm</span><span class="hl-chip mine on">📒 Từ của tôi</span></div>
           <div class="passage hl-awl hl-link hl-mine" style="font-size:1rem">${Lexis.markText(text, { mine: w => App.inDeck(w) })}</div></div>
       </div>`;
+    if (window.AI) AI.attach($('#report'), () => ({ kind: 'task2', task: p.text, text }));
     $('#report').scrollIntoView({ behavior: 'smooth', block: 'start' });
     // Gợi ý thay thế: từ thư viện trước, sau đó Datamuse
     $$('[data-alt]').forEach(async el => {

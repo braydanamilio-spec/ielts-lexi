@@ -306,7 +306,14 @@
           <div><b>Task 2 · ${W.s2.words} từ · ~${W.s2.band}</b>${crit(W.s2.crit)}<ul class="small">${W.s2.notes.map(n => `<li>${esc(n)}</li>`).join('')}</ul><a class="btn sm ghost" href="#/write/${esc(W.p)}">✍️ Mở đề trong Phòng viết</a></div></div></div>` : ''}
         ${S ? `<div class="card"><h3 style="margin-top:0">🗣️ Speaking → ${M.bands.speaking ? 'Band ' + M.bands.speaking : 'chưa chấm được'}</h3>${crit(S.sc.crit)}<ul class="small">${S.sc.notes.map(n => `<li>${esc(n)}</li>`).join('')}</ul>
           <details><summary class="small">Nghe lại & bản chữ từng câu</summary>${S.answers.map(a => `<div class="q-item"><div class="tiny muted">Part ${a.part} · ${Math.round(a.secs)}s</div><b class="small">${esc(a.q)}</b>${a.audio ? `<audio controls src="${a.audio}" style="display:block;height:34px;margin:.3rem 0;max-width:100%"></audio>` : ''}<div class="small">${esc(a.text || '(không nhận được lời nói)')}</div></div>`).join('')}</details></div>` : ''}
+        <div id="mkAI"></div>
         <div class="row center" style="margin-top:1rem"><a class="btn primary" href="#/mock">Về trang Thi thử</a><a class="btn" href="#/mistakes">📕 Sổ lỗi sai</a><a class="btn" href="#/method">🧪 Gợi ý lộ trình</a></div></div>`;
+      if (window.AI) {
+        const box = $('#mkAI');
+        if (W && W.t2) AI.attach(box, () => ({ kind: 'task2', task: ((window.WRITE_PROMPTS || []).find(x => x.id === W.p) || {}).text || '', text: W.t2 }));
+        if (W && W.t1) { const d = App.task1.SETS.find(x => x.id === W.d) || {}; const { overview, ...data } = d; AI.attach(box, () => ({ kind: 'task1', task: d.title || '', text: W.t1, extra: JSON.stringify(data) })); }
+        if (S && S.answers.some(a => a.text)) AI.attach(box, () => ({ kind: 'speaking', task: 'IELTS Speaking test', text: S.answers.map(a => `Q (Part ${a.part}): ${a.q}\nA (${Math.round(a.secs)}s): ${a.text || '(no answer)'}`).join('\n\n') }));
+      }
     }
 
     const SECTION = { listening, reading, writing, speaking };

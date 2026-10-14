@@ -195,6 +195,7 @@
         <div class="tiny muted">Phân tích tự động để luyện tập, không thay thế giám khảo.</div>
       </div>`;
       if (words.length >= 10) { App.reward({ spoken: Math.min(10, Math.round(words.length / 10)), quizzes: 1, xp: 15 }, $('#recBtn')); Sfx.win(); }
+      if (window.AI && text) AI.attach($('#result'), () => ({ kind: 'speaking', task: askText(), text: `Q (${part.toUpperCase()}): ${askText()}\nA (${Math.round(secs)}s): ${text}` }));
       $('#result').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   };

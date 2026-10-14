@@ -852,6 +852,7 @@
     view.innerHTML = `
       <div class="page-head"><div><h1>Cài đặt</h1><p class="muted">Tài khoản, nhắc học, mục tiêu và giao diện</p></div></div>
       <div class="card stack" id="syncBox" style="margin-bottom:1rem"></div>
+      <div id="aiBox" style="margin-bottom:1rem"></div>
       <div class="grid g2">
         <div class="card">
           <h2>⏰ Nhắc học hằng ngày</h2>
@@ -909,6 +910,8 @@
     $('#sTime').onchange = e => { s.reminderTime = e.target.value || '20:00'; save(); toast(`Sẽ nhắc lúc ${s.reminderTime} mỗi ngày`); };
     $('#sNew').oninput = e => { s.dailyNew = +e.target.value; $('#vNew').textContent = s.dailyNew; save(); };
     $('#sGoal').oninput = e => { s.dailyGoal = +e.target.value; $('#vGoal').textContent = s.dailyGoal; save(); };
+    const drawAI = async () => { const b = $('#aiBox'); if (!b || !window.AI) return; b.innerHTML = await AI.settingsHtml(); AI.bindSettings(drawAI); };
+    drawAI();
     $('#sRet').oninput = e => { s.retention = +e.target.value; SRS.retentionTarget = s.retention; $('#vRet').textContent = Math.round(s.retention * 100) + '%'; save(); };
     $('#sGold').onchange = e => { s.goldenOn = e.target.checked; save(); };
     $('#sGMin').oninput = e => { s.goldenMin = +e.target.value; $('#vGMin').textContent = s.goldenMin; save(); };

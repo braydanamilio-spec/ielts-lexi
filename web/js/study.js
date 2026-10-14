@@ -226,14 +226,15 @@
     let answered = false;
     const finish = (ok, given) => {
       if (answered) return; answered = true;
-      if (!ok && App.logMistake) App.logMistake({ kind: 'vocab', q: q.type.startsWith('mcq-en') || q.type === 'type-vi' ? `Từ tiếng Anh nghĩa là “${w.vi}”?` : q.type === 'type-cloze' && w.ex ? `Điền từ: ${w.ex.replace(UI.wordRegex(w.word), '___')}` : `Nghĩa của “${w.word}”?`, answer: q.type === 'mcq-vi' ? w.vi : (q.answer || w.word), given: given || '', explain: `${w.word} ${w.ipa || ''} = ${w.vi}`, ref: w.word });
+      if (!ok && App.logMistake) App.logMistake({ kind: 'vocab', q: q.type.startsWith('mcq-en') || q.type === 'type-vi' || q.type === 'type-spell' ? `Từ tiếng Anh nghĩa là “${w.vi}”?` : q.type === 'type-cloze' && w.ex ? `Điền từ: ${w.ex.replace(UI.wordRegex(w.word), '___')}` : `Nghĩa của “${w.word}”?`, answer: q.type === 'mcq-vi' ? w.vi : (q.answer || w.word), given: given || '', explain: `${w.word} ${w.ipa || ''} = ${w.vi}`, ref: w.word });
       ok ? Sfx.correct() : Sfx.wrong();
       const fb = $('#fb', box);
-      fb.innerHTML = `<div class="feedback ${ok ? 'ok' : 'no'}">
-        <div class="row between"><b style="font-size:1.1rem">${ok ? ['✅ Chính xác!', '🎉 Tuyệt vời!', '👏 Giỏi lắm!'][Math.floor(Math.random() * 3)] : `❌ Đáp án: ${esc(q.answer || w.word)}`}</b>
-          <button class="btn primary" id="nextQ">Tiếp tục ↵</button></div>
-        <div style="margin-top:.4rem"><b>${esc(w.word)}</b> <span class="ipa">${esc(w.ipa)}</span> – ${esc(w.vi)} <button class="icon-btn sm" data-sayw>🔊</button></div>
-        ${w.ex ? `<div class="ex small">“${highlight(w.ex, w.word)}”</div>` : ''}</div>`;
+      fb.innerHTML = `<div class="sheet ${ok ? 'ok' : 'no'}"><div class="sheet-in">
+        <div class="sheet-head">${ok ? ['✅ Chính xác!', '🎉 Tuyệt vời!', '👏 Giỏi lắm!'][Math.floor(Math.random() * 3)] : `❌ Chưa đúng · Đáp án: ${esc(q.answer || w.word)}`}</div>
+        <div class="sheet-word"><button class="sheet-say" data-sayw aria-label="Nghe">🔊</button><div style="min-width:0"><div><b class="sw">${esc(w.word)}</b>${w.pos ? ` <span class="sp">(${esc(w.pos)})</span>` : ''}</div>${w.ipa ? `<div class="sipa">${esc(w.ipa)}</div>` : ''}<div class="svi">${esc(w.vi)}</div></div></div>
+        ${w.ex ? `<div class="sheet-ex">${highlight(w.ex, w.word)} <button class="ctx-say sm" data-saysent="${esc(w.ex)}" title="Nghe câu">🔊</button><button class="ctx-say sm" data-tr title="Dịch câu">🌐</button><div class="sheet-tr" hidden></div></div>` : ''}
+        <button class="btn lg block sheet-next" id="nextQ">Tiếp tục ↵</button></div></div>`;
+      const tr = $('[data-tr]', fb); if (tr) tr.onclick = async () => { const t = $('.sheet-tr', fb); if (!t.hidden) { t.hidden = true; return; } t.hidden = false; t.textContent = '…'; t.textContent = await Dict.translateVi(w.ex); };
       $('[data-sayw]', fb).onclick = () => speak(w.word, accent(), w.audio);
       if (!ok || q.type.startsWith('type')) speak(w.word, accent(), w.audio);
       $('#nextQ').focus();
@@ -270,7 +271,13 @@
     const target = isCloze ? clozeAnswer(w.ex, w.word) : w.word;
     q.answer = target;
     let prompt;
-    if (q.type === 'type-listen') {
+    if (q.type === 'type-spell') {
+      // Gợi ý chữ cái kiểu "_ h _ _ _ _ t _ _": hiện ~1/4 số chữ (không lộ chữ đầu với từ dài)
+      const ch = [...w.word], letters = ch.map((c, i) => /[a-z]/i.test(c) ? i : -1).filter(i => i >= 0);
+      const show = new Set(letters.length <= 3 ? [letters[0]] : letters.filter((_, k) => k % 4 === 1));
+      prompt = `<div class="muted small" style="font-weight:700">Điền từ</div><div class="vi" style="font-size:1.6rem;margin:.4rem 0">${esc(w.vi)}${w.pos ? ` <span class="muted" style="font-size:1rem">(${esc(w.pos)})</span>` : ''}</div>
+        <div class="spell-hint">${ch.map((c, i) => c === ' ' ? '<i class="sp"></i>' : /[a-z]/i.test(c) ? `<span>${show.has(i) ? esc(c) : ''}</span>` : `<b>${esc(c)}</b>`).join('')}</div>`;
+    } else if (q.type === 'type-listen') {
       prompt = `<div style="font-size:3rem">🎧</div><div class="row center"><button class="btn primary" id="play">🔊 Nghe</button><button class="btn" id="slow">🐢 Chậm</button></div><div class="muted small" style="margin-top:.8rem">Gõ lại từ bạn nghe được${w.vi ? ` · gợi ý: ${esc(w.vi)}` : ''}</div>`;
     } else if (isCloze) {
       prompt = `<div style="font-size:1.15rem;line-height:1.8">“${cloze(w.ex, w.word)}”</div><div class="muted" style="margin-top:.8rem">Gợi ý: <b>${esc(w.vi)}</b> ${posChip(w.pos)} · bắt đầu bằng “${esc(target[0])}”, ${target.length} ký tự</div>`;
@@ -362,9 +369,9 @@
     const items = shuffle(list).sort((a, b) => rank(a) - rank(b)).slice(0, Math.min(8, list.length));
     if (!items.length) return emptySource(src);
     const stage = new Map(items.map(w => [w.word, 0])); // 0: chọn nghĩa, 1: chọn từ, 2: gõ từ, 3: xong
-    const STAGES = ['mcq-vi', 'mcq-en', 'type-cloze'];
+    const STAGES = ['mcq-vi', 'type-listen', 'type-spell']; // nhận diện → nghe & viết lại → tự nhớ ra cách viết
     let queue = shuffle(items), mistakes = 0, answered = 0;
-    const introduced = new Set();
+    const introduced = new Set(), knownSkip = new Set();
     const title = `🧠 Học thông minh · ${esc(srcName(src))}`;
     const next = () => {
       queue = queue.filter(w => stage.get(w.word) < 3);
@@ -376,19 +383,35 @@
       // Lần đầu gặp từ chưa thuộc → giới thiệu từ (hình, âm, nghĩa, ví dụ) trước khi kiểm tra
       if (st === 0 && !introduced.has(w.word) && rank(w) <= 0) {
         introduced.add(w.word);
-        $('#qbox').innerHTML = `<div class="card q-card"><span class="chip lv">✨ Từ mới</span>
-          ${pic(w).replace('class="pic"', 'class="pic" style="width:130px;margin:1rem auto"')}
-          <div class="entry-word">${esc(w.word)}</div>
-          <div class="row center"><span class="ipa">${esc(w.ipa)}</span>${posChip(w.pos)}${levelChip(w.level)}<button class="icon-btn sm" id="sayI">🔊</button></div>
-          <div class="vi" style="margin-top:.4rem">${esc(w.vi)}</div>
-          ${w.def ? `<div class="muted small" style="margin-top:.3rem">${esc(w.def)}</div>` : ''}
-          ${w.ex ? `<div class="example-box" style="margin-top:1rem;text-align:left">${highlight(w.ex, w.word)}</div>` : ''}
-        </div><button class="btn primary lg block" id="gotIt" style="margin-top:1rem">Đã hiểu, kiểm tra tôi →</button>`;
+        // Thẻ giới thiệu 2 mặt (kiểu flashcard): mặt trước từ + nghĩa, chạm để lật xem câu ví dụ
+        $('#qbox').innerHTML = `<div class="flip-intro" id="fi"><div class="fi-audio"><button class="fi-btn" id="sayI" aria-label="Nghe">🔊</button><button class="fi-btn" id="slowI" aria-label="Nghe chậm">🐢</button></div>
+          <div class="fi-card" id="fiCard">
+            <div class="fi-face fi-front">${w.image || w.emoji ? pic(w).replace('class="pic"', 'class="pic fi-pic"') : ''}<span class="chip lv">✨ Từ mới</span><div class="entry-word">${esc(w.word)}</div><div class="row center"><span class="ipa">${esc(w.ipa || '')}</span>${posChip(w.pos)}${levelChip(w.level)}</div><div class="vi" style="margin-top:.4rem;font-size:1.25rem">${esc(w.vi)}</div></div>
+            <div class="fi-face fi-back"><div class="entry-word" style="font-size:1.6rem">${esc(w.word)}</div>${w.ex ? `<div class="fi-ex">${highlight(w.ex, w.word)}</div><div class="row center"><button class="ctx-say" data-saysent="${esc(w.ex)}">🔊</button><button class="ctx-say" data-saysent="${esc(w.ex)}" data-slow="1">🐢</button></div><div class="fi-tr small muted" id="fiTr"></div>` : `<div class="muted">${esc(w.def || w.vi)}</div>`}</div>
+            <span class="fi-tap">👆 Chạm để lật</span>
+          </div></div>
+          <button class="btn primary lg block" id="gotIt" style="margin-top:1rem">Tiếp tục</button>
+          <div class="center" style="margin-top:.6rem"><button class="linklike" id="known">Mình đã biết từ này</button></div>`;
+        let flipped = false;
+        const flip = () => { flipped = !flipped; $('#fiCard').classList.toggle('flipped', flipped); if (flipped && w.ex && !$('#fiTr').textContent) Dict.translateVi(w.ex).then(t => { const e = $('#fiTr'); if (e) e.textContent = t; }); if (flipped && w.ex) tts(w.ex, accent()); };
+        $('#fiCard').onclick = e => { if (!e.target.closest('[data-saysent]')) flip(); };
         $('#sayI').onclick = () => speak(w.word, accent(), w.audio);
+        $('#slowI').onclick = () => tts(w.word, accent(), 0.5);
         speak(w.word, accent(), w.audio);
         $('#gotIt').focus();
         $('#gotIt').onclick = () => { queue.unshift(w); next(); };
-        document.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); $('#gotIt').click(); } };
+        // Đã biết → bỏ khỏi phiên học, lưu thẻ với lịch ôn xa (FSRS: độ ổn định ~30 ngày)
+        $('#known').onclick = async () => {
+          stage.set(w.word, 3); knownSkip.add(w.word);
+          const entry = INDEX[w.word.toLowerCase()] || w;
+          if (!App.inDeck(w.word)) await App.addWord(entry, null, { silent: true });
+          const now = Date.now();
+          await Cards.patch(w.word, c => { c.srs = { ...SRS.newState(), reps: 2, S: 30, D: 3, interval: 30, last: now, due: now + 30 * 864e5, step: 0 }; });
+          state.cards = await Cards.all();
+          toast(`👍 Đã đánh dấu “${w.word}” là từ đã biết – sẽ ôn lại sau ~1 tháng`);
+          next();
+        };
+        document.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); $('#gotIt').click(); } else if (e.key === ' ' && e.target === document.body) { e.preventDefault(); flip(); } };
         return;
       }
       renderQuestion($('#qbox'), { type: STAGES[st], w, list }, (ok, el) => {

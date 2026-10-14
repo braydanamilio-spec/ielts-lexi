@@ -123,6 +123,18 @@
     const up = (x, stop) => { for (; x && x !== stop && !x.contains(stop); x = x.parentElement) if (!isInline(x)) return true; return false; };
     return up(a, b) || up(b, a);
   }
+  // Nhãn trang trí chèn trong đoạn (vd. "Opening statement", "Mở bài", "Band 7"): khối nhỏ có nền màu → coi là ranh giới câu
+  const labelOf = (el, stop) => {
+    for (let x = el; x && x !== stop && x !== document.body; x = x.parentElement) {
+      const cs = getComputedStyle(x), t = (x.textContent || '').trim();
+      if (t.length > 40 || /[.!?]$/.test(t)) return null;
+      const bg = cs.backgroundColor, painted = bg && bg !== 'transparent' && !/rgba\(\s*0,\s*0,\s*0,\s*0\s*\)/.test(bg);
+      if (painted && (/inline-block|inline-flex|^flex$|block/.test(cs.display) || parseFloat(cs.borderRadius) >= 3) && cs.userSelect === 'none' || painted && /inline-block|inline-flex/.test(cs.display)) return x;
+    }
+    return null;
+  };
+  // Chữ thường dính chữ hoa ở chỗ nối 2 phần tử ("statement"+"The") → chắc chắn là 2 từ
+  const camelJoin = (out, t) => /[a-z]$/.test(out) && /^[A-Z]/.test(t);
   function visibleText(block, stopNode, stopOffset) {
     const hidden = new Map();
     const isHidden = el => {
@@ -135,7 +147,7 @@
     };
     const startVi = stopNode && VI.test(stopNode.textContent || '');
     const tw = document.createTreeWalker(block, NodeFilter.SHOW_TEXT);
-    let out = '', offset = -1, prevEl = null, n;
+    let out = '', offset = -1, prevEl = null, prevLab = null, n;
     while ((n = tw.nextNode())) {
       const el = n.parentElement;
       let t = n.nodeValue;
@@ -143,12 +155,14 @@
         if (!t.trim() || isHidden(el)) { if (t && /\s/.test(t) && !isHidden(el)) out += ' '; continue; }
         if (!startVi && VI.test(t)) { out += ' '; prevEl = el; continue; } // chú thích tiếng Việt chèn trong câu tiếng Anh
       }
-      // Thêm khoảng trắng khi chuyển sang phần tử khác mà hai phía đều là chữ
-      if (prevEl && el !== prevEl && /\w$/.test(out) && /^\w/.test(t)) {
-        if (boundary(prevEl, el)) out += ' ';
+      // Ra/vào một nhãn trang trí → ngắt câu; chuyển phần tử mà 2 phía đều là chữ → thêm khoảng trắng khi cần
+      const lab = labelOf(el, block);
+      if (prevEl && el !== prevEl) {
+        if (lab !== prevLab && (lab || prevLab)) out += '\n';
+        else if (/\w$/.test(out) && /^\w/.test(t) && (boundary(prevEl, el) || camelJoin(out, t))) out += ' ';
       }
       if (n === stopNode) offset = out.length + stopOffset;
-      out += t; prevEl = el;
+      out += t; prevEl = el; prevLab = lab;
     }
     return { text: out, offset };
   }
@@ -156,7 +170,9 @@
   function rangeText(range, selStr) {
     // Selection.toString() của Chrome tự xuống dòng giữa các khối; Range.toString() thì không
     const raw = (selStr != null ? selStr : range.toString()).replace(/\s+/g, ' ').trim();
-    if (!VI.test(raw) || !/[A-Za-z]{3,}\s+[A-Za-z]{3,}/.test(raw)) return raw;
+    const multi = range.startContainer !== range.endContainer;
+    if (!multi && !VI.test(raw)) return raw;
+    if (!multi && !/[A-Za-z]{3,}\s+[A-Za-z]{3,}/.test(raw)) return raw;
     const root = range.commonAncestorContainer.nodeType === 1 ? range.commonAncestorContainer : range.commonAncestorContainer.parentElement;
     const tw = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
     const parts = []; let n, en = 0, vi = 0;
@@ -173,7 +189,7 @@
     }
     if (vi > en) return raw; // đoạn chủ yếu tiếng Việt → giữ nguyên
     let out = '', prev = null;
-    parts.forEach(p => { if (p.v) { out += ' '; return; } if (prev && p.el && /\w$/.test(out) && /^\w/.test(p.t) && boundary(prev, p.el)) out += ' '; out += p.t; if (p.el) prev = p.el; });
+    parts.forEach(p => { if (p.v) { out += ' '; return; } if (prev && p.el && p.el !== prev && /\w$/.test(out) && /^\w/.test(p.t) && (boundary(prev, p.el) || camelJoin(out, p.t) || labelOf(p.el) !== labelOf(prev))) out += ' '; out += p.t; if (p.el) prev = p.el; });
     return out.replace(/\s+/g, ' ').replace(/\s+([,.;:!?])/g, '$1').trim();
   }
   function sentenceAround(range) {
@@ -370,6 +386,22 @@
     if (back) back.onclick = ev => { ev.stopPropagation(); const p = hist.pop(); if (p) show(p.word, p.rect, p.context, p.meta, 'back'); };
   }
 
+  // Từ nằm đúng dưới con trỏ (không tin vùng chọn của trình duyệt – nó có thể nối 2 phần tử thành "statementThe")
+  function wordAtPoint(x, y) {
+    let node, off;
+    if (document.caretRangeFromPoint) { const r = document.caretRangeFromPoint(x, y); if (!r) return null; node = r.startContainer; off = r.startOffset; }
+    else if (document.caretPositionFromPoint) { const p = document.caretPositionFromPoint(x, y); if (!p) return null; node = p.offsetNode; off = p.offset; }
+    if (!node || node.nodeType !== 3) return null;
+    const t = node.nodeValue, W = /[A-Za-z'’-]/;
+    let a = off, b = off;
+    if (a > 0 && !W.test(t[a] || '') && W.test(t[a - 1])) { a--; b--; }
+    while (a > 0 && W.test(t[a - 1])) a--;
+    while (b < t.length && W.test(t[b])) b++;
+    let word = t.slice(a, b).replace(/^['’-]+|['’-]+$/g, '');
+    if (!/^[A-Za-z][A-Za-z'’-]*$/.test(word) || word.length > 30) return null;
+    a = t.indexOf(word, a); const range = document.createRange(); range.setStart(node, a); range.setEnd(node, a + word.length);
+    return { word: word.toLowerCase().replace(/’/g, "'"), range, rect: range.getBoundingClientRect() };
+  }
   function fromSelection() {
     const sel = window.getSelection();
     if (!sel || sel.rangeCount === 0) return null;
@@ -450,6 +482,11 @@
 
   document.addEventListener('dblclick', e => {
     if (!alive() || !enabled || inEditable(e.target) || fromHost(e) || appHandles(e.target)) return;
+    const pt = wordAtPoint(e.clientX, e.clientY);
+    if (pt) {
+      const sel = window.getSelection(); try { sel.removeAllRanges(); sel.addRange(pt.range); } catch (x) { /* bỏ qua */ }
+      return show(pt.word, pt.rect, sentenceAround(pt.range));
+    }
     const s = fromSelection();
     if (s) show(s.word, s.rect, s.context);
   });
