@@ -10,6 +10,7 @@ Một bộ mã duy nhất cho web, add-on và app, nên sửa một chỗ là c�
 | Biểu tượng app: iOS vuông kín; Android adaptive (nền + hình chữ V tách riêng); màn hình chờ sáng/tối | ✅ |
 | Nhắc học hằng ngày bằng **thông báo trên máy** (không cần máy chủ), bấm vào là mở thẳng trang Ôn tập | ✅ |
 | Rung phản hồi khi trả lời (Haptics) | ✅ |
+| Nút Back Android: đóng hộp thoại → lùi trang → ở trang chủ thì thu nhỏ app (không thoát mất trạng thái) | ✅ |
 | Chạy offline: toàn bộ app nằm trong gói cài đặt | ✅ |
 | Cập nhật: `./scripts/build-mobile.sh` build lại web rồi đồng bộ vào android/ios | ✅ |
 | Đăng nhập Google trong app | ⏳ cần anh tạo cấu hình Firebase (bước 4) |

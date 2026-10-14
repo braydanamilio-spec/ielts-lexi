@@ -40,6 +40,15 @@
   }
   // Bấm thông báo → mở thẳng trang ôn tập
   if (P.LocalNotifications) P.LocalNotifications.addListener('localNotificationActionPerformed', a => { const r = a && a.notification && a.notification.extra && a.notification.extra.route; if (r) location.hash = r; });
+  // Nút Back của Android: đóng hộp thoại/ô tra từ trước, rồi lùi trang; ở trang chủ thì thu nhỏ app (không thoát mất trạng thái)
+  if (P.App) P.App.addListener('backButton', ({ canGoBack }) => {
+    const m = document.getElementById('modal');
+    if (m && !m.hidden) { if (g.UI && g.UI.closeModal) g.UI.closeModal(); else m.hidden = true; return; }
+    const open = document.querySelector('.drawer.open, .sheet.open, [data-sheet]:not([hidden])');
+    if (open) { document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })); return; }
+    if (canGoBack && !/^#?\/?(home)?$/.test(location.hash)) history.back();
+    else P.App.minimizeApp().catch(() => P.App.exitApp());
+  });
   g.VBNative.scheduleReminder = scheduleReminder;
   window.addEventListener('load', () => setTimeout(scheduleReminder, 3000));
 })(typeof self !== 'undefined' ? self : this);
