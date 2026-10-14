@@ -20,7 +20,14 @@ for (const f of files) {
 fs.writeFileSync(process.env.TMPDIR + '/cdnmap.json', JSON.stringify(map));
 JS
 BASE="https://cdn.jsdelivr.net/gh/braydanamilio-spec/ielts-lexi@"
-check() { node -e "const m=require(process.env.TMPDIR+'/cdnmap.json');for(const [f,s] of Object.entries(m))console.log(s+'/web/'+f)" | xargs -P 8 -I{} sh -c 'c=$(curl -s -o /dev/null -w "%{http_code}" -m 60 "'"$BASE"'{}"); [ "$c" = 200 ] || echo "{}"'; }
+check() { # kiểm tra song song (8 luồng) từng URL; in ra URL chưa sẵn sàng. Không dùng xargs -I (macOS giới hạn 255 ký tự)
+  local out="${TMPDIR:-/tmp}/cdnbad.$$"; : > "$out"
+  node -e "const m=require(process.env.TMPDIR+'/cdnmap.json');for(const [f,s] of Object.entries(m))console.log(s+'/web/'+f)" | while read -r u; do
+    while [ "$(jobs -rp | wc -l)" -ge 8 ]; do sleep 0.2; done
+    { c=$(curl -s -o /dev/null -w "%{http_code}" -m 60 "$BASE$u"); [ "$c" = 200 ] || echo "$u" >> "$out"; } &
+  done
+  wait; cat "$out"; rm -f "$out"
+}
 for try in 1 2 3 4 5 6; do
   BAD=$(check); [ -z "$BAD" ] && break
   echo "… $(echo "$BAD" | wc -l | tr -d ' ') file mới sửa chưa sẵn trên CDN, thử lại sau 30s (lần $try)"; sleep 30
