@@ -10,9 +10,9 @@
 ```
 Người dùng (mọi quốc gia)
    │  index.html + phần lõi (~400 KB gzip)       ← Firebase Hosting (CDN toàn cầu)
-   │  đề thi, từ vựng, ngữ pháp (~1 MB gzip)     ← jsDelivr CDN (miễn phí, không giới hạn, gắn theo commit)
-   │                                                 └─ CDN lỗi → tự lấy từ Firebase
-   │  bản dự phòng toàn site                      ← GitHub Pages (tự deploy mỗi lần push)
+   │  file dữ liệu: đề thi, từ vựng, ngữ pháp     ← GitHub Pages (tự deploy mỗi lần push, ~100 GB/tháng, nhanh ~1 s)
+   │    (mã xử lý luôn lấy từ Firebase → không lệch phiên bản)  └─ chưa deploy / khác nội dung → lấy từ Firebase
+   │  bản dự phòng toàn site                      ← GitHub Pages
    │
    ├─ Tra từ / dịch / phát âm: Google Translate (gtx), Wiktionary, dictionaryapi.dev, Wikimedia Commons, Datamuse
    ├─ AI: Gemini bằng khóa của người dùng / Gemini Nano có sẵn trong Chrome
@@ -23,8 +23,8 @@ Người dùng (mọi quốc gia)
 ## Sức chứa của gói miễn phí hiện tại
 | Lớp | Giới hạn miễn phí | Ước tính chịu được | Ghi chú |
 |---|---|---|---|
-| Firebase Hosting | 360 MB/ngày | ~900 người dùng mới/ngày | Phần nặng đã chuyển sang jsDelivr; người cũ dùng bộ nhớ đệm của Service Worker |
-| jsDelivr | không giới hạn | không giới hạn | Repo phải để **công khai** |
+| Firebase Hosting | 360 MB/ngày | ~900 người dùng mới/ngày (phần lõi 411 KB) | File dữ liệu đã chuyển sang GitHub Pages; người dùng cũ lấy từ bộ nhớ đệm của Service Worker |
+| GitHub Pages | ~100 GB/tháng (giới hạn mềm) | ~8.000 người dùng mới/ngày cho file dữ liệu | jsDelivr đã thử nhưng loại vì chậm (15 giây/file khi lấy thẳng từ GitHub) |
 | Firestore | 50k lượt đọc + 20k lượt ghi/ngày | ~5–10k người dùng đồng bộ/ngày | Bước 2 bên dưới khi vượt mức |
 | Firebase Auth | không giới hạn (Google) | không giới hạn | |
 | Dịch vụ tra từ công khai | tính theo IP người dùng | không giới hạn | Mỗi người dùng có hạn mức riêng |
@@ -42,5 +42,5 @@ Người dùng (mọi quốc gia)
 4. **Theo dõi lỗi:** add-on đã có nhật ký lỗi nội bộ. Bản web có thể thêm Sentry (gói miễn phí 5k sự kiện/tháng).
 
 ## Quy trình phát hành (tự động)
-`ship` = kiểm thử → build (esbuild) → tăng phiên bản add-on → commit & push → hâm nóng CDN jsDelivr (có thử lại) → Firebase deploy → kiểm tra bản trên web.
+`ship` = kiểm thử → build (esbuild, sinh hreflang + sitemap) → tăng phiên bản add-on → commit & push → chờ GitHub Pages deploy rồi đối chiếu nội dung từng file dữ liệu (`scripts/cdn-pin.sh`) → Firebase deploy → kiểm tra bản trên web.
 App mobile: `./scripts/build-mobile.sh` (xem `mobile/README.md`).
