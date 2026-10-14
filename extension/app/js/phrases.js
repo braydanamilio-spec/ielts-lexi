@@ -266,9 +266,21 @@
     pop.hidden = false; pop.innerHTML = `<div class="muted small">⏳ ${k === 'look' ? 'Đang tra' : 'Đang dịch'} “${esc(info.text.slice(0, 60))}”…</div>`; place(pop, info.rect);
     if (k === 'tr') {
       const vi = await Dict.translateVi(info.text);
+      const structs = window.VBStruct ? VBStruct.analyze(info.text, 4) : [];
       pop.innerHTML = `<div class="row between nowrap"><b class="small">🌐 Bản dịch</b><button class="icon-btn sm" data-x>✕</button></div><div style="margin:.4rem 0;line-height:1.6">${esc(vi || 'Không dịch được – thử lại sau.')}</div>
-        <div class="row"><button class="btn sm" data-sp>🔊 Nghe câu gốc</button></div>`;
+        ${structs.length ? `<div class="st-box"><b class="small">🧩 Cấu trúc trong đoạn</b>${structs.map(x => `<div class="st-row"><b>${esc(x.name)}</b> <i class="muted">“${esc(x.match)}”</i><div class="small muted">${esc(x.vi)}</div><a class="small" href="#/grammar/${esc(x.lesson)}">📐 Học bài này →</a></div>`).join('')}</div>` : ''}
+        <div data-aiout></div>
+        <div class="row" style="margin-top:.5rem"><button class="btn sm" data-sp>🔊 Nghe</button><button class="btn sm" data-sps>🐢</button><button class="btn sm primary" data-deep>🤖 Giải thích sâu</button></div>`;
       $('[data-sp]', pop).onclick = () => UI.tts(info.text, state.settings.accent);
+      $('[data-sps]', pop).onclick = () => UI.tts(info.text, state.settings.accent, 0.65);
+      $('[data-deep]', pop).onclick = async ev => {
+        if (!window.AI) return;
+        const out = $('[data-aiout]', pop);
+        if (!(await AI.getKey())) return AI.keyDialog(() => ev.target.click());
+        ev.target.disabled = true; out.innerHTML = '<div class="small muted">⏳ AI đang phân tích…</div>';
+        try { out.innerHTML = AI.renderExplain(await AI.explain(info.text, info.sentence)); } catch (e) { out.innerHTML = `<div class="small">❌ ${esc(AI.errText(e))}</div>`; }
+        ev.target.disabled = false; place(pop, info.rect);
+      };
     } else {
       const w = info.text.toLowerCase();
       const d = (await Dict.quick(w)) || (await Dict.lookup(w, { examples: false, image: false }));

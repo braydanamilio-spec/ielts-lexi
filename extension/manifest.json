@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Vocaband – Từ điển & Flashcard IELTS",
   "short_name": "Vocaband",
-  "version": "2.1.6",
+  "version": "2.2.0",
   "description": "Bấm đúp tra từ, bôi đen dịch câu, tra từ trong phụ đề YouTube; lưu kèm ngữ cảnh và ôn flashcard đúng thời điểm vàng.",
   "icons": {
     "16": "icons/icon-16.png",
@@ -29,6 +29,7 @@
     "scripting"
   ],
   "host_permissions": [
+    "https://generativelanguage.googleapis.com/*",
     "http://*/*",
     "https://*/*",
     "https://api.dictionaryapi.dev/*",
@@ -47,6 +48,7 @@
         "https://*/*"
       ],
       "js": [
+        "app/js/structures.js",
         "content.js"
       ],
       "run_at": "document_idle",

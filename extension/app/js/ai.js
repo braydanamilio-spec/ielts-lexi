@@ -9,7 +9,14 @@
   const API = (m, k) => `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(m)}:generateContent?key=${encodeURIComponent(k)}`;
   const hash = s => { let h = 5381; for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0; return (h >>> 0).toString(36); };
 
-  const getKey = () => Store.get('aiKey', '');
+  // Khóa AI dùng chung giữa web app và add-on trên cùng máy (qua cầu nối cục bộ, không lên cloud)
+  const bridge = () => window.VBBridge && VBBridge.ready() ? VBBridge : null;
+  async function getKey() {
+    let k = await Store.get('aiKey', '');
+    if (!k && bridge()) { try { const r = await bridge().call('aiKeyGet'); const rk = r && r.data && r.data.aiKey; if (rk) { k = rk; await Store.set('aiKey', k); } } catch (e) { /* add-on cũ */ } }
+    return k;
+  }
+  const setKey = async k => { await Store.set('aiKey', k); if (bridge()) try { await bridge().call('aiKeySet', { aiKey: k }); } catch (e) { /* bỏ qua */ } };
   const SYS = `You are a certified senior IELTS examiner. Assess strictly according to the official public IELTS band descriptors. Be accurate, not generous: short or off-topic answers must receive low bands. Write all comments, explanations and advice in Vietnamese (clear, encouraging, specific). Quote the learner's exact words when pointing out errors. Return ONLY valid JSON matching the requested schema.`;
   const SCHEMA = kind => `JSON schema:
 {
@@ -79,9 +86,9 @@ Criteria to use: ${kind === 'task1' ? 'Task Achievement, Coherence and Cohesion,
       const k = $('#aiK').value.trim();
       if (!/^AIza[\w-]{20,}$/.test(k)) { $('#aiMsg').textContent = '⚠️ Khóa không đúng định dạng (bắt đầu bằng AIza…).'; return; }
       $('#aiMsg').textContent = '⏳ Đang kiểm tra khóa…';
-      await Store.set('aiKey', k);
+      await setKey(k);
       try { await call('Return {"ok": true} as JSON.'); $('#aiMsg').textContent = '✅ Khóa hoạt động!'; setTimeout(() => { closeModal(); onSaved && onSaved(); }, 600); }
-      catch (e) { $('#aiMsg').textContent = '❌ ' + errText(e); if (e.message === 'BAD_KEY') await Store.set('aiKey', ''); }
+      catch (e) { $('#aiMsg').textContent = '❌ ' + errText(e); if (e.message === 'BAD_KEY') await setKey(''); }
     };
   }
   const errText = e => ({ NO_KEY: 'Chưa có khóa AI.', BAD_KEY: 'Khóa không hợp lệ – kiểm tra lại.', QUOTA: 'Đã hết lượt miễn phí trong ngày/phút của khóa này – thử lại sau ít phút.', MODEL: 'Không tìm thấy mô hình AI phù hợp.' }[e.message] || ('Lỗi: ' + e.message));
@@ -127,9 +134,30 @@ Criteria to use: ${kind === 'task1' ? 'Task Achievement, Coherence and Cohesion,
   }
   function bindSettings(rerender) {
     const s = $('#aiSet'); if (s) s.onclick = () => keyDialog(rerender);
-    const d = $('#aiDel'); if (d) d.onclick = async () => { await Store.set('aiKey', ''); toast('Đã xóa khóa AI'); rerender(); };
+    const d = $('#aiDel'); if (d) d.onclick = async () => { await setKey(''); toast('Đã xóa khóa AI'); rerender(); };
     const m = $('#aiModel'); if (m) m.onchange = () => { state.settings.aiModel = m.value; App.saveSettings(); };
   }
 
-  window.AI = { grade, attach, keyDialog, settingsHtml, bindSettings };
+  // Giải thích sâu một cụm/câu trong ngữ cảnh (nghĩa, cấu trúc, ngữ pháp, collocation, ví dụ)
+  async function explain(text, sentence) {
+    const id = 'ex:' + hash(text + '|' + (sentence || ''));
+    const cache = await Store.get('aiCache', {});
+    if (cache[id]) return cache[id];
+    const r = await call(`Explain the English expression for a Vietnamese IELTS learner. Expression: "${text}"${sentence && sentence !== text ? `\nSentence it appears in: "${sentence}"` : ''}
+Return ONLY JSON: {"meaning": string (Vietnamese meaning in THIS context), "structure": [{"pattern": string, "explain": string (Vietnamese)}] (1-3), "grammar": string (Vietnamese), "collocations": [string] (3-5), "examples": [{"en": string, "vi": string}] (2, IELTS style), "tip": string (Vietnamese: how to use it in IELTS Writing/Speaking)}`);
+    const keys = Object.keys(cache); if (keys.length >= 20) delete cache[keys[0]];
+    cache[id] = r; await Store.set('aiCache', cache);
+    return r;
+  }
+  function renderExplain(x) {
+    return `<div class="ai-ex"><b>🤖 Giải thích sâu</b>
+      ${x.meaning ? `<div class="small"><b>Nghĩa trong ngữ cảnh:</b> ${esc(x.meaning)}</div>` : ''}
+      ${(x.structure || []).map(y => `<div class="small" style="margin-top:.3rem"><b style="color:var(--primary)">${esc(y.pattern)}</b> – ${esc(y.explain)}</div>`).join('')}
+      ${x.grammar ? `<div class="small" style="margin-top:.3rem"><b>Ngữ pháp:</b> ${esc(x.grammar)}</div>` : ''}
+      ${(x.collocations || []).length ? `<div class="row" style="margin-top:.3rem;gap:.25rem">${x.collocations.map(c => `<span class="chip">${esc(c)}</span>`).join('')}</div>` : ''}
+      ${(x.examples || []).map(e => `<div class="small" style="margin-top:.35rem">“${esc(e.en)}” <button class="ctx-say sm" data-saysent="${esc(e.en)}">🔊</button><div class="muted">${esc(e.vi)}</div></div>`).join('')}
+      ${x.tip ? `<div class="small" style="margin-top:.35rem">💡 ${esc(x.tip)}</div>` : ''}</div>`;
+  }
+
+  window.AI = { explain, renderExplain, errText: e => errText(e), getKey, grade, attach, keyDialog, settingsHtml, bindSettings };
 })();

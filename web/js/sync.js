@@ -80,6 +80,8 @@
     setTimeout(() => { window.removeEventListener('message', on); res(null); }, 3000);
   });
   // Gộp từ đã lưu bằng add-on vào tài khoản, rồi trả lại bản gộp cho add-on
+  // Cho module khác dùng cầu nối add-on (vd. dùng chung khóa AI trên cùng máy – không qua cloud)
+  window.VBBridge = { ready: () => extReady, call: (op, data) => extCall(op, data) };
   async function syncExtension() {
     if (!Sync.user) return false;
     const r = await extCall('get');

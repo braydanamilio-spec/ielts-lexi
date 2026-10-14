@@ -778,3 +778,7 @@ mark.cbt-hl { background: #fde047; color: #111; cursor: pointer; }
 .ai-err { padding: .4rem 0; border-bottom: 1px dashed var(--line); font-size: .9rem; }
 .ai-err .bad { color: #e11d48; text-decoration: line-through; } .ai-err .good { color: #16a34a; font-weight: 700; }
 .ai-vocab { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: .4rem .9rem; margin-top: .3rem; font-size: .9rem; }
+.st-box { margin-top: .5rem; padding: .55rem .7rem; border-radius: 12px; background: var(--primary-soft); }
+.st-row { padding: .35rem 0; border-bottom: 1px dashed var(--line); font-size: .88rem; }
+.st-row:last-child { border-bottom: 0; }
+.ai-ex { margin-top: .6rem; padding: .6rem .7rem; border-radius: 12px; background: rgba(22, 163, 74, .08); border: 1px solid rgba(22, 163, 74, .25); }
