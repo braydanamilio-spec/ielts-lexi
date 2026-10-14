@@ -135,7 +135,7 @@
         if (r >= rounds.length) {
           const pct = Math.round(ok / rounds.length * 100);
           box.innerHTML = `<div class="feedback ${pct >= 75 ? 'ok' : 'no'}" style="position:static"><b>Nghe đúng ${ok}/${rounds.length}</b> ${pct >= 75 ? '– tai bạn đã phân biệt tốt!' : '– nghe chậm lại từng cặp và thử lần nữa.'} <button class="btn sm" id="startPairs2">↺ Chơi lại</button></div>`;
-          App.reward({ quizzes: 1, xp: 5 + ok * 2 }); if (pct >= 75) Sfx.win();
+          App.reward({ quizzes: 1, pron: 1, xp: 5 + ok * 2 }); if (pct >= 75) Sfx.win();
           $('#startPairs2').onclick = sp.onclick; return;
         }
         const { p, ans } = rounds[r];
@@ -165,7 +165,7 @@
       const ex = $('[data-explain]', item); ex.hidden = false; ex.innerHTML = `${okk ? '✅' : '❌'} ${esc(q.explain)}`;
       if (qa === x.quiz.length) {
         const pct = Math.round(qr / qa * 100);
-        await App.reward({ quizzes: 1, perfect: pct === 100 ? 1 : 0, xp: 8 + qr * 3 });
+        await App.reward({ quizzes: 1, pron: 1, perfect: pct === 100 ? 1 : 0, xp: 8 + qr * 3 });
         state.game = await Game.mutate(g => { g.pronDone = { ...(g.pronDone || {}), [x.id]: Math.max(pct, (g.pronDone || {})[x.id] || 0) }; });
         if (pct >= 80) { Sfx.win(); confetti(80); }
       }

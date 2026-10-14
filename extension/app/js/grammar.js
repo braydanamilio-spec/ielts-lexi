@@ -113,7 +113,7 @@
     const next = () => {
       if (i >= qs.length) {
         const pct = Math.round(right / qs.length * 100);
-        App.reward({ quizzes: 1, perfect: pct === 100 ? 1 : 0, xp: 10 + right * 2 }); if (pct >= 80) { Sfx.win(); confetti(); }
+        App.reward({ quizzes: 1, grammar: 1, perfect: pct === 100 ? 1 : 0, xp: 10 + right * 2 }); if (pct >= 80) { Sfx.win(); confetti(); }
         view.innerHTML = `<div class="study-wrap"><div class="card celebrate empty"><div class="em">🔀</div><h2>${right}/${qs.length} câu đúng (${pct}%)</h2><p class="muted">Câu sai đã được ghi vào <a href="#/mistakes">Sổ lỗi sai</a>.</p><div class="row center"><a class="btn primary" href="#/grammar/mix">Luyện lượt mới</a><a class="btn" href="#/grammar">Về danh sách bài</a></div></div></div>`;
         return;
       }
@@ -169,7 +169,7 @@
       const nextItem = item.nextElementSibling; if (nextItem && nextItem.classList.contains('q-item')) setTimeout(() => nextItem.scrollIntoView({ behavior: 'smooth', block: 'center' }), 500);
       if (answered === x.quiz.length) {
         const pct = Math.round(right / x.quiz.length * 100);
-        await App.reward({ quizzes: 1, perfect: pct === 100 ? 1 : 0, xp: 10 + right * 3 }, $('#gRes'));
+        await App.reward({ quizzes: 1, grammar: 1, perfect: pct === 100 ? 1 : 0, xp: 10 + right * 3 }, $('#gRes'));
         state.game = await Game.mutate(gs => { gs.grammarDone = { ...(gs.grammarDone || {}), [x.id]: Math.max(pct, (gs.grammarDone || {})[x.id] || 0) }; });
         if (pct >= 80) { Sfx.win(); confetti(); }
         $('#gRes').innerHTML = `<div class="feedback ${pct >= 80 ? 'ok' : 'no'}" style="position:static"><b>${right}/${x.quiz.length} câu đúng (${pct}%)</b> · +${10 + right * 3} XP
@@ -235,7 +235,7 @@
       if (!r.ok && App.logMistake) App.logMistake({ kind: 'grammar', q: r.q, answer: r.answer, given: r.given, explain: r.ex || '', ref: x.id });
       if (answered === ds.length) {
         const pct = Math.round(right / ds.length * 100);
-        await App.reward({ quizzes: 1, perfect: pct === 100 ? 1 : 0, xp: 10 + right * 4 }, $('#dRes'));
+        await App.reward({ quizzes: 1, grammar: 1, writes: 1, perfect: pct === 100 ? 1 : 0, xp: 10 + right * 4 }, $('#dRes'));
         if (pct >= 80) { Sfx.win(); confetti(); }
         $('#dRes').innerHTML = `<div class="feedback ${pct >= 80 ? 'ok' : 'no'}" style="position:static"><b>${right}/${ds.length} câu đúng (${pct}%)</b> · +${10 + right * 4} XP${onDone ? '' : ''}</div>`;
         if (onDone) onDone(pct);

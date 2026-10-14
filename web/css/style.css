@@ -617,3 +617,26 @@ mark.cbt-hl { background: #fde047; color: #111; cursor: pointer; }
 .dk.ok { background: rgba(22, 163, 74, .14); } .dk.miss { background: rgba(229, 72, 77, .16); text-decoration: underline wavy #e5484d; } .dk.extra { background: rgba(245, 158, 11, .18); text-decoration: line-through; }
 /* Nhãn phụ không bị chọn/dính vào từ khi bôi đen hay bấm đúp */
 .tl .spk, .tl .evn, .an-gl, .an-role, .qn { user-select: none; -webkit-user-select: none; }
+
+/* ===== Phương pháp ===== */
+.mloop { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: .6rem; margin-top: .9rem; }
+.mstep { position: relative; display: flex; flex-direction: column; gap: .15rem; background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.22); border-radius: 14px; padding: .75rem .8rem; color: #fff; text-decoration: none; transition: transform .15s, background .15s; }
+.mstep:hover { transform: translateY(-2px); background: rgba(255,255,255,.22); color: #fff; }
+.mstep.done { background: rgba(22,163,74,.35); border-color: rgba(134,239,172,.6); }
+.mstep .mnum { position: absolute; top: .55rem; right: .6rem; width: 1.5rem; height: 1.5rem; border-radius: 50%; display: grid; place-items: center; background: rgba(255,255,255,.25); font-size: .75rem; font-weight: 800; }
+.mstep .mem { font-size: 1.5rem; }
+.mstep small { opacity: .85; font-size: .78rem; }
+.mstep i { opacity: .7; font-size: .7rem; font-style: normal; margin-top: auto; padding-top: .3rem; }
+.mstats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .5rem; margin-top: .7rem; }
+.mstats > div { background: var(--soft, rgba(109,93,252,.06)); border-radius: 12px; padding: .5rem; text-align: center; }
+.mstats b { display: block; font-size: 1.3rem; }
+.mstats span { font-size: .7rem; color: var(--muted); }
+@media (max-width: 520px) { .mstats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.mstrand { display: flex; gap: .6rem; align-items: center; margin: .55rem 0; }
+.mstrand .mse { font-size: 1.4rem; }
+.mstrand .progress { margin: .25rem 0; }
+.mplan { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: .5rem; margin-top: .7rem; }
+.mpi { display: flex; align-items: center; gap: .6rem; border: 1px solid var(--line); border-radius: 12px; padding: .6rem .7rem; color: var(--text); text-decoration: none; }
+.mpi:hover { border-color: var(--primary); }
+.mpi b { font-size: 1.15rem; color: var(--primary); min-width: 2.4rem; }
+.mprin { display: flex; flex-direction: column; }

@@ -253,7 +253,7 @@
       });
       nums.filter(n => !res[n].ok).forEach(n => App.logMistake && App.logMistake({ kind: 'listening', q: `${p.title} – Câu ${n}: ${res[n].q}`, answer: res[n].answer, given: res[n].given || '(bỏ trống)', explain: res[n].cue ? `Nghe: “…${res[n].cue}…”` : '', ref: p.id }));
       state.game = await Game.mutate(gs => { gs.listenDone = { ...(gs.listenDone || {}), [p.id]: Math.max(right, (gs.listenDone || {})[p.id] || 0) }; });
-      await App.reward({ quizzes: 1, perfect: right === nums.length ? 1 : 0, xp: 15 + right * 3 }, $('#lRes'));
+      await App.reward({ quizzes: 1, listens: 1, perfect: right === nums.length ? 1 : 0, xp: 15 + right * 3 }, $('#lRes'));
       if (right >= 8) { Sfx.win(); confetti(); }
       $('#lRes').innerHTML = `<div class="feedback ${right >= 7 ? 'ok' : 'no'}" style="position:static"><b>${right}/${nums.length} câu đúng</b> · +${15 + right * 3} XP
         <div class="small">${right >= 9 ? 'Xuất sắc – mức band 8+ cho phần này.' : right >= 7 ? 'Tốt! Xem lại các câu sai trong lời thoại.' : 'Mở lời thoại bên cạnh, bấm “Nghe đoạn có đáp án” để nghe lại chỗ sai. Câu sai đã vào Sổ lỗi sai.'}</div>
@@ -323,7 +323,7 @@
       const raw = nums.filter(q => results[q].ok).length, band = bandOf(raw);
       nums.filter(q => !results[q].ok).forEach(q => App.logMistake && App.logMistake({ kind: 'listening', q: `Test ${n} – Câu ${q}: ${results[q].q}`, answer: results[q].answer, given: results[q].given || '(bỏ trống)', explain: results[q].cue ? `Nghe: “…${results[q].cue}…”` : '', ref: results[q].pid }));
       state.game = await Game.mutate(gs => { gs.listenBest = { ...(gs.listenBest || {}), [n]: Math.max(band, (gs.listenBest || {})[n] || 0) }; gs.listenTests = [...(gs.listenTests || []), { n, raw, band, at: Date.now() }].slice(-30); });
-      await App.reward({ quizzes: 1, perfect: raw === 40 ? 1 : 0, xp: 40 + raw * 2 });
+      await App.reward({ quizzes: 1, listens: 4, perfect: raw === 40 ? 1 : 0, xp: 40 + raw * 2 });
       if (band >= 7) { Sfx.win(); confetti(160); }
       const byPart = parts.map(p => ({ p, r: qNums(p).filter(q => results[q] && results[q].ok).length }));
       view.innerHTML = `<div class="study-wrap" style="max-width:820px">
@@ -359,7 +359,7 @@
     const draw = () => {
       if (k >= lines.length) {
         const pct = done ? Math.round(score / done * 100) : 0;
-        App.reward({ quizzes: 1, xp: 10 + Math.round(pct / 5) });
+        App.reward({ quizzes: 1, dictations: 1, xp: 10 + Math.round(pct / 5) });
         view.innerHTML = `<div class="study-wrap"><div class="card celebrate empty"><div class="em">⌨️</div><h2>Chính xác ${pct}%</h2><p class="muted">${done} câu đã chép. Chép chính tả đều đặn giúp tai nhận ra nối âm, nuốt âm và trọng âm câu.</p><div class="row center"><a class="btn primary" href="#/listen/${p.id}">🎯 Làm câu hỏi phần này</a><a class="btn" href="#/listening">Về Luyện nghe</a></div></div></div>`;
         return;
       }

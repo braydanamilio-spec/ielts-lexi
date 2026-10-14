@@ -138,5 +138,5 @@
 <<Thân bài 3>> <<Câu chủ đề>> {{In addition}}, an overseas degree can [[significantly enhance|nâng cao đáng kể]] [[career prospects|triển vọng nghề nghiệp]]. <<Giải thích>> Employers [[place a high value on|đánh giá cao]] graduates who have [[international experience|kinh nghiệm quốc tế]] and [[cross-cultural communication skills|kỹ năng giao tiếp liên văn hóa]], {{particularly}} in multinational companies. <<Ví dụ>> {{For example}}, a Vietnamese student who completes an engineering degree in Australia [[gains not only|không chỉ có được]] up-to-date technical knowledge {{but also}} [[a network of contacts|mạng lưới quan hệ]] that may lead to job opportunities [[at home and abroad|trong và ngoài nước]].
 
 <<Kết bài>> {{In conclusion}}, {{while}} studying abroad [[requires considerable financial and emotional investment|đòi hỏi sự đầu tư đáng kể về tài chính và tinh thần]], the linguistic, personal and professional benefits [[make it a worthwhile choice|khiến nó trở thành lựa chọn xứng đáng]] for those who [[have the opportunity|có cơ hội]].` },
-  ];
+  ].concat(g.MODELS || []); // + bài mẫu bổ sung từ js/write/*.js (nạp trước)
 })(typeof self !== 'undefined' ? self : this);

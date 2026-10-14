@@ -40,6 +40,8 @@
              ['Today', [['Bus station', 1, 1, 2, 1, '#0ea5a4'], ['Shops', 3, 1, 2, 1, '#f59e0b'], ['Apartments', 1, 2, 2, 1, '#6d5dfc'], ['Cinema', 1, 3, 2, 1, '#c026d3'], ['Park', 3, 2, 2, 2, '#16a34a']]]],
       overview: 'Overall, the town centre has become more residential and better served by public transport, with the industrial area being replaced, while the park and shops have been retained.' },
   ];
+  // Đề Task 1 bổ sung (js/write/*.js nạp trước): window.TASK1_MORE = [{ id, type, … }]
+  (window.TASK1_MORE || []).forEach(d => { if (!SETS.some(x => x.id === d.id)) SETS.push(d); });
   const VOCAB = {
     line: ['rise / increase / grow', 'fall / decline / decrease', 'fluctuate', 'peak at', 'reach a low of', 'remain stable', 'level off', 'a dramatic surge', 'a steady decline', 'overtake'],
     bar: ['compared with', 'whereas / while', 'the highest / the lowest', 'twice as many as', 'considerably higher than', 'slightly lower than', 'by contrast', 'respectively'],
@@ -185,6 +187,6 @@
       <div><h3>📌 Nhận xét</h3><ul style="padding-left:1.2rem;margin:.3rem 0">${notes.map(n => `<li style="margin:.3rem 0">${n}</li>`).join('')}</ul></div>
       <div><h3>📝 Bài viết được tô sáng</h3><div class="passage hl-awl hl-link hl-mine" style="font-size:1rem">${Lexis.markText(text, { mine: w => App.inDeck(w) })}</div></div></div>`;
     $('#t1Res').scrollIntoView({ behavior: 'smooth', block: 'start' });
-    App.reward({ quizzes: 1, xp: 20 }, $('#go')); Sfx.win();
+    App.reward({ quizzes: 1, writes: 1, xp: 20 }, $('#go')); Sfx.win();
   }
 })();

@@ -11,4 +11,5 @@ git diff --cached --quiet || git commit -q -m "${1:-Cập nhật Vocaband}
 
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 git push -q
+./scripts/build-web.sh
 firebase deploy --only hosting

@@ -40,6 +40,8 @@
     T('p29', 'Two-part question', 'culture', 'Traditional clothing is being replaced by international fashion in many countries. Why is this happening? Is it a positive or negative trend?'),
     T('p30', 'Agree/Disagree', 'education', 'Art and music should be compulsory subjects for all secondary school students. To what extent do you agree or disagree?'),
   ];
+  // Đề bổ sung từ file dữ liệu khác (js/write/*.js nạp trước): window.WRITE_MORE = [[id, type, topic, text], …]
+  (window.WRITE_MORE || []).forEach(a => { if (!PROMPTS.some(x => x.id === a[0])) PROMPTS.push(T(...a)); });
   window.WRITE_PROMPTS = PROMPTS;
   // Thống kê xu hướng (≈92 đề Task 2 thí sinh báo lại, 07–10/2026) – chỉ là số liệu tổng hợp
   const TRENDS = {
@@ -178,7 +180,7 @@
       const essays = await Store.get('essays', []);
       essays.unshift({ prompt: p.id, text, words: a.words, band: a.band, at: Date.now() });
       await Store.set('essays', essays.slice(0, 20));
-      App.reward({ quizzes: 1, xp: 25 }, $('#analyze'));
+      App.reward({ quizzes: 1, writes: 1, xp: 25 }, $('#analyze'));
       Sfx.win();
     }
   }

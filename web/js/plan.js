@@ -110,6 +110,7 @@
 
   // ================= KẾ HOẠCH HÔM NAY (thích ứng) =================
   App.todayPlan = async function () {
+    if (App.need) await App.need('grammar', 'pron', 'listening');
     const s = state.settings, g = state.game, d = g.days[todayKey()] || {};
     const tasks = [];
     const dueNow = Golden.dueNow(state.cards);

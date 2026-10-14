@@ -151,8 +151,29 @@
     const [name, ...rest] = path.split('/');
     return { name, arg: decodeURIComponent(rest.join('/') || ''), query: new URLSearchParams(qs || '') };
   }
-  function route() {
+  // ---------- Nạp module theo trang (lazy loading): trang đầu chỉ tải phần lõi, phần nặng tải khi cần ----------
+  const G = 'js/grammar/', BUNDLES = {
+    grammar: [...['tenses', 'verbs', 'sentences', 'foundation', 'academic', 'chapters', 'book2', 'drills-a', 'drills-b', 'drills-c'].map(f => G + f + '.js'), 'js/grammar.js'],
+    pron: ['js/pron/sounds.js', 'js/pron/skills.js', 'js/pron.js'],
+    listening: [...[1, 2, 3, 4, 5].map(n => `js/listen/test${n}.js`), 'js/listening.js'],
+    writing: ['js/write/task2-more.js', 'js/write/task1-more.js', 'js/write.js', 'js/task1.js', 'js/models.js'],
+  };
+  const ROUTE_BUNDLE = { grammar: 'grammar', placement: 'grammar', pron: 'pron', listening: 'listening', listen: 'listening', 'listen-test': 'listening', dictation: 'listening', write: 'writing', task1: 'writing', model: 'writing', phrases: 'writing' };
+  const bundleP = {};
+  const loadScript = src => new Promise(res => { const s = document.createElement('script'); s.src = src; s.async = false; s.onload = s.onerror = () => res(); document.head.appendChild(s); });
+  // Tải song song nhưng chạy đúng thứ tự (async=false); file thiếu được bỏ qua
+  App.need = (...names) => Promise.all(names.map(n => bundleP[n] || (bundleP[n] = Promise.all(BUNDLES[n].map(loadScript)))));
+  App.loaded = n => !!bundleP[n];
+  // Rảnh thì tải trước các module còn lại → chuyển trang tức thì, dùng offline được
+  const idle = cb => ('requestIdleCallback' in window ? requestIdleCallback(cb, { timeout: 4000 }) : setTimeout(cb, 2500));
+  App.prefetchAll = () => idle(() => Object.keys(BUNDLES).reduce((p, n) => p.then(() => App.need(n)), Promise.resolve()));
+
+  let routeSeq = 0;
+  async function route() {
     const { name, arg, query } = parseHash();
+    const b = ROUTE_BUNDLE[name], my = ++routeSeq;
+    if (b && !App.loaded(b)) view.innerHTML = '<div class="card empty"><div class="em">⏳</div>Đang tải…</div>';
+    if (b) { await App.need(b); if (my !== routeSeq) return; }
     const fn = routes[name] || routes.home;
     const navKey = name === 'topic' ? 'library' : name === 'practice' && arg === 'speak' ? 'speak' : name === 'read' ? 'reading' : /^(listen|listen-test|dictation)$/.test(name) ? 'listening' : name;
     $$('#nav a, #bnav a').forEach(a => a.classList.toggle('active', a.dataset.route === navKey));
@@ -814,29 +835,7 @@
 
 
   // ================= PHƯƠNG PHÁP HỌC =================
-  routes.method = function () {
-    const P = [
-      ['📉', 'Đường cong quên lãng', 'Hermann Ebbinghaus (1885)', 'Trí nhớ về một thông tin mới giảm rất nhanh trong vài ngày đầu nếu không được ôn lại; mỗi lần ôn đúng lúc làm đường cong thoải dần.', 'Mỗi từ có chỉ số <b>🧠 % còn nhớ</b>. Từ tụt dưới mức mục tiêu được đưa vào danh sách <b>Sắp quên</b> để ôn ngay.', '#/deck?from=forget', 'Xem từ sắp quên'],
-      ['🔁', 'Lặp lại ngắt quãng', 'Pimsleur (1967) · Leitner (1972) · Woźniak – SM-2 (1987) · Ye – FSRS (2022)', 'Ôn với khoảng cách tăng dần (10 phút → 1 ngày → 3 ngày → 1 tuần → 1 tháng…) hiệu quả hơn nhiều so với học dồn.', 'Flashcard dùng <b>FSRS</b> – thuật toán Anki chọn làm mặc định, được huấn luyện trên hàng trăm triệu lượt ôn: mỗi từ có độ ổn định &amp; độ khó riêng, lịch ôn tính đúng lúc bạn còn nhớ ~90% (chỉnh được trong Cài đặt). Kèm <b>bước học 1→10 phút</b> cho từ mới; mỗi lựa chọn Quên/Khó/Nhớ/Dễ hiển thị lần ôn tiếp theo.', '#/review', 'Ôn tập ngay'],
-      ['🎯', 'Chủ động nhớ lại (Testing effect)', 'Roediger & Karpicke (2006)', 'Tự kiểm tra – cố gắng nhớ lại trước khi xem đáp án – giúp nhớ lâu hơn hẳn việc đọc lại nhiều lần.', 'Thẻ luôn bắt bạn <b>đoán trước khi lật</b>; Học thông minh đi từ nhận diện (trắc nghiệm) đến <b>tự gõ lại từ</b>.', '#/practice/learn', 'Học thông minh'],
-      ['📖', 'Ngữ liệu dễ hiểu (Comprehensible input)', 'Stephen Krashen', 'Ta tiếp thu ngôn ngữ tốt nhất khi gặp nó trong nội dung có ý nghĩa, hơi vượt trình độ hiện tại một chút (i+1).', 'Lưu từ <b>kèm câu gốc</b> từ bài đọc, trang web, phụ đề YouTube; bài đọc chia cấp độ B1 → C1.', '#/reading', 'Đọc bài'],
-      ['✍️', 'Hiệu ứng tự tạo & mức độ dấn thân', 'Slamecka & Graf (1978) · Laufer & Hulstijn (2001)', 'Thông tin do chính mình tạo ra (tự đặt câu, tự tìm nghĩa) được nhớ tốt hơn thông tin được cho sẵn.', 'Mặt sau flashcard có ô <b>Tự đặt câu</b> (+5 XP); câu của bạn trở thành ngữ cảnh cho lần ôn sau.', '#/review', 'Thử đặt câu'],
-      ['🖼️', 'Mã hóa kép (Dual coding)', 'Allan Paivio (1971)', 'Kết hợp hình ảnh với chữ và âm thanh tạo nhiều “đường dẫn” để truy xuất trí nhớ.', 'Mỗi từ có <b>hình minh họa</b>, phiên âm IPA và <b>phát âm UK/US</b>; luyện nói có chấm điểm.', '#/practice/speak', 'Luyện phát âm'],
-      ['🔀', 'Học xen kẽ (Interleaving)', 'Rohrer & Taylor (2007)', 'Trộn nhiều dạng bài và chủ đề trong một buổi giúp phân biệt và ghi nhớ tốt hơn học từng khối.', 'Bài kiểm tra trộn 5 dạng câu hỏi; phiên ôn tập xen kẽ từ mới vào giữa từ cũ.', '#/practice/test', 'Làm bài kiểm tra'],
-      ['🧩', 'Bốn mạch học từ vựng', 'Paul Nation (2007)', 'Chương trình cân bằng gồm: đầu vào có ý nghĩa, đầu ra có ý nghĩa, học tập trung vào ngôn ngữ, và luyện độ trôi chảy.', 'Đọc & nghe (bài đọc, video) · nói & viết (phát âm, đặt câu) · flashcard & collocation · trò chơi Ghép thẻ tính giờ.', '#/practice', 'Xem các chế độ'],
-    ];
-    view.innerHTML = `
-      <div class="page-head"><div><h1>Phương pháp học của Vocaband</h1><p class="muted">Mỗi tính năng dựa trên một nguyên lý đã được nghiên cứu về trí nhớ và thụ đắc ngôn ngữ.</p></div></div>
-      <div class="card hero-main" style="margin-bottom:1rem"><h2 style="color:#fff;margin:0 0 .4rem">Vòng lặp học 15 phút mỗi ngày</h2>
-        <div class="row" style="gap:.5rem;font-weight:700">${['📖 Gặp từ trong ngữ cảnh', '📌 Lưu kèm câu gốc', '🧠 Học thông minh', '🔁 Ôn đúng lúc sắp quên', '✍️ Dùng lại khi nói & viết'].map((x, i) => `<span style="background:rgba(255,255,255,.18);padding:.4rem .75rem;border-radius:10px">${x}</span>${i < 4 ? '<span>→</span>' : ''}`).join('')}</div></div>
-      <div class="grid g2">${P.map(([em, t, who, idea, how, href, cta]) => `
-        <div class="card stack" style="display:flex;flex-direction:column">
-          <div class="row nowrap"><span style="font-size:2rem">${em}</span><div><h3 style="margin:0">${t}</h3><div class="tiny muted">${who}</div></div></div>
-          <p>${idea}</p>
-          <div class="example-box small" style="border-left-color:var(--primary)"><b>Trong Vocaband:</b> ${how}</div>
-          <div style="margin-top:auto"><a class="btn sm" href="${href}">${cta} →</a></div>
-        </div>`).join('')}</div>`;
-  };
+  // Trang Phương pháp: js/method.js
 
   // ================= CÀI ĐẶT =================
   routes.settings = function () {
@@ -1148,8 +1147,9 @@
   const boot = async () => {
     await App.ready;
     const fresh = !state.settings.onboarded && !Object.keys(state.cards).length && !state.game.xp;
-    if (fresh && /^(#\/?(home)?)?$/.test(location.hash)) { location.hash = '#/welcome'; return; }
+    if (fresh && /^(#\/?(home)?)?$/.test(location.hash)) { location.hash = '#/welcome'; App.prefetchAll(); return; }
     route();
+    App.prefetchAll();
   };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else setTimeout(boot, 0);
 })();
