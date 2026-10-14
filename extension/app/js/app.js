@@ -191,12 +191,13 @@
   const bundleP = {};
   // Phần nặng (đề thi, từ vựng, ngữ pháp…) tải từ CDN jsDelivr (miễn phí, không giới hạn băng thông, gắn đúng phiên bản commit)
   // → máy chủ chính chỉ phục vụ phần lõi, chịu được lượng người dùng lớn gấp nhiều lần. CDN lỗi → tự lấy từ máy chủ chính.
-  const CDN = (!Store.isExtension && !(window.VBNative && VBNative.is) && document.querySelector('meta[name="vb-cdn"]') || {}).content || '';
+  const CDN = (() => { try { if (Store.isExtension || (window.VBNative && VBNative.is)) return null; const el = document.getElementById('vb-cdn'); return el ? JSON.parse(el.textContent) : null; } catch (e) { return null; } })(); // { base, files: { 'js/x.js': commit } }
   let cdnDown = false;
   const loadOne = src => new Promise(res => { const s = document.createElement('script'); s.src = src; s.async = false; s.onload = () => res(true); s.onerror = () => res(false); document.head.appendChild(s); });
   const loadScript = async src => {
-    if (CDN && !cdnDown && await loadOne(CDN + src)) return;
-    if (CDN && !cdnDown) cdnDown = true; // từ giờ dùng máy chủ chính cho các file còn lại (giữ đúng thứ tự)
+    const sha = CDN && !cdnDown && CDN.files[src];
+    if (sha && await loadOne(`${CDN.base}${sha}/web/${src}`)) return;
+    if (sha) cdnDown = true; // CDN lỗi → từ giờ dùng máy chủ chính cho các file còn lại (giữ đúng thứ tự)
     await loadOne(src);
   };
   // Tải song song nhưng chạy đúng thứ tự (async=false); file thiếu được bỏ qua
