@@ -185,6 +185,7 @@
 
   // Nhóm thư viện – các file js/lib/*.js đăng ký thêm bộ từ qua IELTS_DATA.add(...)
   const GROUPS = [
+    { id: 'core', name: 'Từ vựng cốt lõi (NGSL)', emoji: '🧱', desc: '2.809 từ thông dụng nhất theo tần suất – NGSL © Browne, Culligan & Phillips, CC BY-SA 4.0' },
     { id: 'topics', name: 'IELTS theo chủ đề', emoji: '🗂️', desc: 'Từ vựng theo các chủ đề hay gặp trong Speaking & Writing' },
     { id: 'writing', name: 'Writing', emoji: '✍️', desc: 'Từ mô tả biểu đồ, từ nối, collocation học thuật' },
     { id: 'speaking', name: 'Speaking', emoji: '🗣️', desc: 'Phrasal verb, thành ngữ, cách diễn đạt tự nhiên' },

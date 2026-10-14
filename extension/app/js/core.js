@@ -143,6 +143,8 @@
       c.sentences = Array.isArray(c.sentences) ? c.sentences : [];
       c.srs = { ...SRS.newState(), ...(c.srs || {}) };
       if (!c.added) c.added = Date.now();
+      // Ảnh cũ từ Wikipedia không rõ giấy phép → bỏ, dùng emoji cho tới khi tra lại ảnh có giấy phép
+      if (c.image && !c.imageCredit && /wikipedia|wikimedia/.test(c.image)) c.image = '';
     }
     return map || {};
   }
@@ -165,6 +167,7 @@
         topic: entry.topic || 'mine',
         emoji: entry.emoji || '📘',
         image: entry.image || '',
+        imageCredit: entry.imageCredit || null,
         audio: entry.audio || '',
         sentences: (entry.sentences || []).slice(0, 2), // câu song ngữ [{en, vi}]
         contexts: [],          // [{text, vi, source, title, at}]
@@ -184,6 +187,7 @@
       if (!card) card = Cards.make(entry);
       else {
         // bổ sung trường còn trống
+        if (!card.image && entry.image) card.imageCredit = entry.imageCredit || null;
         for (const k of ['ipa', 'ipaUS', 'pos', 'vi', 'def', 'ex', 'image', 'audio', 'level']) {
           if (!card[k] && entry[k]) card[k] = entry[k];
         }

@@ -105,11 +105,32 @@
     return t || myMemory(text);
   }
 
-  async function wikiImage(word) {
-    const d = await fetchJSON(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(word.replace(/ /g, '_'))}`, 3500);
-    if (!d || d.type === 'disambiguation') return '';
-    return (d.thumbnail && d.thumbnail.source) || '';
+  // Ảnh minh họa từ Openverse (kho ảnh Creative Commons): ưu tiên CC0/phạm vi công cộng, sau đó giấy phép cho phép dùng thương mại.
+  // Trả về { src, credit, link, license } – luôn hiển thị ghi nguồn theo giấy phép.
+  async function freeImage(word) {
+    const q = encodeURIComponent(word);
+    // Chỉ nhận ảnh thực sự liên quan: tiêu đề hoặc thẻ mô tả phải chứa từ (hoặc dạng gốc của từ)
+    const stem = word.toLowerCase().replace(/(ies|es|s|ed|ing)$/, '').slice(0, Math.max(4, word.length - 3));
+    const relevant = r => {
+      const hay = [(r.title || ''), ...(r.tags || []).map(t => t.name || '')].join(' ').toLowerCase();
+      return new RegExp(`\\b${stem.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`).test(hay);
+    };
+    const titleHit = r => new RegExp(`\\b${stem.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`).test((r.title || '').toLowerCase());
+    const photo = r => r.thumbnail && !r.mature && !/svg|gif/i.test(r.filetype || '') && !/maki|icon|logo|symbol|emblem|coat of arms|\.svg|\.tif|\.pdf|diagram|chart|map of/i.test(r.title || '')
+      && (!r.width || r.width >= 400) && (!r.height || !r.width || (r.width / r.height > 0.6 && r.width / r.height < 2.2));
+    const pick = d => d && Array.isArray(d.results) && (d.results.find(r => photo(r) && titleHit(r)) || d.results.find(r => photo(r) && relevant(r)));
+    const api = qs => fetchJSON(`https://api.openverse.org/v1/images/?q=${q}&page_size=12&mature=false&${qs}`, 4000);
+    let r = pick(await api('license=cc0,pdm&source=stocksnap,rawpixel,nappy,wikimedia'))      // ảnh stock CC0 chất lượng cao
+      || pick(await api('license=cc0,pdm'))                                                      // mọi nguồn CC0 / phạm vi công cộng
+      || pick(await api('license_type=commercial&source=wikimedia,flickr'));                     // CC BY / BY-SA (ghi nguồn)
+    if (!r) return null;
+    const lic = (r.license || '').toUpperCase() + (r.license_version && !/cc0|pdm/i.test(r.license) ? ' ' + r.license_version : '');
+    return { src: r.thumbnail, link: r.foreign_landing_url || r.url, license: lic,
+      credit: `“${(r.title || word).slice(0, 60)}” – ${r.creator || 'không rõ tác giả'} · ${/pdm/i.test(r.license) ? 'Public Domain' : lic} · qua Openverse` };
   }
+  // Giữ tên cũ cho mã gọi trước đây
+  const wikiImage = async word => { const im = await freeImage(word); return im ? im.src : ''; };
+
 
   const POS_SHORT_RAW = { noun: 'n', verb: 'v', adjective: 'adj', adverb: 'adv', preposition: 'prep', conjunction: 'conj', pronoun: 'pron', interjection: 'excl',
     'danh từ': 'n', 'động từ': 'v', 'tính từ': 'adj', 'trạng từ': 'adv', 'giới từ': 'prep', 'liên từ': 'conj', 'đại từ': 'pron', 'thán từ': 'excl' };
@@ -117,14 +138,14 @@
 
   // ---------- Bộ nhớ đệm bền (giữ kết quả tra qua các lần mở trang / khởi động lại add-on) ----------
   const persist = {
-    async get(w) { try { return g.Core ? await g.Core.Store.get('dc:' + w, null) : null; } catch (e) { return null; } },
+    async get(w) { try { return g.Core ? await g.Core.Store.get('dc2:' + w, null) : null; } catch (e) { return null; } },
     async set(w, e) {
       try {
         if (!g.Core) return;
-        await g.Core.Store.set('dc:' + w, { ...e, _t: Date.now() });
+        await g.Core.Store.set('dc2:' + w, { ...e, _t: Date.now() });
         const idx = (await g.Core.Store.get('dcIndex', [])).filter(x => x !== w);
         idx.push(w);
-        while (idx.length > 300) { const old = idx.shift(); if (g.Core.Store.remove) await g.Core.Store.remove('dc:' + old); }
+        while (idx.length > 150) { const old = idx.shift(); if (g.Core.Store.remove) await g.Core.Store.remove('dc2:' + old); }
         await g.Core.Store.set('dcIndex', idx);
       } catch (e) { /* hết dung lượng: bỏ qua */ }
     },
@@ -155,7 +176,8 @@
       level: (local && local.level) || '',
       emoji: (local && local.emoji) || '',
       topic: (local && local.topic) || 'mine',
-      image: img || '',
+      image: (img && img.src) || '',
+      imageCredit: img ? { text: img.credit, link: img.link } : null,
       senses: gg ? gg.senses : [],
       oxford: gg ? gg.defs : [],
       meanings: fd ? fd.meanings : [],
@@ -194,7 +216,7 @@
       fromGoogle(word),
       fromFreeDict(word),
       local && local.ipa ? null : wiktIPA(word),
-      image ? wikiImage(word) : '',
+      image ? freeImage(word) : null,
       examples ? sentences(word) : [],
     ]);
     const base = gg && gg.base && gg.base !== word ? gg.base : '';
@@ -215,10 +237,11 @@
       }
     }
     const entry = build(word, local, gg, fd, wk, img, sents);
+    if (entry.image && !/^n|danh/.test(entry.pos || '')) { entry.image = ''; entry.imageCredit = null; }
     cache.set(word, entry);
-    if (image && examples) persist.set(word, entry);
+    if (image && examples) persist.set(word, { ...entry, meanings: entry.oxford.length ? [] : entry.meanings.slice(0, 2) });
     return entry;
   }
 
-  g.Dict = { lookup, quick, translateVi, wikiImage, sentences, normWord };
+  g.Dict = { lookup, quick, translateVi, wikiImage, freeImage, sentences, normWord };
 })(typeof self !== 'undefined' ? self : this);

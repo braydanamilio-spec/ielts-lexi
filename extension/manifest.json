@@ -37,7 +37,8 @@
     "https://api.mymemory.translated.net/*",
     "https://en.wikipedia.org/*",
     "https://en.wiktionary.org/*",
-    "https://api.datamuse.com/*"
+    "https://api.datamuse.com/*",
+    "https://api.openverse.org/*"
   ],
   "content_scripts": [
     {

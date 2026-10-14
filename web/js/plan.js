@@ -87,7 +87,7 @@
     const finish = async () => {
       const pct = Math.round(got / Math.max(1, max) * 100);
       const band = pct >= 88 ? '7.5+' : pct >= 75 ? '7.0' : pct >= 62 ? '6.5' : pct >= 50 ? '6.0' : pct >= 38 ? '5.5' : pct >= 25 ? '5.0' : '4.5';
-      const stage = pct >= 75 ? 's3' : pct >= 50 ? 's2' : 's1';
+      const stage = pct >= 75 ? 's3' : pct >= 50 ? 's2' : pct >= 30 ? 's1' : 's0';
       const vp = Math.round(res.vocab[0] / Math.max(1, res.vocab[1]) * 100), gp = Math.round(res.grammar[0] / Math.max(1, res.grammar[1]) * 100);
       state.settings.placement = { band, pct, vocab: vp, grammar: gp, stage, at: Date.now() };
       await App.saveSettings();
@@ -97,7 +97,7 @@
         <div class="em">🎯</div><h2>Trình độ ước tính: Band ${band}</h2>
         <div class="row center" style="gap:2rem;margin:1rem 0">${ring(vp, vp + '%', 'var(--primary)')}<div class="small">Từ vựng</div>${ring(gp, gp + '%', 'var(--accent)')}<div class="small">Ngữ pháp</div></div>
         <p>Điểm cần ưu tiên: <b>${weak}</b>. Kế hoạch hôm nay trên trang chủ đã được điều chỉnh theo kết quả này.</p>
-        <p class="small muted">Gợi ý bắt đầu lộ trình từ <b>${{ s1: 'Chặng 1 · Nền tảng', s2: 'Chặng 2 · Mở rộng chủ đề', s3: 'Chặng 3 · Học thuật' }[stage]}</b>. Kết quả chỉ để tham khảo, không thay thế bài thi thật.</p>
+        <p class="small muted">Gợi ý bắt đầu lộ trình từ <b>${{ s0: 'Chặng 0 · Từ cốt lõi', s1: 'Chặng 1 · Nền tảng', s2: 'Chặng 2 · Mở rộng chủ đề', s3: 'Chặng 3 · Học thuật' }[stage]}</b>. Kết quả chỉ để tham khảo, không thay thế bài thi thật.</p>
         <div class="row center"><a class="btn primary" href="#/home">Xem kế hoạch hôm nay →</a><a class="btn" href="#/path">🗺️ Lộ trình</a></div></div></div>`;
     };
     view.innerHTML = `<div class="study-wrap"><div class="card celebrate empty"><div class="em">🧭</div><h2>Kiểm tra đầu vào (5 phút)</h2>

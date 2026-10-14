@@ -194,7 +194,8 @@
   }
   const stopRecognize = () => { if (activeRec) { activeRec._stale = true; try { activeRec.abort(); } catch (e) { /* đã dừng */ } activeRec = null; } };
 
-  const pic = (c, cls = 'pic') => `<div class="${cls}">${c.image ? `<img src="${esc(c.image)}" alt="${esc(c.word)}" loading="lazy" referrerpolicy="no-referrer">` : esc(c.emoji || '📘')}</div>`;
+  // Ảnh minh họa kèm ghi nguồn theo giấy phép Creative Commons
+  const pic = (c, cls = 'pic') => `<div class="${cls}">${c.image ? `<img src="${esc(c.image)}" alt="${esc(c.word)}" loading="lazy" referrerpolicy="no-referrer">${c.imageCredit ? `<a class="pcredit" href="${esc(c.imageCredit.link)}" target="_blank" rel="noopener" title="${esc(c.imageCredit.text)}" onclick="event.stopPropagation()">ⓘ</a>` : ''}` : esc(c.emoji || '📘')}</div>`;
   const levelChip = l => l ? `<span class="chip lv ${esc(l)}">${esc(l)}</span>` : '';
   const posChip = p => p ? `<span class="chip pos">${esc(p)}</span>` : '';
   const masteryDots = (s, SRS) => { const m = SRS.mastery(s); return `<span class="mastery" title="Mức thuộc">${[1, 2, 3].map(i => `<i class="${i <= m ? 'on' : ''}"></i>`).join('')}</span>`; };

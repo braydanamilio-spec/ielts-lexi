@@ -7,6 +7,8 @@
   const view = App.view;
 
   const STAGES = [
+    { id: 's0', name: 'Chặng 0 · Từ cốt lõi', band: 'Band 4.0 – 5.0', color: '#64748b', desc: 'Những từ thông dụng nhất tiếng Anh (NGSL) – nền móng cho người mới',
+      units: ['ngsl1', 'ngsl2', 'ngsl3', 'ngsl4', 'ngsl5'] },
     { id: 's1', name: 'Chặng 1 · Nền tảng', band: 'Band 5.5 – 6.0', color: '#16a34a', desc: 'Từ vựng chủ đề quen thuộc trong Speaking Part 1–2',
       units: ['education', 'work', 'health', 'travel', 'society', 'technology', 'food', 'sport'] },
     { id: 's2', name: 'Chặng 2 · Mở rộng chủ đề', band: 'Band 6.5', color: '#0ea5a4', desc: 'Chủ đề Writing Task 2 hay gặp và từ mô tả biểu đồ',

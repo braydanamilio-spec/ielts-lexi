@@ -50,7 +50,13 @@
       { q: '___ education is the key to reducing poverty.', options: ['A', 'An', 'The', 'Ø'], answer: 3, explain: 'Nói về giáo dục nói chung (không đếm được, trừu tượng) nên không dùng mạo từ.' },
       { q: 'He studied at ___ university in Manchester.', options: ['a', 'an', 'the', 'Ø'], answer: 0, explain: '“university” phát âm bắt đầu bằng /j/ nên dùng a.' },
       { q: 'Many students travel to ___ United States to study.', options: ['a', 'an', 'the', 'Ø'], answer: 2, explain: 'Tên nước có “States” dùng the.' },
-      { q: 'Which sentence is correct?', options: ['The number of cars rose sharply.', 'Number of cars rose sharply.', 'A number of cars rose sharply.', 'The number of car rose sharply.'], answer: 0, explain: '“The number of + N số nhiều” chỉ con số cụ thể; các câu khác sai mạo từ hoặc sai nghĩa/số.' }
+      { q: 'Which sentence is correct?', options: ['The number of cars rose sharply.', 'Number of cars rose sharply.', 'A number of cars rose sharply.', 'The number of car rose sharply.'], answer: 0, explain: '“The number of + N số nhiều” chỉ con số cụ thể; các câu khác sai mạo từ hoặc sai nghĩa/số.' },
+      { q: 'Câu nào đúng ngữ pháp?', options: ['She is an university student.', 'She is a university student.', 'She is a university students.', 'She is university student.'], answer: 1, explain: 'university bắt đầu bằng âm /j/ (phụ âm) nên dùng a; danh từ đếm được số ít cần mạo từ.' },
+      { q: 'Câu nào đúng ngữ pháp?', options: ['The unemployment is a serious problem.', 'An unemployment is a serious problem.', 'Unemployment is a serious problem.', 'Unemployment is serious the problem.'], answer: 2, explain: 'Danh từ không đếm được nói chung (unemployment) không dùng mạo từ.' },
+      { q: 'Phần nào sai? (A) The life in (B) a big city can be stressful, (C) but it offers (D) many opportunities.', options: ['(A) The', '(B) a', '(C) but', '(D) many'], answer: 0, explain: 'life nói chung không dùng the → bỏ The: Life in a big city…' },
+      { q: 'Phần nào sai? He plays (A) piano (B) very well and (C) is (D) the best musician in our class.', options: ['(A) piano', '(B) very', '(C) is', '(D) the'], answer: 0, explain: 'Chơi nhạc cụ dùng the → plays the piano.' },
+      { q: 'Task 1: ___ number of international students rose sharply between 2010 and 2020.', options: ['A', 'The', 'An', '—'], answer: 1, explain: 'The number of + N số nhiều (con số cụ thể) đi với động từ số ít; a number of nghĩa là nhiều.' },
+      { q: 'Task 2: Many people believe that ___ education is the key to reducing poverty.', options: ['the', 'an', 'a', '—'], answer: 3, explain: 'education nói chung (không đếm được) không dùng mạo từ.' }
     ]
   });
 
@@ -95,7 +101,13 @@
       { q: 'The chart shows the ___ of water used by each sector.', options: ['number', 'amount', 'many', 'few'], answer: 1, explain: '“water” không đếm được nên dùng amount.' },
       { q: 'There is ___ traffic in the city centre during rush hour.', options: ['many', 'a lot of', 'a few', 'several'], answer: 1, explain: '“traffic” không đếm được; a lot of dùng được cho cả hai loại.' },
       { q: 'Choose the correct sentence.', options: ['They bought new furnitures.', 'They bought a new furniture.', 'They bought some new furniture.', 'They bought many new furniture.'], answer: 2, explain: '“furniture” không đếm được, đi với some; không có dạng số nhiều.' },
-      { q: 'People today spend ___ time outdoors than their parents did.', options: ['fewer', 'less', 'few', 'little'], answer: 1, explain: '“time” không đếm được, dạng so sánh hơn của little là less.' }
+      { q: 'People today spend ___ time outdoors than their parents did.', options: ['fewer', 'less', 'few', 'little'], answer: 1, explain: '“time” không đếm được, dạng so sánh hơn của little là less.' },
+      { q: 'Câu nào đúng ngữ pháp?', options: ['She gave me some useful advices.', 'She gave me a useful advice.', 'She gave me some useful advice.', 'She gave me many useful advice.'], answer: 2, explain: 'advice là danh từ không đếm được: không thêm -s, không dùng a/many; dùng some.' },
+      { q: 'Câu nào đúng ngữ pháp?', options: ['There is too much traffic in the city centre.', 'There are too many traffics in the city centre.', 'There is too many traffic in the city centre.', 'There are too much traffic in the city centre.'], answer: 0, explain: 'traffic không đếm được → too much + động từ số ít is.' },
+      { q: 'Phần nào sai? We need (A) more (B) informations (C) about the course (D) before we decide.', options: ['(A) more', '(B) informations', '(C) about', '(D) before'], answer: 1, explain: 'information không đếm được, không thêm -s.' },
+      { q: 'Phần nào sai? Only (A) a little students (B) attended the lecture (C) because of (D) the heavy rain.', options: ['(A) a little', '(B) attended', '(C) because of', '(D) the'], answer: 0, explain: 'students đếm được → dùng a few (hoặc few), không dùng a little.' },
+      { q: 'Task 1: The ___ of plastic waste produced in the country doubled between 2000 and 2020.', options: ['number', 'amount', 'many', 'few'], answer: 1, explain: 'waste không đếm được → the amount of.' },
+      { q: 'Speaking Part 1: "Do you have many friends?" – "Not many, but I have ___ close friends I can really trust."', options: ['a little', 'much', 'little', 'a few'], answer: 3, explain: 'friends đếm được, ý tích cực (một vài) → a few.' }
     ]
   });
 
@@ -144,7 +156,13 @@
       { q: 'The food in the canteen tastes ___.', options: ['awfully', 'awful', 'awfulness', 'more awfully'], answer: 1, explain: '“taste” là động từ chỉ giác quan, đóng vai trò động từ nối nên đi với tính từ.' },
       { q: 'Choose the correct word order.', options: ['He always is late for class.', 'He is always late for class.', 'He is late always for class.', 'Always he is late for class.'], answer: 1, explain: 'Trạng từ tần suất đứng sau động từ be.' },
       { q: 'She works very ___ to support her family.', options: ['hardly', 'hard', 'hardness', 'harder than'], answer: 1, explain: '“hard” vừa là tính từ vừa là trạng từ; hardly nghĩa là hầu như không.' },
-      { q: 'Which phrase has the correct adjective order?', options: ['a Japanese small new car', 'a new small Japanese car', 'a small new Japanese car', 'a Japanese new small car'], answer: 2, explain: 'Thứ tự: kích cỡ (small) – tuổi (new) – nguồn gốc (Japanese).' }
+      { q: 'Which phrase has the correct adjective order?', options: ['a Japanese small new car', 'a new small Japanese car', 'a small new Japanese car', 'a Japanese new small car'], answer: 2, explain: 'Thứ tự: kích cỡ (small) – tuổi (new) – nguồn gốc (Japanese).' },
+      { q: 'Câu nào đúng ngữ pháp?', options: ['She speaks English very good.', 'She speaks English very well.', 'She speaks very well English.', 'She very well speaks English.'], answer: 1, explain: 'Bổ nghĩa cho động từ dùng trạng từ well; trạng từ đứng sau tân ngữ.' },
+      { q: 'Câu nào đúng ngữ pháp?', options: ['They live in a stone old lovely cottage.', 'They live in an old lovely stone cottage.', 'They live in a lovely stone old cottage.', 'They live in a lovely old stone cottage.'], answer: 3, explain: 'Trật tự tính từ: ý kiến (lovely) – tuổi (old) – chất liệu (stone).' },
+      { q: 'Phần nào sai? The number of visitors (A) increased (B) dramatic (C) after the museum (D) reopened.', options: ['(A) increased', '(B) dramatic', '(C) after', '(D) reopened'], answer: 1, explain: 'Bổ nghĩa cho động từ increased cần trạng từ → dramatically.' },
+      { q: 'Phần nào sai? He (A) always is late (B) for meetings, (C) which annoys his (D) colleagues.', options: ['(A) always is', '(B) for', '(C) which', '(D) colleagues'], answer: 0, explain: 'Trạng từ tần suất đứng sau be → is always.' },
+      { q: 'Task 1: Car sales rose ___ in the first quarter and then levelled off.', options: ['steady', 'steadiness', 'steadily', 'steadied'], answer: 2, explain: 'Bổ nghĩa cho động từ rose dùng trạng từ steadily.' },
+      { q: 'Speaking Part 1: "How do you feel about your hometown?" – "I feel really ___ there because everyone is so friendly."', options: ['comfortably', 'comfortable', 'comfort', 'comfortableness'], answer: 1, explain: 'Sau động từ nối feel dùng tính từ: comfortable.' }
     ]
   });
 
@@ -198,7 +216,13 @@
       { q: 'The ___ you read, the wider your vocabulary becomes.', options: ['much', 'most', 'more', 'many'], answer: 2, explain: 'So sánh kép: The more…, the + comparative…' },
       { q: 'Cycling is not ___ popular as walking in this town.', options: ['so', 'more', 'than', 'the most'], answer: 0, explain: 'So sánh không bằng: not as/so + Adj + as.' },
       { q: 'The unemployment rate in Spain was higher than ___ in Germany.', options: ['this', 'those', 'that', 'it'], answer: 2, explain: '“that” thay cho danh từ số ít the unemployment rate.' },
-      { q: 'Electricity was ___ most common source of energy for heating.', options: ['a', 'Ø', 'the', 'an'], answer: 2, explain: 'So sánh nhất luôn đi với the.' }
+      { q: 'Electricity was ___ most common source of energy for heating.', options: ['a', 'Ø', 'the', 'an'], answer: 2, explain: 'So sánh nhất luôn đi với the.' },
+      { q: 'Câu nào đúng ngữ pháp?', options: ['London is more expensive than Manchester.', 'London is expensiver than Manchester.', 'London is more expensive as Manchester.', 'London is most expensive than Manchester.'], answer: 0, explain: 'Tính từ dài: more + adj + than.' },
+      { q: 'Câu nào đúng ngữ pháp?', options: ['This is the more interesting book I have ever read.', 'This is most interesting book I have ever read.', 'This is the most interesting book I have ever read.', 'This is the interestingest book I have ever read.'], answer: 2, explain: 'So sánh nhất tính từ dài: the most + adj; thường đi với I have ever V3.' },
+      { q: 'Phần nào sai? Living in (A) the countryside is (B) much (C) more cheaper (D) than living in the city.', options: ['(A) the', '(B) much', '(C) more cheaper', '(D) than'], answer: 2, explain: 'cheap là tính từ ngắn → cheaper, không thêm more.' },
+      { q: 'Phần nào sai? This year\'s results (A) are (B) not as (C) good (D) than last year\'s.', options: ['(A) are', '(B) not as', '(C) good', '(D) than'], answer: 3, explain: 'So sánh không bằng: not as + adj + as → sửa than thành as.' },
+      { q: 'Task 1: Coal was ___ source of electricity in 1990, accounting for 45% of the total.', options: ['more important', 'most important than', 'the importantest', 'the most important'], answer: 3, explain: 'So sánh nhất tính từ dài: the most important.' },
+      { q: 'Task 2: The ___ people use private cars, the worse air quality becomes.', options: ['most', 'more', 'much', 'many'], answer: 1, explain: 'So sánh kép: The more …, the + so sánh hơn …' }
     ]
   });
 
@@ -251,7 +275,13 @@
       { q: 'Governments should be responsible ___ protecting the environment.', options: ['of', 'for', 'in', 'to'], answer: 1, explain: 'responsible for + V-ing.' },
       { q: 'Smoking is harmful ___ your health.', options: ['for', 'with', 'to', 'at'], answer: 2, explain: 'harmful to sb/sth.' },
       { q: 'I usually study ___ night when it is quiet.', options: ['in', 'on', 'at', 'during'], answer: 2, explain: 'Cụm cố định: at night.' },
-      { q: 'Which sentence is correct?', options: ['She is good in maths.', 'She is interested on art.', 'She is aware of the risks.', 'She is capable to win.'], answer: 2, explain: 'aware of đúng; các câu khác cần good at, interested in, capable of winning.' }
+      { q: 'Which sentence is correct?', options: ['She is good in maths.', 'She is interested on art.', 'She is aware of the risks.', 'She is capable to win.'], answer: 2, explain: 'aware of đúng; các câu khác cần good at, interested in, capable of winning.' },
+      { q: 'Câu nào đúng ngữ pháp?', options: ['The meeting is in Monday at 10 a.m.', 'The meeting is on Monday in 10 a.m.', 'The meeting is on Monday at 10 a.m.', 'The meeting is at Monday on 10 a.m.'], answer: 2, explain: 'on + thứ/ngày, at + giờ.' },
+      { q: 'Câu nào đúng ngữ pháp?', options: ['She is interested in environmental science.', 'She is interested on environmental science.', 'She is interested about environmental science.', 'She is interested for environmental science.'], answer: 0, explain: 'interested in là giới từ đi kèm cố định.' },
+      { q: 'Phần nào sai? I was born (A) in 2001 (B) on a small village (C) in the north (D) of Vietnam.', options: ['(A) in', '(B) on', '(C) in', '(D) of'], answer: 1, explain: 'in + làng, thành phố, quốc gia → in a small village.' },
+      { q: 'Phần nào sai? Many young people (A) depend (B) of their parents (C) for financial support (D) until their late twenties.', options: ['(A) depend', '(B) of', '(C) for', '(D) until'], answer: 1, explain: 'depend on sb → sửa of thành on.' },
+      { q: 'Task 1: The figure rose ___ 20% to 35% between 2005 and 2015.', options: ['at', 'from', 'in', 'since'], answer: 1, explain: 'Mô tả thay đổi số liệu: rise from … to …' },
+      { q: 'Task 2: Children who spend too much time online may be exposed ___ harmful content.', options: ['with', 'for', 'at', 'to'], answer: 3, explain: 'be exposed to sth là giới từ đi kèm cố định.' }
     ]
   });
 
@@ -301,7 +331,13 @@
       { q: 'Neither my parents nor my sister ___ to move abroad.', options: ['want', 'wants', 'are wanting', 'have wanted'], answer: 1, explain: 'Chia theo chủ ngữ gần nhất “my sister” (số ít).' },
       { q: 'Economics ___ a popular subject at university.', options: ['are', 'is', 'were', 'have been'], answer: 1, explain: '“Economics” là tên môn học, tuy có -s nhưng là số ít.' },
       { q: 'Everyone in these villages ___ access to clean water.', options: ['need', 'needs', 'are needing', 'have needed'], answer: 1, explain: 'Everyone → động từ số ít; “in these villages” chỉ là cụm bổ nghĩa.' },
-      { q: 'Sixty per cent of the respondents ___ that they exercise weekly.', options: ['says', 'say', 'is saying', 'has said'], answer: 1, explain: 'Phần trăm chia theo danh từ sau of: respondents (số nhiều).' }
+      { q: 'Sixty per cent of the respondents ___ that they exercise weekly.', options: ['says', 'say', 'is saying', 'has said'], answer: 1, explain: 'Phần trăm chia theo danh từ sau of: respondents (số nhiều).' },
+      { q: 'Câu nào đúng ngữ pháp?', options: ['Everyone in the class have finished the test.', 'Everyone in the class has finished the test.', 'Everyone in the class are finished the test.', 'Everyone in the class have finish the test.'], answer: 1, explain: 'everyone là chủ ngữ số ít → has finished.' },
+      { q: 'Câu nào đúng ngữ pháp?', options: ['The news are very worrying.', 'The news were very worrying.', 'The news is very worrying.', 'The news be very worrying.'], answer: 2, explain: 'news là danh từ không đếm được, dù có -s vẫn dùng động từ số ít.' },
+      { q: 'Phần nào sai? The number of cars (A) on the roads (B) have (C) increased (D) dramatically.', options: ['(A) on', '(B) have', '(C) increased', '(D) dramatically'], answer: 1, explain: 'The number of + N số nhiều → động từ số ít: has increased.' },
+      { q: 'Phần nào sai? One of the most serious problems (A) in big cities (B) are (C) the lack (D) of affordable housing.', options: ['(A) in', '(B) are', '(C) the lack', '(D) of'], answer: 1, explain: 'Chủ ngữ chính là One → động từ số ít is.' },
+      { q: 'Task 1: A large number of people ___ unemployed in 2020.', options: ['were', 'was', 'is', 'has been'], answer: 0, explain: 'A number of + N số nhiều → động từ số nhiều; năm 2020 → quá khứ: were.' },
+      { q: 'Speaking Part 1: "Which subject did you find hardest at school?" – "Mathematics ___ always been the hardest for me."', options: ['have', 'were', 'are', 'has'], answer: 3, explain: 'Tên môn học tận cùng -s (mathematics) vẫn là số ít → has.' }
     ]
   });
 
@@ -353,7 +389,13 @@
       { q: 'This is the school ___ my mother used to teach.', options: ['which', 'when', 'where', 'whose'], answer: 2, explain: 'Thay cho nơi chốn với vai trò trạng ngữ (teach there) dùng where.' },
       { q: 'Choose the correct reduced relative clause: “Students who live on campus save money.”', options: ['Students lived on campus save money.', 'Students living on campus save money.', 'Students to live on campus save money.', 'Students are living on campus save money.'], answer: 1, explain: 'Mệnh đề chủ động rút gọn thành V-ing.' },
       { q: 'The rules ___ by the government were unpopular.', options: ['introducing', 'introduced', 'which introduced', 'were introduced'], answer: 1, explain: 'Nghĩa bị động (được chính phủ ban hành) rút gọn bằng V3.' },
-      { q: 'House prices doubled, ___ made it hard for young couples to buy a home.', options: ['that', 'what', 'which', 'it'], answer: 2, explain: '“which” thay cho cả mệnh đề phía trước, sau dấu phẩy.' }
+      { q: 'House prices doubled, ___ made it hard for young couples to buy a home.', options: ['that', 'what', 'which', 'it'], answer: 2, explain: '“which” thay cho cả mệnh đề phía trước, sau dấu phẩy.' },
+      { q: 'Câu nào đúng ngữ pháp?', options: ['The man which lives next door is a doctor.', 'The man who he lives next door is a doctor.', 'The man whom lives next door is a doctor.', 'The man who lives next door is a doctor.'], answer: 3, explain: 'who thay cho người làm chủ ngữ; không lặp lại đại từ he.' },
+      { q: 'Câu nào đúng ngữ pháp?', options: ['Hanoi, that is the capital of Vietnam, is famous for its street food.', 'Hanoi, which is the capital of Vietnam, is famous for its street food.', 'Hanoi, where is the capital of Vietnam, is famous for its street food.', 'Hanoi, which it is the capital of Vietnam, is famous for its street food.'], answer: 1, explain: 'Mệnh đề không xác định (có dấu phẩy) dùng which, không dùng that.' },
+      { q: 'Phần nào sai? The student (A) whose essay won the prize (B) is (C) from Da Nang, (D) that is in central Vietnam.', options: ['(A) whose', '(B) is', '(C) from', '(D) that'], answer: 3, explain: 'Sau dấu phẩy (mệnh đề không xác định) không dùng that → sửa thành which.' },
+      { q: 'Phần nào sai? People (A) who (B) smokes (C) regularly are (D) more likely to develop lung disease.', options: ['(A) who', '(B) smokes', '(C) regularly', '(D) more likely'], answer: 1, explain: 'who thay cho people (số nhiều) → động từ số nhiều smoke.' },
+      { q: 'Task 1 (bản đồ): The map shows the area ___ a new shopping centre is planned.', options: ['which', 'where', 'who', 'whose'], answer: 1, explain: 'where thay cho nơi chốn, theo sau là mệnh đề đầy đủ.' },
+      { q: 'Task 2: Parents ___ children spend too much time on screens should set clear limits.', options: ['who', 'which', 'whom', 'whose'], answer: 3, explain: 'whose + danh từ chỉ sở hữu (con cái của các phụ huynh).' }
     ]
   });
 
@@ -400,7 +442,13 @@
       { q: 'It is uncertain ___ the project will be finished on time.', options: ['whether', 'what', 'which', 'that if'], answer: 0, explain: 'Câu hỏi có/không gián tiếp dùng whether.' },
       { q: 'The table shows ___ people spent on food.', options: ['how much did', 'how much', 'how many', 'what did'], answer: 1, explain: '“how much” + S + V (money không đếm được), không đảo trợ động từ.' },
       { q: 'Scientists agree ___ climate change is caused by human activity.', options: ['what', 'that', 'whether', 'which'], answer: 1, explain: 'Nêu một quan điểm/sự thật dùng that.' },
-      { q: 'The decision depends on ___ the council approves the budget.', options: ['if', 'whether', 'that', 'what'], answer: 1, explain: 'Sau giới từ (on) chỉ dùng whether, không dùng if.' }
+      { q: 'The decision depends on ___ the council approves the budget.', options: ['if', 'whether', 'that', 'what'], answer: 1, explain: 'Sau giới từ (on) chỉ dùng whether, không dùng if.' },
+      { q: 'Câu nào đúng ngữ pháp?', options: ['I don\'t know where he lives.', 'I don\'t know where does he live.', 'I don\'t know where he does live.', 'I don\'t know where lives he.'], answer: 0, explain: 'Mệnh đề danh từ dùng trật tự câu khẳng định: where + S + V.' },
+      { q: 'Câu nào đúng ngữ pháp?', options: ['What he said were surprising.', 'What did he say was surprising.', 'What he said was surprising.', 'Which he said was surprising.'], answer: 2, explain: 'Mệnh đề What làm chủ ngữ coi là số ít → was; không đảo ngữ.' },
+      { q: 'Phần nào sai? Nobody (A) knows (B) exactly (C) how many people (D) will they attend the event.', options: ['(A) knows', '(B) exactly', '(C) how many', '(D) will they'], answer: 3, explain: 'Mệnh đề danh từ không đảo ngữ và không thêm they → how many people will attend.' },
+      { q: 'Phần nào sai? Scientists (A) are still unsure (B) whether (C) is the treatment (D) effective or not.', options: ['(A) are still', '(B) whether', '(C) is the treatment', '(D) effective'], answer: 2, explain: 'Sau whether dùng trật tự khẳng định → whether the treatment is effective.' },
+      { q: 'Task 2: It is often argued ___ university education should be free for everyone.', options: ['what', 'that', 'which', 'whether that'], answer: 1, explain: 'It is argued that + mệnh đề: that giới thiệu mệnh đề danh từ.' },
+      { q: 'Speaking Part 1: "What do you like about your job?" – "___ I enjoy most is meeting new people."', options: ['That', 'Which', 'It', 'What'], answer: 3, explain: 'What = the thing that, làm chủ ngữ cho is.' }
     ]
   });
 
@@ -446,7 +494,13 @@
       { q: 'Exports rose in Brazil, ___ they fell in Argentina.', options: ['whereas', 'despite', 'because of', 'in order to'], answer: 0, explain: 'Tương phản hai đối tượng, theo sau là mệnh đề: whereas.' },
       { q: 'The match was postponed ___ bad weather.', options: ['because', 'because of', 'although', 'so that'], answer: 1, explain: '“bad weather” là cụm danh từ nên dùng because of.' },
       { q: 'Which sentence is correct?', options: ['Although he is rich, but he is unhappy.', 'Despite he is rich, he is unhappy.', 'Although he is rich, he is unhappy.', 'In spite he is rich, he is unhappy.'], answer: 2, explain: 'Although + mệnh đề, không kèm but.' },
-      { q: 'Many people cycle to work ___ save money.', options: ['so that', 'in order to', 'because', 'due to'], answer: 1, explain: 'Theo sau là động từ nguyên mẫu save: in order to.' }
+      { q: 'Many people cycle to work ___ save money.', options: ['so that', 'in order to', 'because', 'due to'], answer: 1, explain: 'Theo sau là động từ nguyên mẫu save: in order to.' },
+      { q: 'Câu nào đúng ngữ pháp?', options: ['Although it was raining, but we went out.', 'Although it was raining, we went out.', 'Despite it was raining, we went out.', 'Although raining, but we went out.'], answer: 1, explain: 'Although không đi cùng but; Despite không đi với mệnh đề.' },
+      { q: 'Câu nào đúng ngữ pháp?', options: ['Despite of the high cost, many people buy organic food.', 'Although the high cost, many people buy organic food.', 'Despite the cost is high, many people buy organic food.', 'Despite the high cost, many people buy organic food.'], answer: 3, explain: 'Despite + danh từ (không có of); Although + mệnh đề.' },
+      { q: 'Phần nào sai? (A) Because of the price of fuel (B) rose, (C) many airlines (D) increased their fares.', options: ['(A) Because of', '(B) rose', '(C) many', '(D) increased'], answer: 0, explain: 'Theo sau là mệnh đề (the price … rose) → dùng Because, không dùng Because of.' },
+      { q: 'Phần nào sai? She saved money (A) every month (B) so that she (C) can (D) buy a car the following year.', options: ['(A) every', '(B) so that', '(C) can', '(D) buy'], answer: 2, explain: 'Mệnh đề chính ở quá khứ → so that + could: so that she could buy.' },
+      { q: 'Task 2: ___ technology has made life easier, it has also created new problems.', options: ['Although', 'Despite', 'Because', 'In spite of'], answer: 0, explain: 'Hai ý tương phản, theo sau là mệnh đề → Although.' },
+      { q: 'Speaking Part 1: "Why did you choose your university?" – "I chose it ___ it has an excellent engineering department."', options: ['because of', 'despite', 'because', 'although'], answer: 2, explain: 'Chỉ nguyên nhân, theo sau là mệnh đề → because.' }
     ]
   });
 
@@ -494,7 +548,13 @@
       { q: 'Choose the best way to combine: “Fast food is cheap. It is unhealthy.”', options: ['Fast food is cheap, it is unhealthy.', 'Fast food is cheap however unhealthy.', 'Although fast food is cheap, it is unhealthy.', 'Fast food is cheap, despite it is unhealthy.'], answer: 2, explain: 'Although + mệnh đề phụ, mệnh đề chính: đúng ngữ pháp và rõ nghĩa tương phản.' },
       { q: 'Choose the correct punctuation.', options: ['Costs rose, therefore, sales fell.', 'Costs rose; therefore, sales fell.', 'Costs rose therefore sales fell.', 'Costs rose, therefore sales, fell.'], answer: 1, explain: 'Trạng từ nối therefore cần dấu chấm phẩy (hoặc dấu chấm) trước và dấu phẩy sau.' },
       { q: '___ in a big city, he is used to noise.', options: ['Having grown up', 'He grew up', 'Grown up', 'He has grown up'], answer: 0, explain: 'Cụm phân từ hoàn thành diễn tả hành động xảy ra trước, cùng chủ ngữ he.' },
-      { q: 'Fix the comma splice: “Many students work part-time, this affects their grades.”', options: ['…part-time, it affects their grades.', '…part-time, which affects their grades.', '…part-time, however affects their grades.', '…part-time this affects their grades.'], answer: 1, explain: '“which” biến vế sau thành mệnh đề quan hệ không xác định, nối hợp lệ.' }
+      { q: 'Fix the comma splice: “Many students work part-time, this affects their grades.”', options: ['…part-time, it affects their grades.', '…part-time, which affects their grades.', '…part-time, however affects their grades.', '…part-time this affects their grades.'], answer: 1, explain: '“which” biến vế sau thành mệnh đề quan hệ không xác định, nối hợp lệ.' },
+      { q: 'Câu nào đúng ngữ pháp?', options: ['Having finish the report, she sent it to her manager.', 'Finished the report, she sent it to her manager.', 'Having finished the report, she sent it to her manager.', 'Having finished the report, it was sent to her manager.'], answer: 2, explain: 'Having + V3 diễn tả hành động xảy ra trước; chủ ngữ của mệnh đề chính (she) phải là người thực hiện.' },
+      { q: 'Câu nào đúng ngữ pháp?', options: ['While many people enjoy city life, but others prefer the peace of the countryside.', 'While many people enjoy city life, others prefer the peace of the countryside.', 'While many people enjoying city life, others prefer the peace of the countryside.', 'Many people while enjoy city life, others prefer the peace of the countryside.'], answer: 1, explain: 'While (tương phản) + mệnh đề, không dùng thêm but.' },
+      { q: 'Phần nào sai? (A) Walking along the street, (B) a car (C) almost (D) hit me.', options: ['(A) Walking', '(B) a car', '(C) almost', '(D) hit'], answer: 1, explain: 'Lỗi chủ ngữ treo: người đi bộ là I, không phải a car → Walking along the street, I was almost hit by a car.' },
+      { q: 'Phần nào sai? The government (A) has introduced a new tax, (B) it (C) aims (D) to reduce sugar consumption.', options: ['(A) has introduced', '(B) it', '(C) aims', '(D) to reduce'], answer: 1, explain: 'Hai mệnh đề nối bằng dấu phẩy là lỗi → dùng đại từ quan hệ: …a new tax, which aims to…' },
+      { q: 'Task 2: Online learning offers flexibility; ___, it may reduce face-to-face interaction.', options: ['although', 'despite', 'however', 'because'], answer: 2, explain: 'Sau dấu chấm phẩy, trước dấu phẩy dùng trạng từ nối however.' },
+      { q: 'Task 1: Coal consumption fell sharply, ___ only 10% of total energy use by 2020.', options: ['accounting for', 'accounted for', 'which accounting for', 'was accounting for'], answer: 0, explain: 'Mệnh đề phân từ V-ing bổ sung kết quả cho mệnh đề trước: accounting for.' }
     ]
   });
 
@@ -544,7 +604,13 @@
       { q: 'It was the teachers ___ organised the charity event.', options: ['which', 'who', 'what', 'whom'], answer: 1, explain: 'Câu chẻ nhấn mạnh người làm chủ ngữ dùng who (hoặc that).' },
       { q: '___ the public needs is reliable information.', options: ['That', 'It', 'What', 'Which'], answer: 2, explain: 'Câu chẻ What…is: What the public needs is…' },
       { q: 'No sooner ___ the announcement than the shares rose.', options: ['had they made', 'they had made', 'did they make', 'they made'], answer: 0, explain: 'No sooner + had + S + V3 + than.' },
-      { q: 'Only after the accident ___ the dangers of the road.', options: ['people realised', 'did people realise', 'people did realise', 'realised people'], answer: 1, explain: 'Only after + mốc → đảo ngữ ở mệnh đề chính: did people realise.' }
+      { q: 'Only after the accident ___ the dangers of the road.', options: ['people realised', 'did people realise', 'people did realise', 'realised people'], answer: 1, explain: 'Only after + mốc → đảo ngữ ở mệnh đề chính: did people realise.' },
+      { q: 'Câu nào đúng ngữ pháp?', options: ['Never I have seen such a beautiful sunset.', 'Never have I seen such a beautiful sunset.', 'Never I saw such a beautiful sunset.', 'Never have I saw such a beautiful sunset.'], answer: 1, explain: 'Đảo ngữ với Never: Never + trợ động từ + S + V3.' },
+      { q: 'Câu nào đúng ngữ pháp?', options: ['It was my mother which taught me to cook.', 'It were my mother who taught me to cook.', 'It was my mother whom taught me to cook.', 'It was my mother who taught me to cook.'], answer: 3, explain: 'Câu chẻ nhấn mạnh người: It was + người + who + V.' },
+      { q: 'Phần nào sai? Not only (A) the city is (B) polluted, but it (C) is also (D) overcrowded.', options: ['(A) the city is', '(B) polluted', '(C) is also', '(D) overcrowded'], answer: 0, explain: 'Not only đứng đầu câu cần đảo ngữ → Not only is the city polluted…' },
+      { q: 'Phần nào sai? (A) What I need (B) most (C) are a quiet place (D) to study.', options: ['(A) What', '(B) most', '(C) are', '(D) to study'], answer: 2, explain: 'Câu chẻ với What làm chủ ngữ dùng động từ số ít → is.' },
+      { q: 'Task 2: Only by investing in public transport ___ reduce traffic congestion.', options: ['governments can', 'do governments can', 'can governments', 'governments could to'], answer: 2, explain: 'Only by + V-ing đứng đầu câu → đảo ngữ: can governments reduce.' },
+      { q: 'Speaking Part 1: "What do you like most about your hometown?" – "___ the people that make it special – they\'re so welcoming."', options: ['It\'s', 'There are', 'They are', 'What is'], answer: 0, explain: 'Câu chẻ: It is + phần nhấn mạnh + that/who …' }
     ]
   });
 })(typeof self !== 'undefined' ? self : this);

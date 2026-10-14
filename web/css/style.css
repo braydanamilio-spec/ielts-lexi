@@ -505,3 +505,40 @@ body.cbt-mode .view { max-width: none; padding: 0; }
 mark.cbt-hl { background: #fde047; color: #111; cursor: pointer; }
 .cbt-hlbtn { position: absolute; z-index: 60; }
 @media (max-width: 900px) { .cbt-body { grid-template-columns: minmax(0, 1fr); } .cbt-pass { border-right: 0; border-bottom: 4px solid var(--line); max-height: 45vh; } }
+
+/* Task 1 */
+.chart-wrap { background: var(--surface-2); border-radius: 14px; padding: .8rem; }
+.chart { width: 100%; height: auto; display: block; }
+.ch-ax { font: 600 11px var(--font); fill: var(--muted); } .ch-lg { font: 700 12px var(--font); fill: var(--text); }
+.ch-pie { font: 800 12px var(--font); fill: #fff; } .ch-map { font: 800 10px var(--font); fill: #fff; }
+.proc { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem; }
+.pstep { flex: 1 1 140px; background: var(--surface); border: 2px solid var(--line); border-radius: 12px; padding: .6rem; font-size: .88rem; font-weight: 600; position: relative; }
+.pnum { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: var(--primary); color: #fff; font-size: .75rem; margin-right: .3rem; }
+.parrow { color: var(--primary); font-weight: 800; }
+
+/* Học ngữ pháp từng bước */
+.steps { display: flex; gap: .3rem; overflow-x: auto; padding: .3rem 0 .8rem; scrollbar-width: none; }
+.stepdot { flex: 1; min-width: 74px; display: flex; flex-direction: column; align-items: center; gap: .2rem; border: 0; background: transparent; cursor: pointer; color: var(--muted); font-weight: 700; }
+.stepdot span { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; background: var(--surface-2); font-size: 1.1rem; border: 2px solid var(--line); }
+.stepdot small { font-size: .68rem; white-space: nowrap; }
+.stepdot.on span { background: var(--primary); color: #fff; border-color: var(--primary); box-shadow: 0 0 0 4px var(--primary-soft); }
+.stepdot.on { color: var(--primary); }
+.stepdot.done span { background: var(--good); color: #fff; border-color: var(--good); }
+.step-body { animation: fade .3s ease-out; }
+.build-slot { min-height: 52px; border: 2px dashed var(--line); border-radius: 14px; padding: .5rem; display: flex; flex-wrap: wrap; gap: .3rem; align-items: center; }
+.build-slot.ok { border-color: var(--good); background: var(--good-soft); } .build-slot.no { border-color: var(--again); background: var(--again-soft); }
+.fpick { border: 0; cursor: pointer; font-size: 1rem; padding: .45rem .8rem; transition: transform .1s; }
+.fpick:hover { transform: translateY(-2px); }
+.shake { animation: shake .3s; }
+.use-card { width: 100%; border: 2px solid var(--line); background: var(--surface); border-radius: 14px; padding: .8rem; cursor: pointer; font: inherit; color: inherit; }
+.use-card:hover { border-color: var(--primary); }
+/* hiệu ứng vẽ dòng thời gian */
+.timeline polyline, .timeline line[stroke="var(--accent)"] { stroke-dasharray: 700; stroke-dashoffset: 700; animation: draw 1.1s ease-out forwards; }
+.timeline circle, .timeline rect { animation: pop .4s ease-out both; animation-delay: .5s; }
+@keyframes draw { to { stroke-dashoffset: 0; } }
+@keyframes pop { from { opacity: 0; transform: scale(.6); } }
+
+/* Ghi nguồn ảnh */
+.pic { position: relative; }
+.pcredit { position: absolute; right: 6px; bottom: 6px; width: 20px; height: 20px; border-radius: 50%; background: rgba(0,0,0,.55); color: #fff; font-size: .72rem; display: grid; place-items: center; text-decoration: none; }
+.pcredit:hover { background: rgba(0,0,0,.8); }

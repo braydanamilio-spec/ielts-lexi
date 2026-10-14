@@ -117,6 +117,7 @@
       const e = await Dict.lookup(w, { image: c.pos === 'n' && !c.image, examples: !(c.sentences || []).length });
       if (e && e.found) {
         const cur = await Cards.patch(w, x => {
+          if (!x.image && e.image) x.imageCredit = e.imageCredit || null;
           for (const k of ['ipa', 'ipaUS', 'audio', 'def', 'ex', 'vi', 'image']) if (!x[k] && e[k]) x[k] = e[k];
           if (!(x.sentences || []).length && e.sentences) x.sentences = e.sentences.slice(0, 2);
         });

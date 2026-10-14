@@ -42,7 +42,13 @@
       { q: 'If you practise every day, you ___ speak more fluently in a few months.', options: ['can', 'could', 'will be able to', 'were able to'], answer: 2, explain: 'Khả năng ở tương lai → will be able to.' },
       { q: '___ I leave the room for a moment, please? (rất lịch sự với giám khảo)', options: ['May', 'Must', 'Will', 'Should'], answer: 0, explain: 'May I…? là cách xin phép trang trọng.' },
       { q: 'Since she moved to London, she ___ improve her listening skills a lot.', options: ['can', 'could', 'has been able to', 'is able'], answer: 2, explain: 'Thì hiện tại hoàn thành (since…) → has been able to.' },
-      { q: 'Câu nào ĐÚNG?', options: ['He musts can swim.', 'He might be able to help us.', 'He can to drive.', 'He will can come.'], answer: 1, explain: 'Sau might phải dùng be able to; các câu còn lại sai cấu trúc.' }
+      { q: 'Câu nào ĐÚNG?', options: ['He musts can swim.', 'He might be able to help us.', 'He can to drive.', 'He will can come.'], answer: 1, explain: 'Sau might phải dùng be able to; các câu còn lại sai cấu trúc.' },
+      { q: 'Câu nào đúng ngữ pháp?', options: ['She can to speak three languages.', 'She cans speak three languages.', 'She can speak three languages.', 'She can speaking three languages.'], answer: 2, explain: 'can + V nguyên mẫu không to; can không thêm -s.' },
+      { q: 'Câu nào đúng ngữ pháp?', options: ['I will can drive next year.', 'I will be able to drive next year.', 'I will able to drive next year.', 'I can be able drive next year.'], answer: 1, explain: 'can không đi sau will → dùng will be able to + V.' },
+      { q: 'Phần nào sai? Despite the storm, the pilot (A) could (B) land the plane (C) safely (D) last night.', options: ['(A) could', '(B) land', '(C) safely', '(D) last night'], answer: 0, explain: 'Thành công trong một tình huống cụ thể ở quá khứ dùng was able to / managed to, không dùng could.' },
+      { q: 'Phần nào sai? Visitors (A) may (B) to use the library, (C) but they cannot (D) borrow books.', options: ['(A) may', '(B) to use', '(C) but', '(D) borrow'], answer: 1, explain: 'Sau may dùng V nguyên mẫu không to → sửa to use thành use.' },
+      { q: 'Speaking (lời xin phép): "___ I borrow your pen for a moment?" – "Of course, here you are."', options: ['Must', 'Should', 'Am', 'Could'], answer: 3, explain: 'Xin phép lịch sự dùng Could/May I + V.' },
+      { q: 'Task 2: Thanks to online learning, students in remote areas ___ access high-quality courses.', options: ['can', 'can to', 'are able', 'could to'], answer: 0, explain: 'Diễn tả khả năng: can + V nguyên mẫu (are able cần thêm to).' }
     ]
   });
 
@@ -87,7 +93,13 @@
       { q: 'It\'s a free event, so you ___ buy a ticket.', options: ['mustn\'t', 'have to', 'don\'t have to', 'must'], answer: 2, explain: 'Không cần thiết → don\'t have to.' },
       { q: 'I failed the test. I ___ more vocabulary.', options: ['should learn', 'should have learnt', 'must learn', 'had to learn'], answer: 1, explain: 'Hối tiếc về việc lẽ ra nên làm trong quá khứ → should have + V3.' },
       { q: 'Last year, all staff ___ attend a safety course.', options: ['must', 'had to', 'have to', 'should'], answer: 1, explain: 'Nghĩa vụ trong quá khứ → had to.' },
-      { q: 'We ___ have taken a taxi – the station was only five minutes away.', options: ['mustn\'t', 'needn\'t', 'shouldn\'t to', 'didn\'t need'], answer: 1, explain: 'Needn\'t have V3: đã làm nhưng hóa ra không cần.' }
+      { q: 'We ___ have taken a taxi – the station was only five minutes away.', options: ['mustn\'t', 'needn\'t', 'shouldn\'t to', 'didn\'t need'], answer: 1, explain: 'Needn\'t have V3: đã làm nhưng hóa ra không cần.' },
+      { q: 'Câu nào đúng ngữ pháp?', options: ['You mustn\'t to pay; the museum is free.', 'You don\'t must pay; the museum is free.', 'You haven\'t to paying; the museum is free.', 'You don\'t have to pay; the museum is free.'], answer: 3, explain: 'Không cần thiết (miễn phí) dùng don\'t have to + V; mustn\'t là cấm.' },
+      { q: 'Câu nào đúng ngữ pháp?', options: ['Students should to submit essays on time.', 'Students should submit essays on time.', 'Students should submitting essays on time.', 'Students shoulds submit essays on time.'], answer: 1, explain: 'should + V nguyên mẫu không to, không thêm -s.' },
+      { q: 'Phần nào sai? Yesterday I (A) must (B) leave work early (C) because my son (D) was ill.', options: ['(A) must', '(B) leave', '(C) because', '(D) was'], answer: 0, explain: 'must không có dạng quá khứ → dùng had to: I had to leave.' },
+      { q: 'Phần nào sai? In my opinion, the government (A) ought invest more (B) in (C) public transport (D) than in roads.', options: ['(A) ought invest', '(B) in', '(C) public', '(D) than'], answer: 0, explain: 'ought luôn đi với to → sửa thành ought to invest.' },
+      { q: 'Task 2: To reduce pollution, factories ___ meet strict environmental standards by law.', options: ['should to', 'has to', 'must', 'mustn\'t'], answer: 2, explain: 'Bắt buộc theo luật dùng must + V nguyên mẫu (factories số nhiều nên không dùng has to).' },
+      { q: 'Speaking Part 1: "Do you wear a uniform at work?" – "No, we ___ – we can wear whatever we like."', options: ['mustn\'t', 'don\'t have to', 'shouldn\'t', 'haven\'t to'], answer: 1, explain: 'Không bắt buộc dùng don\'t have to; mustn\'t nghĩa là bị cấm.' }
     ]
   });
 
@@ -129,7 +141,13 @@
       { q: 'I can\'t find my keys. I ___ them at the library.', options: ['might leave', 'might have left', 'must leave', 'can\'t have leave'], answer: 1, explain: 'Khả năng trong quá khứ → might have + V3.' },
       { q: 'The museum is closed. It ___ have been renovated.', options: ['must', 'can\'t', 'mustn\'t', 'should'], answer: 0, explain: 'Kết luận chắc chắn về quá khứ → must have V3.' },
       { q: 'He ___ have written this essay alone – it\'s full of advanced vocabulary he never uses.', options: ['must', 'might', 'can\'t', 'should'], answer: 2, explain: 'Gần như chắc chắn không → can\'t have V3.' },
-      { q: 'Electric cars ___ become cheaper than petrol cars in the next decade. (không chắc)', options: ['must', 'could', 'can\'t', 'mustn\'t'], answer: 1, explain: 'Khả năng không chắc chắn trong tương lai → could/might/may.' }
+      { q: 'Electric cars ___ become cheaper than petrol cars in the next decade. (không chắc)', options: ['must', 'could', 'can\'t', 'mustn\'t'], answer: 1, explain: 'Khả năng không chắc chắn trong tương lai → could/might/may.' },
+      { q: 'Câu nào đúng ngữ pháp?', options: ['She must be tired after such a long flight.', 'She must to be tired after such a long flight.', 'She musts be tired after such a long flight.', 'She must being tired after such a long flight.'], answer: 0, explain: 'Suy đoán chắc chắn ở hiện tại: must + be.' },
+      { q: 'Câu nào đúng ngữ pháp?', options: ['He can\'t have went home already.', 'He can\'t have gone home already.', 'He mustn\'t have gone home already.', 'He can\'t has gone home already.'], answer: 1, explain: 'Suy đoán phủ định về quá khứ: can\'t have + V3 (gone); không dùng mustn\'t để suy đoán.' },
+      { q: 'Phần nào sai? The lights are off, so they (A) mustn\'t (B) be (C) at home (D) right now.', options: ['(A) mustn\'t', '(B) be', '(C) at home', '(D) right now'], answer: 0, explain: 'Suy đoán chắc chắn là không dùng can\'t, không dùng mustn\'t → sửa thành can\'t be.' },
+      { q: 'Phần nào sai? Linh didn\'t answer the phone; she (A) might (B) have (C) fell asleep (D) early.', options: ['(A) might', '(B) have', '(C) fell', '(D) early'], answer: 2, explain: 'might have + V3 → sửa fell thành fallen.' },
+      { q: 'Task 2: The decline in bee populations ___ be caused by pesticides, although scientists are not yet certain.', options: ['must', 'can\'t', 'may', 'should to'], answer: 2, explain: 'Chưa chắc chắn (not yet certain) → dùng may để diễn tả khả năng.' },
+      { q: 'Speaking Part 3: "Why do you think the old cinema closed?" – "I\'m not sure. It ___ lost customers to streaming services."', options: ['must', 'can\'t have', 'might has', 'might have'], answer: 3, explain: 'Suy đoán không chắc chắn về quá khứ (I\'m not sure) → might have + V3.' }
     ]
   });
 
@@ -181,7 +199,13 @@
       { q: 'The results ___ next Monday.', options: ['will announce', 'will be announced', 'are announcing', 'announced'], answer: 1, explain: 'Tương lai đơn bị động: will be + V3.' },
       { q: 'Câu nào SAI?', options: ['The letter was sent yesterday.', 'The problem has been solved.', 'The earthquake was occurred in 2011.', 'Rice is grown in the Mekong Delta.'], answer: 2, explain: 'Occur là nội động từ, không có bị động → The earthquake occurred in 2011.' },
       { q: 'By the time we arrived, all the seats ___.', options: ['had taken', 'had been taken', 'were taking', 'have been taken'], answer: 1, explain: 'Hành động xảy ra trước một mốc quá khứ → quá khứ hoàn thành bị động.' },
-      { q: 'Carbon emissions must ___ significantly.', options: ['reduce', 'be reduced', 'reduced', 'being reduced'], answer: 1, explain: 'Modal + be + V3.' }
+      { q: 'Carbon emissions must ___ significantly.', options: ['reduce', 'be reduced', 'reduced', 'being reduced'], answer: 1, explain: 'Modal + be + V3.' },
+      { q: 'Câu nào đúng ngữ pháp?', options: ['The bridge was build in 1990.', 'The bridge built in 1990.', 'The bridge was built in 1990.', 'The bridge is built in 1990 ago.'], answer: 2, explain: 'Bị động quá khứ đơn: was/were + V3 (built).' },
+      { q: 'Câu nào đúng ngữ pháp?', options: ['A new hospital is building near my house.', 'A new hospital is been built near my house.', 'A new hospital being built near my house.', 'A new hospital is being built near my house.'], answer: 3, explain: 'Bị động hiện tại tiếp diễn: is/are being + V3.' },
+      { q: 'Phần nào sai? The results (A) will (B) announce (C) on the website (D) next week.', options: ['(A) will', '(B) announce', '(C) on', '(D) next week'], answer: 1, explain: 'Kết quả được công bố → bị động tương lai: will be announced.' },
+      { q: 'Phần nào sai? English (A) is (B) spoke (C) as a first language (D) in many countries.', options: ['(A) is', '(B) spoke', '(C) as', '(D) in'], answer: 1, explain: 'Bị động cần V3 → sửa spoke thành spoken.' },
+      { q: 'Task 1 (quy trình): After the beans are roasted, they ___ into a fine powder.', options: ['grind', 'are ground', 'are grinded', 'ground'], answer: 1, explain: 'Quy trình dùng bị động hiện tại đơn; grind là bất quy tắc: ground.' },
+      { q: 'Task 2: In recent years, many traditional shops ___ by large supermarket chains.', options: ['have been replaced', 'have replaced', 'were replace', 'has been replaced'], answer: 0, explain: 'In recent years + chủ ngữ số nhiều bị tác động → bị động hiện tại hoàn thành: have been replaced.' }
     ]
   });
 
@@ -231,7 +255,13 @@
       { q: 'The pyramid is thought ___ over 4,000 years ago.', options: ['to build', 'to be built', 'to have been built', 'having built'], answer: 2, explain: 'Xảy ra trong quá khứ + bị động → to have been V3.' },
       { q: 'I need to ___ before the trip.', options: ['have my car serviced', 'have serviced my car', 'have my car service', 'get serviced my car'], answer: 0, explain: 'Have + O + V3.' },
       { q: 'She ___ her phone stolen at the airport.', options: ['got', 'made', 'let', 'was'], answer: 0, explain: 'Get/have + O + V3 cũng diễn tả việc không may xảy ra với mình.' },
-      { q: 'Chọn câu ĐÚNG.', options: ['He is known that he is honest.', 'It is known to be honest.', 'He is known to be honest.', 'He knows to be honest.'], answer: 2, explain: 'S + is known + to V là cấu trúc đúng.' }
+      { q: 'Chọn câu ĐÚNG.', options: ['He is known that he is honest.', 'It is known to be honest.', 'He is known to be honest.', 'He knows to be honest.'], answer: 2, explain: 'S + is known + to V là cấu trúc đúng.' },
+      { q: 'Câu nào đúng ngữ pháp?', options: ['It said that the castle is haunted.', 'It is said that the castle is haunted.', 'It is saying that the castle is haunted.', 'It is said the castle to be haunted.'], answer: 1, explain: 'Bị động tường thuật: It is said that + mệnh đề.' },
+      { q: 'Câu nào đúng ngữ pháp?', options: ['I had my hair cutting yesterday.', 'I had cut my hair by a hairdresser yesterday.', 'I had my hair cut yesterday.', 'I had my hair to cut yesterday.'], answer: 2, explain: 'Thể sai khiến: have + vật + V3 (cut).' },
+      { q: 'Phần nào sai? The suspect (A) is believed (B) to (C) leave the country (D) last week.', options: ['(A) is believed', '(B) to', '(C) leave', '(D) last week'], answer: 2, explain: 'Hành động xảy ra trước thời điểm tường thuật → to have + V3: to have left.' },
+      { q: 'Phần nào sai? We (A) are going to (B) have our kitchen (C) redecorate (D) next month.', options: ['(A) are going to', '(B) have', '(C) redecorate', '(D) next month'], answer: 2, explain: 'have + vật + V3 → sửa redecorate thành redecorated.' },
+      { q: 'Task 2: Coffee ___ to have originated in Ethiopia.', options: ['thinks', 'is thinking', 'is think', 'is thought'], answer: 3, explain: 'Bị động tường thuật: S + is thought + to have V3.' },
+      { q: 'Speaking Part 1: "How often do you check your eyesight?" – "I ___ my eyes tested once a year."', options: ['get', 'make', 'do', 'am'], answer: 0, explain: 'Thể sai khiến: get + vật + V3 (get my eyes tested).' }
     ]
   });
 
@@ -277,7 +307,13 @@
       { q: 'If the price of fuel rises, airlines ___ their fares.', options: ['increased', 'will increase', 'would have increased', 'increasing'], answer: 1, explain: 'Kết quả có thể xảy ra → will + V.' },
       { q: 'I\'ll lend you my book as soon as I ___ it.', options: ['will finish', 'finish', 'would finish', 'finished'], answer: 1, explain: 'Sau as soon as (tương lai) dùng hiện tại đơn.' },
       { q: '___ you need any help, please contact the reception.', options: ['Should', 'Would', 'Will', 'Had'], answer: 0, explain: 'Đảo ngữ loại 1 trang trọng: Should you need… = If you need…' },
-      { q: 'If plants don\'t get enough light, they ___.', options: ['will died', 'die', 'would die', 'had died'], answer: 1, explain: 'Quy luật tự nhiên → loại 0.' }
+      { q: 'If plants don\'t get enough light, they ___.', options: ['will died', 'die', 'would die', 'had died'], answer: 1, explain: 'Quy luật tự nhiên → loại 0.' },
+      { q: 'Câu nào đúng ngữ pháp?', options: ['If it will rain tomorrow, we will cancel the trip.', 'If it rains tomorrow, we will cancel the trip.', 'If it rains tomorrow, we cancel will the trip.', 'If it rain tomorrow, we will cancel the trip.'], answer: 1, explain: 'Loại 1: If + hiện tại đơn, S + will + V; không dùng will trong mệnh đề if.' },
+      { q: 'Câu nào đúng ngữ pháp?', options: ['If you will heat ice, it melts.', 'If you heat ice, it will melted.', 'If you heated ice, it melts.', 'If you heat ice, it melts.'], answer: 3, explain: 'Loại 0 (sự thật chung): If + hiện tại đơn, hiện tại đơn.' },
+      { q: 'Phần nào sai? If the government (A) will raise taxes, many people (B) will (C) be (D) unhappy.', options: ['(A) will raise', '(B) will', '(C) be', '(D) unhappy'], answer: 0, explain: 'Mệnh đề if loại 1 dùng hiện tại đơn → sửa will raise thành raises.' },
+      { q: 'Phần nào sai? If you (A) mix blue and yellow, you (B) get green, (C) but if you (D) adds red, it turns brown.', options: ['(A) mix', '(B) get', '(C) but', '(D) adds'], answer: 3, explain: 'Chủ ngữ you dùng động từ nguyên mẫu → sửa adds thành add.' },
+      { q: 'Task 2: If cities invest in cycle lanes, more people ___ to work by bike.', options: ['travelled', 'would travelled', 'will travel', 'will travelling'], answer: 2, explain: 'Loại 1 (kết quả có thể xảy ra): If + hiện tại đơn, will + V nguyên mẫu.' },
+      { q: 'Speaking Part 1: "What do you do when you feel stressed?" – "If I ___ stressed, I usually go for a run."', options: ['will feel', 'feel', 'felt', 'am feel'], answer: 1, explain: 'Thói quen/sự thật chung (loại 0): If + hiện tại đơn, hiện tại đơn.' }
     ]
   });
 
@@ -326,7 +362,13 @@
       { q: 'If I ___ you, I would accept the offer.', options: ['am', 'were', 'had been', 'would be'], answer: 1, explain: 'If I were you – lời khuyên, loại 2.' },
       { q: '___ the doctors acted faster, the patient might have survived.', options: ['If', 'Had', 'Were', 'Should'], answer: 1, explain: 'Đảo ngữ loại 3: Had + S + V3.' },
       { q: 'What would you do if you ___ a wallet in the street?', options: ['find', 'found', 'will find', 'had found'], answer: 1, explain: 'Giả định khó xảy ra → loại 2.' },
-      { q: 'If the bridge ___ properly, it wouldn\'t have collapsed.', options: ['was maintained', 'had been maintained', 'would be maintained', 'is maintained'], answer: 1, explain: 'Loại 3 bị động: had been + V3.' }
+      { q: 'If the bridge ___ properly, it wouldn\'t have collapsed.', options: ['was maintained', 'had been maintained', 'would be maintained', 'is maintained'], answer: 1, explain: 'Loại 3 bị động: had been + V3.' },
+      { q: 'Câu nào đúng ngữ pháp?', options: ['If I had more time, I would learn Japanese.', 'If I would have more time, I would learn Japanese.', 'If I have more time, I would learn Japanese.', 'If I had more time, I will learn Japanese.'], answer: 0, explain: 'Loại 2: If + quá khứ đơn, S + would + V.' },
+      { q: 'Câu nào đúng ngữ pháp?', options: ['If she studied harder, she would have passed the exam.', 'If she had studied harder, she would passed the exam.', 'If she had studied harder, she would have passed the exam.', 'If she would have studied harder, she had passed the exam.'], answer: 2, explain: 'Loại 3: If + had V3, S + would have V3.' },
+      { q: 'Phần nào sai? If we (A) had left earlier, we (B) would (C) not miss the flight (D) yesterday.', options: ['(A) had left', '(B) would', '(C) not miss', '(D) yesterday'], answer: 2, explain: 'Loại 3 về quá khứ → sửa thành would not have missed.' },
+      { q: 'Phần nào sai? If people (A) would recycle more, there (B) would be (C) less waste (D) in landfill sites.', options: ['(A) would recycle', '(B) would be', '(C) less', '(D) in'], answer: 0, explain: 'Mệnh đề if loại 2 dùng quá khứ đơn, không dùng would → sửa thành recycled.' },
+      { q: 'Task 2: If governments banned single-use plastics, ocean pollution ___ significantly.', options: ['will fall', 'falls', 'would have fall', 'would fall'], answer: 3, explain: 'Giả định loại 2: If + quá khứ đơn, would + V nguyên mẫu.' },
+      { q: 'Speaking Part 3: "If you could live anywhere, where ___?" – "Probably in New Zealand."', options: ['will you live', 'would you live', 'did you live', 'would you lived'], answer: 1, explain: 'Câu hỏi giả định loại 2: would + S + V nguyên mẫu.' }
     ]
   });
 
@@ -376,7 +418,13 @@
       { q: 'I wish I ___ more time to prepare for the interview yesterday.', options: ['have', 'had', 'had had', 'would have'], answer: 2, explain: 'Hối tiếc về quá khứ → wish + had V3 (had had).' },
       { q: 'You can borrow my notes ___ you return them tomorrow.', options: ['unless', 'as long as', 'even if', 'in case'], answer: 1, explain: 'As long as = miễn là (điều kiện).' },
       { q: 'I wish my brother ___ borrowing my things without asking.', options: ['stops', 'would stop', 'stopped had', 'will stop'], answer: 1, explain: 'Phàn nàn về hành vi người khác → wish + would.' },
-      { q: 'If he weren\'t so shy, he ___ to the party last night.', options: ['would go', 'will go', 'would have gone', 'had gone'], answer: 2, explain: 'Hỗn hợp: tính cách hiện tại (V2) → kết quả quá khứ (would have V3).' }
+      { q: 'If he weren\'t so shy, he ___ to the party last night.', options: ['would go', 'will go', 'would have gone', 'had gone'], answer: 2, explain: 'Hỗn hợp: tính cách hiện tại (V2) → kết quả quá khứ (would have V3).' },
+      { q: 'Câu nào đúng ngữ pháp?', options: ['If I had taken that job, I will be rich now.', 'If I had taken that job, I would be rich now.', 'If I would have taken that job, I would be rich now.', 'If I have taken that job, I would be rich now.'], answer: 1, explain: 'Điều kiện hỗn hợp: If + had V3 (quá khứ), would + V (kết quả hiện tại, now).' },
+      { q: 'Câu nào đúng ngữ pháp?', options: ['I wish I can speak English fluently.', 'I wish I would can speak English fluently.', 'I wish I spoken English fluently.', 'I wish I could speak English fluently.'], answer: 3, explain: 'Ước điều trái hiện tại: wish + quá khứ đơn / could + V.' },
+      { q: 'Phần nào sai? (A) Unless you (B) don\'t (C) practise regularly, your speaking (D) will not improve.', options: ['(A) Unless', '(B) don\'t', '(C) practise', '(D) will not improve'], answer: 1, explain: 'Unless đã mang nghĩa phủ định (= if not) → bỏ don\'t: Unless you practise…' },
+      { q: 'Phần nào sai? I wish I (A) didn\'t spend so (B) much money (C) on clothes (D) last month.', options: ['(A) didn\'t spend', '(B) much', '(C) on', '(D) last month'], answer: 0, explain: 'Ước điều trái quá khứ (last month) → wish + had V3: hadn\'t spent.' },
+      { q: 'Task 2: ___ governments take urgent action, climate change will continue to accelerate.', options: ['If not', 'Unless', 'Wish', 'Despite'], answer: 1, explain: 'Unless = if … not: trừ khi chính phủ hành động khẩn cấp.' },
+      { q: 'Speaking Part 2: "Is there anything you regret?" – "Yes, I wish I ___ harder at school."', options: ['studied', 'have studied', 'had studied', 'would study'], answer: 2, explain: 'Tiếc nuối về quá khứ (thời đi học) → wish + had V3: had studied.' }
     ]
   });
 
@@ -428,7 +476,13 @@
       { q: '"Don\'t touch the screen," the guide said. → The guide told us ___ the screen.', options: ['don\'t touch', 'not to touch', 'to not touching', 'not touch'], answer: 1, explain: 'Mệnh lệnh phủ định → told sb not to V.' },
       { q: '"I will help you tomorrow," he said. → He said he ___ help me ___.', options: ['will / tomorrow', 'would / the next day', 'would / yesterday', 'will / the next day'], answer: 1, explain: 'will → would; tomorrow → the next day.' },
       { q: 'She ___ breaking the vase.', options: ['denied', 'refused', 'promised', 'told'], answer: 0, explain: 'Deny + V-ing (phủ nhận đã làm).' },
-      { q: '"Can you swim?" she asked. → She asked ___ I could swim.', options: ['that', 'what', 'if', 'did'], answer: 2, explain: 'Câu hỏi Yes/No → if/whether.' }
+      { q: '"Can you swim?" she asked. → She asked ___ I could swim.', options: ['that', 'what', 'if', 'did'], answer: 2, explain: 'Câu hỏi Yes/No → if/whether.' },
+      { q: 'Câu nào đúng ngữ pháp?', options: ['She said me that she was tired.', 'She told that she was tired.', 'She told me that she was tired.', 'She told to me that she was tired.'], answer: 2, explain: 'tell + người + that…; say không có tân ngữ người trực tiếp (say to sb).' },
+      { q: 'Câu nào đúng ngữ pháp?', options: ['He asked me where did I live.', 'He asked me where I lived.', 'He asked me where I did live.', 'He asked me where do I live.'], answer: 1, explain: 'Câu hỏi tường thuật dùng trật tự câu khẳng định và lùi thì: where I lived.' },
+      { q: 'Phần nào sai? The teacher (A) told us (B) that the exam (C) will be held (D) the following week.', options: ['(A) told', '(B) that', '(C) will be', '(D) the following'], answer: 2, explain: 'Tường thuật lùi thì: will → would (would be held).' },
+      { q: 'Phần nào sai? My manager (A) asked me (B) whether (C) could I (D) work late on Friday.', options: ['(A) asked', '(B) whether', '(C) could I', '(D) work'], answer: 2, explain: 'Câu hỏi tường thuật không đảo ngữ → sửa thành whether I could work.' },
+      { q: 'Speaking Part 2: "Describe some advice you received." – "My grandfather told me ___ give up on my dreams."', options: ['don\'t', 'didn\'t', 'not', 'not to'], answer: 3, explain: 'Tường thuật lời khuyên/mệnh lệnh phủ định: told + sb + not to + V.' },
+      { q: 'Speaking: "What did your friend say about the film?" – "She said she ___ it the week before."', options: ['had seen', 'has seen', 'sees', 'will see'], answer: 0, explain: 'Lùi thì quá khứ đơn → quá khứ hoàn thành; the week before là dấu hiệu tường thuật: had seen.' }
     ]
   });
 
@@ -477,7 +531,13 @@
       { q: 'On the way home, I stopped ___ some bread.', options: ['buying', 'to buy', 'buy', 'bought'], answer: 1, explain: 'Dừng lại để mua (mục đích) → stop to V.' },
       { q: 'I don\'t remember ___ this film before, but the ending seems familiar.', options: ['to watch', 'watching', 'watch', 'to have watch'], answer: 1, explain: 'Nhớ (không nhớ) việc đã làm → remember + V-ing.' },
       { q: 'If you can\'t sleep, try ___ a book instead of using your phone.', options: ['reading', 'to read', 'read', 'reads'], answer: 0, explain: 'Thử làm một cách để xem có hiệu quả không → try + V-ing.' },
-      { q: 'Scientists are committed to ___ a cure for the disease.', options: ['find', 'finding', 'found', 'to finding a'], answer: 1, explain: 'Be committed to: to là giới từ → V-ing.' }
+      { q: 'Scientists are committed to ___ a cure for the disease.', options: ['find', 'finding', 'found', 'to finding a'], answer: 1, explain: 'Be committed to: to là giới từ → V-ing.' },
+      { q: 'Câu nào đúng ngữ pháp?', options: ['I enjoy to read novels.', 'I enjoy reading novels.', 'I enjoy read novels.', 'I enjoy to reading novels.'], answer: 1, explain: 'enjoy + V-ing.' },
+      { q: 'Câu nào đúng ngữ pháp?', options: ['She decided studying abroad.', 'She decided study abroad.', 'She decided for studying abroad.', 'She decided to study abroad.'], answer: 3, explain: 'decide + to V.' },
+      { q: 'Phần nào sai? Many people (A) avoid (B) to use public transport (C) because it (D) is unreliable.', options: ['(A) avoid', '(B) to use', '(C) because', '(D) is'], answer: 1, explain: 'avoid + V-ing → sửa to use thành using.' },
+      { q: 'Phần nào sai? I (A) look forward (B) to (C) hear (D) from you soon.', options: ['(A) look forward', '(B) to', '(C) hear', '(D) from'], answer: 2, explain: 'look forward to: to là giới từ nên theo sau là V-ing → hearing.' },
+      { q: 'Task 2: Governments should encourage people ___ more environmentally friendly products.', options: ['to buy', 'buying', 'buy', 'for buying'], answer: 0, explain: 'encourage + sb + to V.' },
+      { q: 'Speaking Part 1: "Do you like cooking?" – "Not really. I\'m not very good at ___."', options: ['cook', 'to cook', 'cooking', 'cooked'], answer: 2, explain: 'Sau giới từ (good at) dùng V-ing.' }
     ]
   });
 })(typeof self !== 'undefined' ? self : this);
