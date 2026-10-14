@@ -16,6 +16,9 @@
     if (it.options.length !== 4) return;
     const want = PAT[it.n % PAT.length], r = (it.a - want + 4) % 4; if (!r) return;
     it.options = it.options.slice(r).concat(it.options.slice(0, r)); it.a = want;
+    // Đổi chữ cái đáp án nhắc trong lời giải thích theo vị trí mới (→ C, (B), đáp án A…) – tránh giải thích chỉ sai phương án
+    const mv = L => 'ABCD'[('ABCD'.indexOf(L) - r + 4) % 4];
+    if (it.explain) it.explain = it.explain.replace(/(→\s*|\(|[Đđ]áp án\s+|[Cc]họn\s+|[Pp]hương án\s+)([A-D])\b/g, (m, pre, L) => pre + mv(L));
   })));
   // Quy đổi % đúng → điểm thang 5–495 mỗi phần (ước tính tuyến tính có hiệu chỉnh nhẹ; không phải bảng chính thức)
   const scaled = pct => Math.max(5, Math.min(495, Math.round((5 + 490 * Math.pow(pct, 1.08)) / 5) * 5));

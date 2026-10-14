@@ -177,14 +177,16 @@
   const G = 'js/grammar/', BUNDLES = {
     grammar: [...['tenses', 'verbs', 'sentences', 'foundation', 'academic', 'chapters', 'book2', 'drills-a', 'drills-b', 'drills-c'].map(f => G + f + '.js'), 'js/grammar.js'],
     pron: ['js/pron/sounds.js', 'js/pron/skills.js', 'js/pron.js'],
-    listening: ['js/qengine.js', ...[1, 2, 3, 4, 5, 6].map(n => `js/listen/test${n}.js`), 'js/listening.js'],
+    listening: ['js/qengine.js', ...[1, 2, 3, 4, 5, 6, 7, 8].map(n => `js/listen/test${n}.js`), 'js/listening.js'],
     writing: ['js/write/task2-more.js', 'js/write/task1-more.js', 'js/write/ideas.js', 'js/write.js', 'js/task1.js', 'js/models.js', 'js/ideas.js'],
-    mock: ['js/qengine.js', 'js/readtest/test1.js', 'js/readtest/test2.js', 'js/readtest/test3.js', 'js/readtest/test4.js', 'js/readtest/explain-a.js', 'js/readtest/explain-b.js', 'js/mock.js', 'js/rtype.js'],
+    mock: ['js/qengine.js', 'js/readtest/test1.js', 'js/readtest/test2.js', 'js/readtest/test3.js', 'js/readtest/test4.js', 'js/readtest/test5.js', 'js/readtest/test6.js', 'js/readtest/explain-a.js', 'js/readtest/explain-b.js', 'js/readtest/explain-c.js', 'js/mock.js', 'js/rtype.js'],
     tsl: ['js/lib/tsl-a.js', 'js/lib/tsl-b.js', 'js/lib/domain-a.js', 'js/lib/domain-b.js'],
     speak: ['js/speak/samples.js'],
-    toeic: ['js/qengine.js', 'js/toeic/reading1.js', 'js/toeic/reading2.js', 'js/toeic/listening1.js', 'js/toeic/listening2.js', 'js/toeic.js'],
+    toefl: ['js/qengine.js', 'js/toefl/data1.js', 'js/toefl.js'],
+    toeic: ['js/qengine.js', 'js/toeic/reading1.js', 'js/toeic/reading2.js', 'js/toeic/listening1.js', 'js/toeic/listening2.js', 'js/toeic/reading3.js', 'js/toeic/listening3.js', 'js/toeic.js'],
   };
   const ROUTE_BUNDLE = { grammar: 'grammar', placement: 'grammar', pron: 'pron', listening: 'listening', listen: ['listening', 'toeic'], 'listen-test': 'listening', dictation: ['listening', 'toeic'],
+    toefl: ['listening', 'toefl'], 'toefl-p': ['listening', 'toefl'],
     toeic: ['tsl', 'listening', 'toeic'], 'toeic-r': ['toeic'], 'toeic-test': ['listening', 'toeic'], library: 'tsl', topic: 'tsl', practice: 'tsl', dict: 'tsl', write: 'writing', task1: 'writing', model: 'writing', phrases: 'writing', ideas: 'writing', rtype: 'mock', speaking: 'speak', mock: ['listening', 'writing', 'mock'] };
   const bundleP = {};
   const loadScript = src => new Promise(res => { const s = document.createElement('script'); s.src = src; s.async = false; s.onload = s.onerror = () => res(); document.head.appendChild(s); });
@@ -204,7 +206,7 @@
     if (b.some(x => !App.loaded(x))) view.innerHTML = `<div class="card empty"><div class="em">⏳</div>${t('Đang tải…')}</div>`;
     if (b.length) { await App.need(...b); if (my !== routeSeq) return; }
     const fn = routes[name] || routes.home;
-    const navKey = name === 'topic' ? 'library' : name === 'practice' && arg === 'speak' ? 'speak' : name === 'read' ? 'reading' : /^(listen|listen-test|dictation)$/.test(name) ? 'listening' : /^toeic/.test(name) ? 'toeic' : name === 'ideas' ? 'write' : name;
+    const navKey = name === 'topic' ? 'library' : name === 'practice' && arg === 'speak' ? 'speak' : name === 'read' ? 'reading' : /^(listen|listen-test|dictation)$/.test(name) ? 'listening' : /^toefl/.test(name) ? 'toefl' : /^toeic/.test(name) ? 'toeic' : name === 'ideas' ? 'write' : name;
     $$('#nav a, #bnav a').forEach(a => a.classList.toggle('active', a.dataset.route === navKey));
     UI.stopSpeak(); UI.clearRecs();
     document.onkeydown = null;
