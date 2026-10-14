@@ -68,7 +68,7 @@
   routes.mock = async function (arg, query) {
     if (arg === 'run') return run(query);
     const hist = await Store.get('mocks', []);
-    const lt = [...new Set((window.LISTENING || []).map(p => p.test))], rt = RT().map(t => t.test);
+    const lt = [...new Set((window.LISTENING || []).map(p => p.test))], rtA = RT().filter(x => !x.gt).map(x => x.test), rtG = RT().filter(x => x.gt).map(x => x.test), rt = [...rtA, ...rtG];
     view.innerHTML = `
       <div class="page-head"><div><h1>🏁 ${t('Thi thử IELTS 4 kỹ năng')}</h1><p class="muted">${t('Mô phỏng một buổi thi IELTS Academic: Listening → Reading → Writing → Speaking, bấm giờ như thật, chấm tự động và quy đổi <b>band Overall</b>. Đề tự biên soạn – điểm mang tính tham khảo.')}</p></div></div>
       <div class="grid g2">
@@ -77,7 +77,7 @@
           <div class="mk-skills">${SKILLS.map(([k, em, n, d]) => `<label class="mk-skill"><input type="checkbox" value="${k}" checked> <span class="em">${em}</span><div><b>${n}</b><div class="tiny muted">${d}</div></div></label>`).join('')}</div>
           <div class="grid g2" style="margin-top:.8rem">
             <label class="field"><span class="small">${t('Đề Listening')}</span><select class="input" id="mkL">${lt.map(n => `<option value="${n}">Test ${n}</option>`).join('')}</select></label>
-            <label class="field"><span class="small">${t('Đề Reading')}</span><select class="input" id="mkR">${rt.length ? rt.map(n => `<option value="${n}">Test ${n}</option>`).join('') : `<option value="">${t('Đang cập nhật')}</option>`}</select></label>
+            <label class="field"><span class="small">${t('Đề Reading')}</span><select class="input" id="mkR">${rt.length ? `<optgroup label="Academic">${rtA.map(n => `<option value="${n}">Test ${n}</option>`).join('')}</optgroup>${rtG.length ? `<optgroup label="General Training">${rtG.map(n => `<option value="${n}">General ${n - 100}</option>`).join('')}</optgroup>` : ''}` : `<option value="">${t('Đang cập nhật')}</option>`}</select></label>
           </div>
           <div class="tiny muted" style="margin-top:.5rem">${t('Writing & Speaking chọn ngẫu nhiên từ {a} đề Task 2, {b} đề Task 1 và {c} chủ đề Speaking.', { a: (window.WRITE_PROMPTS || []).length, b: (App.task1 ? App.task1.SETS.length : 0), c: (App.speakBank || []).length })}</div>
           <button class="btn primary lg block" id="mkGo" style="margin-top:1rem">${t('Bắt đầu thi')}</button>
@@ -185,7 +185,7 @@
           const res = {};
           tst.passages.forEach((p, k) => Object.assign(res, Object.fromEntries(Object.entries(QE.collect(p, $(`.mk-qp[data-p="${k}"]`))).map(([n, r]) => [n, { ...r, ref: tst.id + ':' + p.n }]))));
           const raw = Object.values(res).filter(r => r.ok).length;
-          M.bands.reading = QE.bandOf(raw, 'reading'); M.detail.reading = { raw, res, t: tst.id };
+          M.bands.reading = QE.bandOf(raw, tst.gt ? 'reading-gt' : 'reading'); M.detail.reading = { raw, res, t: tst.id };
           next();
         };
         countdown(3600, '#mkClock', () => { toast('⏰ ' + t('Hết giờ Reading')); submit(); });
