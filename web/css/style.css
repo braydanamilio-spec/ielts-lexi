@@ -833,3 +833,7 @@ kbd { font-family: ui-monospace, Menlo, monospace; font-size: .75em; padding: .0
 .leech { margin-top: .8rem; padding: .7rem .8rem; border-radius: 12px; background: var(--again-soft); border: 1px solid color-mix(in srgb, var(--again) 35%, transparent); }
 .type-in.ok { border-color: var(--good); background: var(--good-soft); } .type-in.near { border-color: #d97706; } .type-in.bad { border-color: var(--again); background: var(--again-soft); }
 .grades .suggest { outline: 3px solid var(--primary); outline-offset: 2px; }
+.forecast { display: flex; justify-content: center; gap: .5rem; margin: .8rem 0; align-items: flex-end; }
+.forecast > div { display: flex; flex-direction: column; align-items: center; gap: .15rem; min-width: 32px; }
+.forecast i { width: 18px; border-radius: 5px 5px 2px 2px; background: color-mix(in srgb, var(--primary) 70%, transparent); }
+.forecast b { font-size: .8rem; } .forecast span { font-size: .7rem; color: var(--muted); }

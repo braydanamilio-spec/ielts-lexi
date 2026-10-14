@@ -461,3 +461,4 @@
   'Gõ từ tiếng Anh rồi Enter': 'Type the English word, then Enter', 'Gợi ý: bắt đầu bằng “{a}”, {n} chữ cái': 'Hint: starts with “{a}”, {n} letters',
   'Chính xác!': 'Correct!', 'Gần đúng – sai 1 chữ': 'Almost – one letter off', 'Chưa đúng': 'Not quite',
 }); })(typeof self !== 'undefined' ? self : this);
+(function (g) { Object.assign(g.I18N_DICT.en, { 'Từ vừa quên – xem lại 1 lần nữa:': 'Words you just forgot – look again:', 'Số thẻ đến hạn 7 ngày tới': 'Cards due in the next 7 days', 'Mai': 'Tmrw' }); })(typeof self !== 'undefined' ? self : this);

@@ -59,7 +59,7 @@
       view.innerHTML = `<div class="study-wrap"><div class="card empty"><div class="em">🃏</div><h2>${t('Chưa có flashcard nào')}</h2><p>${t('Thêm từ từ thư viện hoặc tra từ điển để bắt đầu.')}</p><div class="row center"><a class="btn primary" href="#/library">${t('Mở thư viện')}</a><a class="btn" href="#/dict">${t('Tra từ')}</a></div></div></div>`;
       return;
     }
-    session = { queue: buildQueue(), done: 0, again: 0, total: 0, xp: 0, reverse: !!session && session.reverse };
+    session = { queue: buildQueue(), done: 0, again: 0, missed: [], total: 0, xp: 0, reverse: !!session && session.reverse };
     session.total = session.queue.length;
     if (!session.queue.length) return reviewDone(true);
     showCard();
@@ -73,6 +73,13 @@
       <div class="em">${nothing ? '🎉' : '🏆'}</div>
       <h2>${nothing ? t('Hôm nay bạn đã ôn hết!') : t('Hoàn thành {n} lượt ôn!', { n: session.done })}</h2>
       ${nothing ? '' : `<div class="row center" style="gap:1.5rem;margin:1rem 0"><div><b style="font-size:1.6rem;color:var(--gold)">+${session.xp}</b><div class="tiny muted">XP</div></div><div><b style="font-size:1.6rem;color:var(--good)">${acc}%</b><div class="tiny muted">${t('Nhớ ngay')}</div></div><div><b style="font-size:1.6rem">🔥${App.streak()}</b><div class="tiny muted">${t('Chuỗi ngày')}</div></div></div>`}
+      ${(session.missed || []).length ? `<div style="margin:.6rem 0"><div class="small muted">🔁 ${t('Từ vừa quên – xem lại 1 lần nữa:')}</div><div class="row center" style="gap:.35rem;margin-top:.3rem">${session.missed.slice(0, 12).map(w => `<a class="chip" href="#/dict/${encodeURIComponent(w)}">${esc(w)}</a>`).join('')}</div></div>` : ''}
+      ${(() => { // Dự báo 7 ngày tới (như Anki): biết trước khối lượng, chủ động sắp xếp thời gian
+        const day0 = endOfToday(), n = [0, 0, 0, 0, 0, 0, 0];
+        Object.values(state.cards).forEach(c => { const d = Math.floor((c.srs.due - day0) / 864e5); if (c.srs.last && d >= 0 && d < 7) n[d]++; });
+        const mx = Math.max(1, ...n);
+        return n.some(Boolean) ? `<div class="forecast" title="${t('Số thẻ đến hạn 7 ngày tới')}">${n.map((x, i) => `<div><i style="height:${Math.round(x / mx * 44) + 2}px"></i><b>${x}</b><span>${i === 0 ? t('Mai') : new Date(day0 + (i + 0.5) * 864e5).toLocaleDateString(I18N.lang(), { weekday: 'short' })}</span></div>`).join('')}</div>` : '';
+      })()}
       <p>${next ? t('Thẻ tiếp theo đến hạn: <b>{date}</b>.', { date: new Date(next.srs.due).toLocaleDateString(I18N.lang()) }) : ''} ${t('Học đều mỗi ngày là bí quyết nhớ lâu.')}</p>
       <div class="row center"><a class="btn primary" href="#/practice/learn">🧠 ${t('Học thông minh')}</a><a class="btn" href="#/practice/match">⚡ ${t('Ghép thẻ')}</a><a class="btn" href="#/library">${t('Thêm từ mới')}</a></div>
     </div></div>`;
@@ -233,7 +240,7 @@
       session.done += 1;
       // Thẻ còn ở bước học (1–10 phút) quay lại trong cùng phiên
       if (c.srs.reps === 0) session.queue.splice(Math.min(session.queue.length, g === 0 ? 3 : 6), 0, key);
-      if (g === 0) session.again += 1;
+      if (g === 0) { session.again += 1; if (!session.missed.includes(c.word)) session.missed.push(c.word); }
       if (!/^#\/review/.test(location.hash)) return; // đã rời trang ôn tập
       session.queue.length ? showCard() : reviewDone(false);
     }
