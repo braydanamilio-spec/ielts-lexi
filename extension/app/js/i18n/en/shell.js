@@ -406,3 +406,5 @@
   'Chế độ thử nghiệm – dữ liệu tách riêng, không đồng bộ': 'Sandbox mode: data is kept separate and not synced',
 }); })(typeof self !== 'undefined' ? self : this);
 (function (g) { Object.assign(g.I18N_DICT.en, { 'Ngôn ngữ giao diện': 'Interface language', 'Chế độ màu': 'Colour mode' }); })(typeof self !== 'undefined' ? self : this);
+/* Nhãn từ loại do Google trả về bằng tiếng Việt */
+(function (g) { Object.assign(g.I18N_DICT.en, { 'danh từ': 'noun', 'động từ': 'verb', 'tính từ': 'adjective', 'trạng từ': 'adverb', 'giới từ': 'preposition', 'liên từ': 'conjunction', 'đại từ': 'pronoun', 'thán từ': 'interjection', 'từ hạn định': 'determiner', 'viết tắt': 'abbreviation', 'cụm từ': 'phrase', 'tiền tố': 'prefix', 'hậu tố': 'suffix' }); })(typeof self !== 'undefined' ? self : this);

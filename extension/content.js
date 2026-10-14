@@ -55,6 +55,8 @@
     .body { padding: 0 14px 12px; max-height: 340px; overflow: auto; }
     .def { margin: 4px 0; }
     .ex { color: #6b6f85; font-style: italic; font-size: 13px; }
+    .pg { margin: 8px 0; padding-left: 8px; border-left: 3px solid #e4e6f2; } .pg .chip { margin: 0 6px 0 0; } .pvi { font-weight: 600; }
+    .pdef { margin: 3px 0 0; font-size: 13.5px; } .pex { display: block; color: #6b6f85; font-size: 13px; }
     .ctx { margin-top: 8px; padding: 8px 10px; background: #fff8e6; border-radius: 10px; font-size: 13px; }
     .ctx b { font-style: normal; }
     mark { background: #fde68a; color: inherit; border-radius: 3px; padding: 0 2px; }
@@ -90,7 +92,7 @@
     .tr { font-size: 15.5px; line-height: 1.55; color: inherit; font-weight: 500; }
     @media (prefers-color-scheme: dark) {
       .box { background: #1b1c26; color: #ecedf5; border-color: #2e3040; }
-      .pic, .spk, .chip { background: #242533; } .foot { background: #171821; border-color: #2e3040; }
+      .pg { border-color: #2e3040; } .pic, .spk, .chip { background: #242533; } .foot { background: #171821; border-color: #2e3040; }
       .btn { background: #242533; border-color: #2e3040; color: #ecedf5; } .ctx { background: #2b2618; }
       .vi { color: #2dd4bf; } .lv { background: #2a2850; color: #8b85ff; }
     }`;
@@ -299,7 +301,16 @@
     const paintCtx = () => { const el = b.querySelector('.ctxvi'); if (el && current === word) el.textContent = ctxVi ? '🇻🇳 ' + ctxVi : ''; };
 
     function render() {
-      const defs = (e.oxford && e.oxford.length ? e.oxford : e.meanings || []).slice(0, 2).map(m => `<div class="def"><span class="chip">${esc(m.pos)}</span> ${linkify((m.defs[0] && m.defs[0].def) || '')}</div>`).join('');
+      // Gom theo từ loại như từ điển lớn: mỗi từ loại = nghĩa Việt + định nghĩa Anh + ví dụ của đúng nghĩa đó
+      const POSV = { noun: 'danh từ', verb: 'động từ', adjective: 'tính từ', adverb: 'trạng từ', preposition: 'giới từ', conjunction: 'liên từ', pronoun: 'đại từ', interjection: 'thán từ', determiner: 'từ hạn định', abbreviation: 'viết tắt', phrase: 'cụm từ', 'phrasal verb': 'cụm động từ' };
+      const toEn = x => { x = String(x || '').toLowerCase(); const hit = Object.keys(POSV).find(k => POSV[k] === x); return hit || x; };
+      const groups = [], byPos = {};
+      const grp = x => byPos[x] || (byPos[x] = groups[groups.push({ pos: x, vi: [], defs: [] }) - 1]);
+      (e.senses || []).forEach(x => { grp(toEn(x.pos)).vi = x.terms.slice(0, 4); });
+      (e.oxford && e.oxford.length ? e.oxford : e.meanings || []).forEach(m => { const g2 = grp(toEn(m.pos)); if (!g2.defs.length) g2.defs = (m.defs || []).filter(d => d.def).slice(0, 2); });
+      const shown = groups.filter(x => x.vi.length || x.defs.length).slice(0, 3);
+      const hasEx = shown.some(x => x.defs.some(d => d.ex));
+      const defs = shown.map(x => `<div class="pg"><span class="chip">${esc(POSV[x.pos] || x.pos)}</span>${x.vi.length ? `<span class="pvi">${esc(x.vi.join(', '))}</span>` : ''}${x.defs.map(d => `<div class="pdef">${linkify(d.def)}${d.ex ? `<span class="pex">“${linkify(d.ex, e.word)}” <button class="spk mini" data-text="${esc(d.ex)}" title="Nghe câu ví dụ">🔊</button></span>` : ''}</div>`).join('')}</div>`).join('');
       const ctxHtml = context ? linkify(context, word) : '';
       b.innerHTML = H(`
         <div class="head">
@@ -312,9 +323,8 @@
           </div>
         </div>
         <div class="body">
-          ${(e.senses || []).length ? `<div class="def">${e.senses.slice(0, 3).map(x => `<span class="chip">${esc(x.pos)}</span> ${esc(x.terms.slice(0, 4).join(', '))}`).join('<br>')}</div>` : ''}
           ${defs || (e.def ? `<div class="def">${linkify(e.def)}</div>` : '')}
-          ${e.ex ? `<div class="ex">“${linkify(e.ex, e.word)}” <button class="spk mini" data-text="${esc(e.ex)}" title="Nghe câu ví dụ">🔊</button></div>` : ''}
+          ${e.ex && !hasEx ? `<div class="ex">“${linkify(e.ex, e.word)}” <button class="spk mini" data-text="${esc(e.ex)}" title="Nghe câu ví dụ">🔊</button></div>` : ''}
           ${ctxHtml ? `<div class="ctx"><b>📌 Ngữ cảnh sẽ lưu</b> <button class="spk mini" data-text="${esc(context)}" title="Nghe cả câu">🔊</button><button class="spk mini" data-text="${esc(context)}" data-rate="0.65" title="Nghe chậm">🐢</button><br>${ctxHtml}<div class="ctxvi ex" style="margin-top:4px">${ctxVi ? '🇻🇳 ' + esc(ctxVi) : '⏳ Đang dịch câu…'}</div></div>` : ''}
           ${e.partial ? '<div class="sk" style="width:50%;margin-top:8px"></div>' : ''}
         </div>

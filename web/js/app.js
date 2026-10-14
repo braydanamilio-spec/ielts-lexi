@@ -609,12 +609,12 @@
         <div id="related"></div>
         <div id="phraseBox"></div>
         ${(e.senses || []).length ? `<div style="margin-top:1.2rem"><h3>🇻🇳 ${t('Nghĩa tiếng Việt theo từ loại')}</h3>${e.senses.map(s => `
-          <div class="meaning"><span class="chip pos">${esc(s.pos)}</span> ${s.terms.map(esc).join(', ')}</div>`).join('')}</div>` : ''}
+          <div class="meaning"><span class="chip pos">${esc(t(s.pos))}</span> ${s.terms.map(esc).join(', ')}</div>`).join('')}</div>` : ''}
         ${(e.oxford || []).length ? `<div style="margin-top:1rem"><h3>📕 ${t('Định nghĩa')} <span class="muted small">(Oxford Languages)</span></h3>${e.oxford.map(m => `
-          <div class="meaning"><span class="chip pos">${esc(m.pos)}</span>
+          <div class="meaning"><span class="chip pos">${esc(t(m.pos))}</span>
             <ol>${m.defs.map(d => `<li>${esc(d.def)}${d.ex ? `<div class="ex small">“${highlight(d.ex, e.word)}”</div>` : ''}</li>`).join('')}</ol></div>`).join('')}</div>` : ''}
         ${e.meanings.length ? `<details style="margin-top:.8rem"${(e.oxford || []).length ? '' : ' open'}><summary class="small"><b>${t('Định nghĩa bổ sung')}</b> <span class="muted">(Wiktionary)</span></summary>${e.meanings.map(m => `
-          <div class="meaning"><span class="chip pos">${esc(m.pos)}</span>
+          <div class="meaning"><span class="chip pos">${esc(t(m.pos))}</span>
             <ol>${m.defs.map(d => `<li>${esc(d.def)}${d.ex ? `<div class="ex small">“${highlight(d.ex, e.word)}”</div>` : ''}</li>`).join('')}</ol></div>`).join('')}</details>` : ''}
       </div>
 
