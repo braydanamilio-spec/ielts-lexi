@@ -49,6 +49,18 @@
     if (canGoBack && !/^#?\/?(home)?$/.test(location.hash)) history.back();
     else P.App.minimizeApp().catch(() => P.App.exitApp());
   });
+  // Thanh trạng thái theo giao diện sáng/tối của app
+  const syncBar = () => {
+    const SB = P.StatusBar; if (!SB) return;
+    const th = document.documentElement.getAttribute('data-theme');
+    const dark = th ? th === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    SB.setStyle({ style: dark ? 'DARK' : 'LIGHT' }).catch(() => {});
+    const bg = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim();
+    if (Cap.getPlatform() === 'android' && /^#[0-9a-f]{6}$/i.test(bg)) SB.setBackgroundColor({ color: bg }).catch(() => {});
+  };
+  new MutationObserver(syncBar).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', syncBar);
+  window.addEventListener('load', syncBar);
   g.VBNative.scheduleReminder = scheduleReminder;
   window.addEventListener('load', () => setTimeout(scheduleReminder, 3000));
 })(typeof self !== 'undefined' ? self : this);
