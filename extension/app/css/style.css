@@ -879,3 +879,5 @@ kbd { font-family: ui-monospace, Menlo, monospace; font-size: .75em; padding: .0
 .pos-block { padding: .8rem 0 .4rem; border-top: 1px dashed var(--line); } .pos-block:first-of-type { border-top: 0; }
 .pos-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: .5rem; } .pos-head .vi { font-size: 1.05rem; }
 .pos-block ol { margin: .4rem 0 0 1.2rem; padding: 0; line-height: 1.6; } .pos-block li { margin: .25rem 0; }
+/* Điện thoại: nút chính của bước học luôn trong tầm tay (không phải cuộn tìm) */
+@media (max-width: 560px) { #gotIt { position: sticky; bottom: calc(72px + env(safe-area-inset-bottom)); z-index: 5; box-shadow: 0 6px 20px rgba(0,0,0,.25); } }

@@ -108,22 +108,42 @@
 
   // Phiên âm UK/US từ Wiktionary (khi dictionaryapi.dev thiếu); đổi ɹ → r theo quy ước từ điển Oxford
   async function wiktIPA(word) {
-    const d = await fetchJSON(`https://en.wiktionary.org/w/api.php?action=parse&page=${encodeURIComponent(word)}&prop=wikitext&format=json&formatversion=2&origin=*`, 3500);
+    const d = await fetchJSON(`https://en.wiktionary.org/w/api.php?action=parse&page=${encodeURIComponent(word)}&prop=wikitext&format=json&formatversion=2&origin=*`, 6000);
     const text = d && d.parse && d.parse.wikitext;
     if (!text) return null;
     const en = text.split(/\n==(?!=)/).find(sec => /^English==/.test(sec)) || text;
-    let uk = '', us = '', any = '';
-    for (const line of en.split('\n')) {
-      const m = line.match(/\{\{IPA\|en\|([^}|]+)/);
-      if (!m || !m[1].startsWith('/')) continue;
-      const ipa = m[1].trim();
-      if (/a=[^}|]*(UK|RP|Received|British)/.test(line)) uk = uk || ipa;
-      else if (/a=[^}|]*(GA|US|General American)/.test(line)) us = us || ipa;
-      else any = any || ipa;
+    // Mỗi dòng phát âm: giọng (UK/US) + từ loại áp dụng ({{q|adjective|adverb}}) + IPA – từ nhiều từ loại có phiên âm khác nhau (overall, record, present…)
+    const POSN = /^(noun|verb|adjective|adverb|preposition|conjunction|pronoun|interjection|determiner)s?$/i;
+    const fix = x => x.replace(/ɹ/g, 'r').replace(/\./g, '').replace(/[\u032F\u0306\u031A\u0361]/g, ''); // bỏ ký hiệu phiên âm hẹp (ɪ̯…) – kiểu từ điển học tập Oxford/Cambridge
+    const entries = [];
+    // Hiểu 3 cách ghi của Wiktionary: (1) {{q|adjective}} cùng dòng; (2) dòng cha "* {{a|en|adjective|noun}}" + dòng con "**";
+    // (3) tách theo Etymology – từ loại lấy từ các tiêu đề ====Noun==== trong cùng phần nguồn gốc
+    const ACC = x => /^(UK|RP|Received Pronunciation|British|England)$/i.test(x) ? 'UK' : /^(US|GA|General American|America)$/i.test(x) ? 'US' : '';
+    const posOf = x => { x = x.trim().toLowerCase(); return POSN.test(x) ? x.replace(/s$/, '') : ''; };
+    const blocks = en.split(/\n(?====Etymology)/);
+    for (const blk of blocks) {
+      const blockPos = [...blk.matchAll(/\n====?(Noun|Verb|Adjective|Adverb|Preposition|Conjunction|Pronoun|Interjection|Determiner)====?/g)].map(m => m[1].toLowerCase());
+      let parent = null;
+      for (const line of blk.split('\n')) {
+        const toks = [...line.matchAll(/\{\{(?:a|q|qualifier|i)\|(?:en\|)?([^}]+)\}\}/g)].flatMap(m => m[1].split('|')).concat([...line.matchAll(/\|a=([^|}]*)/g)].flatMap(m => m[1].split(/[,;]/)));
+        const m = line.match(/\{\{IPA\|en\|([^}|]+)/);
+        if (!m) { if (/^\*\s/.test(line) && toks.length) parent = toks; else if (/^\*\s/.test(line)) parent = null; continue; }
+        if (/^\*\s/.test(line)) parent = null; // dòng cấp 1 có IPA → không thuộc dòng cha nào
+        const all = toks.concat(/^\*\*/.test(line) && parent ? parent : []);
+        const ipa0 = m[1].trim().replace(/<[^>]*>/g, '');
+        if (!ipa0.startsWith('/')) continue;
+        const accs = [...new Set(all.map(ACC).filter(Boolean))];
+        const otherAcc = all.some(x => /^(AU|NZ|CA|Canada|Australia|New Zealand|Scotland|Scottish|Ireland|Irish|India|Indian|South Africa|Northern England|cot-caught|.*dialects.*)$/i.test(x.trim()));
+        const acc = accs.length ? accs.join(',') : otherAcc ? 'X' : '';
+        let pos = all.map(posOf).filter(Boolean);
+        if (!pos.length && /^\*\*/.test(line) && parent && !parent.some(x => ACC(x) || posOf(x))) pos = ['other']; // dòng cha là chú thích lạ (vd. "past of presend")
+        if (!pos.length) pos = blockPos;
+        entries.push({ acc, pos, ipa: fix(ipa0) });
+      }
     }
-    const fix = x => x.replace(/ɹ/g, 'r').replace(/\./g, '').replace(/[\u032F\u0306\u031A]/g, ''); // bỏ ký hiệu phiên âm hẹp (ɪ̯…) – kiểu từ điển học tập Oxford/Cambridge
-    if (!uk && !us && !any) return null;
-    return { ipa: fix(uk || any || us), ipaUS: fix(us || any || uk) };
+    if (!entries.length) return null;
+    const pick = acc => (entries.find(e => e.acc.split(',').includes(acc) && !e.pos.includes('other')) || entries.find(e => !e.acc && !e.pos.includes('other')) || entries[0]).ipa;
+    return { ipa: pick('UK'), ipaUS: pick('US'), entries };
   }
 
   async function myMemory(text) {
@@ -204,6 +224,18 @@
 
   const normWord = raw => String(raw || '').trim().toLowerCase().replace(/[’]/g, "'").replace(/[^a-z\s'-]/g, '').replace(/\s+/g, ' ');
 
+  // Phiên âm đúng từ loại chính của mục từ (vd. overall tính từ /ˌəʊvəˈrɔːl/ ≠ danh từ /ˈəʊvərɔːl/)
+  const POS_FULL = { n: 'noun', v: 'verb', adj: 'adjective', adv: 'adverb', 'danh từ': 'noun', 'động từ': 'verb', 'tính từ': 'adjective', 'trạng từ': 'adverb' };
+  const ipaFor = (wk, posRaw, acc) => {
+    if (!wk) return ''; if (!wk.entries) return acc === 'US' ? wk.ipaUS : wk.ipa;
+    const pos = POS_FULL[posRaw] || posRaw || '';
+    let E = wk.entries.filter(e => !e.pos.includes('other') && e.acc !== 'X'); if (!E.length) E = wk.entries;
+    const hasAcc = e => e.acc.split(',').includes(acc), exact = e => pos && e.pos.includes(pos);
+    let C = E.filter(exact); if (!C.length) C = E.filter(e => !e.pos.length); if (!C.length) C = E;
+    // Không ghi rõ từ loại (vd. project, object): danh/tính từ nhấn âm đầu, động từ nhấn âm sau – quy tắc trọng âm của từ đồng hình
+    if (C.some(e => e.pos.length !== 1) && /^(noun|verb|adjective)$/.test(pos)) { const ini = e => /^\/ˈ/.test(e.ipa), S = C.filter(e => (pos === 'verb' ? !ini(e) && /ˈ/.test(e.ipa) : ini(e))); if (S.length) C = S; }
+    return (C.find(hasAcc) || C.find(e => !e.acc) || C[0]).ipa;
+  };
   function build(word, local, gg, fd, wk, img, sents) {
     const gFirst = gg && gg.defs[0] && gg.defs[0].defs[0];
     const fFirst = fd && fd.meanings[0];
@@ -213,8 +245,8 @@
     return {
       word,
       found: true,
-      ipa: (local && local.ipa) || (wk && wk.ipa) || (fd && fd.ipa) || '',
-      ipaUS: (wk && wk.ipaUS) || (fd && fd.ipaUS) || '',
+      ipa: (local && local.ipa) || ipaFor(wk, (local && local.pos) || posRaw, 'UK') || (fd && fd.ipa) || '',
+      ipaUS: ipaFor(wk, (local && local.pos) || posRaw, 'US') || (fd && fd.ipaUS) || '',
       audio: (fd && fd.audio) || '',
       audioUS: (fd && fd.audioUS) || '',
       pos: (local && local.pos) || POS_SHORT[posRaw] || posRaw,
