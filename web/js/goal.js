@@ -8,13 +8,14 @@
   const view = App.view;
 
   // Ước lượng giờ học cần để tăng điểm (tham khảo khuyến nghị phổ biến: ~150 giờ có hướng dẫn cho mỗi 1.0 band IELTS)
-  const HOURS = { ielts: gap => gap * 150, toeic: gap => gap / 100 * 60 };
+  const HOURS = { ielts: gap => gap * 150, toeic: gap => gap / 100 * 60 }; HOURS.ieltsgt = HOURS.ielts; // IELTS General: cùng thang band
   // Thời lượng mỗi đơn vị hoạt động (phút) để quy đổi giờ học → số bài
   const UNIT = { words: 1, listens: 10, readings: 20, writes: 50, spoken: 2, grammar: 15 };
   const SPLIT = {
     ielts: { words: .22, listens: .2, readings: .2, writes: .16, spoken: .1, grammar: .12 },
     toeic: { words: .3, listens: .3, readings: .28, writes: 0, spoken: 0, grammar: .12 },
   };
+  SPLIT.ieltsgt = SPLIT.ielts;
   const LABEL = { words: ['📌', t('Từ mới học'), '#/review'], listens: ['🎧', t('Phần nghe'), '#/listening'], readings: ['📖', t('Bài đọc'), '#/reading'], writes: ['✍️', t('Bài viết'), '#/write'], spoken: ['🗣️', t('Lượt nói (điểm)'), '#/speaking'], grammar: ['📐', t('Bài ngữ pháp'), '#/grammar'] };
 
   const goal = () => state.settings.goal || null;
@@ -47,7 +48,7 @@
     const cur = await current(g.exam), { t: tg } = weeklyTargets(g, cur), { out, dow } = thisWeek();
     const keys = Object.keys(tg), pct = Math.round(keys.reduce((a, k) => a + Math.min(1, out[k] / tg[k]), 0) / keys.length * 100);
     const exp = Math.round((dow + 1) / 7 * 100), days = Math.max(0, Math.ceil((new Date(g.date) - Date.now()) / DAY));
-    return `<a class="card goal-mini" href="#/goal" style="color:var(--text)"><div class="row between nowrap"><div><b>🎯 ${g.exam === 'toeic' ? 'TOEIC ' + g.target : 'IELTS ' + g.target}</b> <span class="small muted">· ${t('còn {days} ngày · hiện ~{cur}', { days, cur })}</span></div><span class="chip ${pct >= exp ? 'ok' : ''}">${t('Tuần này {pct}%', { pct })}</span></div>
+    return `<a class="card goal-mini" href="#/goal" style="color:var(--text)"><div class="row between nowrap"><div><b>🎯 ${g.exam === 'toeic' ? 'TOEIC ' + g.target : (g.exam === 'ieltsgt' ? 'IELTS GT ' : 'IELTS ') + g.target}</b> <span class="small muted">· ${t('còn {days} ngày · hiện ~{cur}', { days, cur })}</span></div><span class="chip ${pct >= exp ? 'ok' : ''}">${t('Tuần này {pct}%', { pct })}</span></div>
       <div class="progress" style="margin-top:.5rem"><i style="width:${pct}%"></i></div><div class="tiny muted" style="margin-top:.3rem">${pct >= exp ? t('Đúng tiến độ') + ' 👍' : t('Nên đạt ~{exp}% vào hôm nay – xem chỉ tiêu còn thiếu →', { exp })}</div></a>`;
   };
 
@@ -63,7 +64,7 @@
         <div class="card">
           <h3 style="margin-top:0">⚙️ ${t('Mục tiêu của bạn')}</h3>
           <div class="grid g2">
-            <label class="field"><span class="small">${t('Kỳ thi')}</span><select class="input" id="gExam"><option value="ielts" ${g.exam === 'ielts' ? 'selected' : ''}>IELTS Academic</option><option value="toeic" ${g.exam === 'toeic' ? 'selected' : ''}>TOEIC L&R</option></select></label>
+            <label class="field"><span class="small">${t('Kỳ thi')}</span><select class="input" id="gExam"><option value="ielts" ${g.exam === 'ielts' ? 'selected' : ''}>IELTS Academic</option><option value="ieltsgt" ${g.exam === 'ieltsgt' ? 'selected' : ''}>IELTS General Training</option><option value="toeic" ${g.exam === 'toeic' ? 'selected' : ''}>TOEIC L&R</option></select></label>
             <label class="field"><span class="small">${t('Điểm mục tiêu')}</span><input class="input" id="gTarget" type="number" step="${g.exam === 'toeic' ? 5 : 0.5}" min="${g.exam === 'toeic' ? 300 : 4}" max="${g.exam === 'toeic' ? 990 : 9}" value="${g.target}"></label>
             <label class="field"><span class="small">${t('Ngày thi')}</span><input class="input" id="gDate" type="date" value="${esc(g.date)}"></label>
             <label class="field"><span class="small">${t('Điểm hiện tại (ước tính)')}</span><input class="input" value="${cur}" disabled></label>
@@ -86,7 +87,7 @@
     $('#gSave').onclick = async () => {
       const exam = $('#gExam').value, target = +$('#gTarget').value, date = $('#gDate').value;
       if (!date || new Date(date) < Date.now()) return toast(t('Chọn ngày thi trong tương lai'));
-      if (exam === 'ielts' && (target < 4 || target > 9)) return toast(t('Band IELTS từ 4.0 đến 9.0'));
+      if (exam !== 'toeic' && (target < 4 || target > 9)) return toast(t('Band IELTS từ 4.0 đến 9.0'));
       if (exam === 'toeic' && (target < 300 || target > 990)) return toast(t('Điểm TOEIC từ 300 đến 990'));
       state.settings.goal = { exam, target, date, at: Date.now() }; await App.saveSettings();
       toast('🎯 ' + t('Đã lập kế hoạch! Chỉ tiêu tuần hiện trên Trang chủ.')); routes.goal();
