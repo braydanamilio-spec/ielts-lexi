@@ -226,7 +226,7 @@
 
     // ---------- SPEAKING ----------
     function speaking() {
-      const bank = App.speakBank || [];
+      App.speakMerge && App.speakMerge(); const bank = App.speakBank || [];
       const t1 = pick(bank), t2 = pick(bank.filter(x => x !== t1)) || t1, t3 = pick(bank) || t1;
       const Q = [...t1.p1.slice(0, 3).map(q => ({ part: 1, q })), { part: 1, q: (t2.p1 || [])[0] }, { part: 2, q: t3.p2.q, points: t3.p2.points }, ...t3.p3.slice(0, 3).map(q => ({ part: 3, q }))].filter(x => x.q);
       const answers = [];

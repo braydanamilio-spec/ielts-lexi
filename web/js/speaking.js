@@ -50,9 +50,11 @@
   };
 
   // Chủ đề bổ sung (js/speak/*.js nạp trước): window.SPEAK_MORE = [{ topic, title, p1: [...], p2: { q, points }, p3: [...] }]
-  (window.SPEAK_MORE || []).forEach(t => { if (!BANK.some(b => b.title === t.title)) BANK.push(t); });
-  App.speakBank = BANK;
+  const mergeMore = () => (window.SPEAK_MORE || []).forEach(t => { if (!BANK.some(b => b.title === t.title)) BANK.push(t); }); // gói speak (nạp khi cần) thêm chủ đề
+  mergeMore();
+  App.speakBank = BANK; App.speakMerge = mergeMore;
   routes.speaking = function (arg) {
+    mergeMore();
     const seg = (arg || '').split('/');
     const part = PARTS[seg[0]] ? seg[0] : 'p1';
     const ti = /^\d+$/.test(seg[1] || '') && BANK[+seg[1]] ? seg[1] : '0';
