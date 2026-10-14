@@ -1,5 +1,5 @@
 /* Service worker: cache giao diện để dùng offline + mở app khi bấm thông báo. */
-const CACHE = 'vocaband-20261014100327';
+const CACHE = 'vocaband-20261014100511';
 const SHELL = ['./', 'index.html', 'css/style.css', 'js/data.js', 'js/lib/topics-more.js', 'js/lib/skills.js', 'js/lib/awl.js', 'js/readings.js', 'js/lexis.js', 'js/core.js', 'js/write.js', 'js/speaking.js', 'js/grammar/tenses.js', 'js/grammar/verbs.js', 'js/grammar/sentences.js', 'js/grammar.js', 'js/pron/sounds.js', 'js/pron/skills.js', 'js/pron.js', 'js/plan.js', 'js/cbt.js', 'js/path.js', 'js/dictionary.js', 'js/game.js', 'js/ui.js', 'js/app.js', 'js/study.js', 'js/reading.js', 'js/firebase-config.js', 'js/sync.js', 'manifest.webmanifest', 'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png'];
 
 self.addEventListener('install', e => {

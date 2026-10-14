@@ -1117,10 +1117,12 @@
     document.addEventListener('visibilitychange', async () => { if (!document.hidden) { state.cards = await Cards.all(); state.stats = await Stats.get(); state.game = await Game.get(); updateChrome(); } });
   })();
   // Các module khác (study.js, reading.js) đăng ký route rồi mới vẽ trang đầu tiên
-  setTimeout(async () => {
+  // Chỉ vẽ trang khi mọi module (study, grammar, pron, plan…) đã tải xong
+  const boot = async () => {
     await App.ready;
     const fresh = !state.settings.onboarded && !Object.keys(state.cards).length && !state.game.xp;
     if (fresh && !/welcome|dict|read/.test(location.hash)) { location.hash = '#/welcome'; return; }
     route();
-  }, 0);
+  };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else setTimeout(boot, 0);
 })();
