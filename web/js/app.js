@@ -1333,7 +1333,7 @@
       if (img.tagName === 'IMG' && img.parentElement && (img.parentElement.classList.contains('pic') || img.parentElement.classList.contains('em'))) img.parentElement.textContent = '📘';
     }, true);
     if (Store.isExtension && chrome.storage.onChanged) {
-      chrome.storage.onChanged.addListener(ch => { if (ch.cards) { state.cards = ch.cards.newValue || {}; updateChrome(); } });
+      chrome.storage.onChanged.addListener(ch => { if (ch.cards) { state.cards = Object.assign(Object.create(null), ch.cards.newValue || {}); updateChrome(); } });
     }
     if (!Store.isExtension && !(window.VBNative && VBNative.is) && 'serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(() => {});
     applyFreeze().catch(() => {});

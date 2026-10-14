@@ -34,7 +34,7 @@
   // ---------- Gộp dữ liệu ----------
   const activity = c => Math.max(c.srs && c.srs.last || 0, c.added || 0, c.mod || 0);
   function mergeCards(a, b, deleted = {}) {
-    const out = { ...a };
+    const out = Object.assign(Object.create(null), a); // không kế thừa prototype (thẻ "constructor"…)
     for (const [k, c] of Object.entries(b)) {
       const mine = out[k];
       if (!mine) { out[k] = c; continue; }
@@ -93,7 +93,7 @@
     const r = await extCall('get');
     if (!r || !r.data) return false;
     const ext = r.data;
-    const deleted = { ...(await Store.get('deleted', {})) };
+    const deleted = Object.assign(Object.create(null), await Store.get('deleted', {}));
     for (const [k, t] of Object.entries(ext.deleted || {})) deleted[k] = Math.max(deleted[k] || 0, t);
     const merged = mergeCards(await Cards.all(), ext.cards || {}, deleted);
     await Store.set('deleted', deleted);
@@ -177,7 +177,7 @@
           sentHashes[k] = hash(txt);
         }
         const remote = JSON.parse((await docText(docs.meta)) || '{}');
-        const deleted = { ...(remote.deleted || {}) };
+        const deleted = Object.assign(Object.create(null), remote.deleted || {});
         for (const [k, t] of Object.entries(local.deleted)) deleted[k] = Math.max(deleted[k] || 0, t);
         pruneDel(deleted);
         await Store.set('deleted', deleted);

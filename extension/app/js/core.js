@@ -204,6 +204,7 @@
   const keyOf = w => String(w || '').toLowerCase().replace(/[’‘`]/g, "'").replace(/\s+/g, ' ').trim();
   const activityOf = c => Math.max((c.srs && c.srs.last) || 0, c.mod || 0, c.added || 0);
   function normalize(map) {
+    map = Object.assign(Object.create(null), map || {}); // không kế thừa prototype: thẻ "constructor", "toString"… không bị nhầm
     for (const [k, c] of Object.entries(map || {})) {
       if (!c || !c.word) { delete map[k]; continue; }
       const nk = keyOf(c.word);
@@ -224,7 +225,7 @@
       // Ảnh cũ từ Wikipedia không rõ giấy phép → bỏ, dùng emoji cho tới khi tra lại ảnh có giấy phép
       if (c.image && !c.imageCredit && /wikipedia|wikimedia/.test(c.image)) c.image = '';
     }
-    return map || {};
+    return map;
   }
   const Cards = {
     async all() { return normalize(await Store.get('cards', {})); },
