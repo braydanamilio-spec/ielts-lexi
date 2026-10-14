@@ -6,11 +6,21 @@
   const view = App.view;
   const R = () => window.READINGS || [];
 
-  routes.reading = function () {
+  routes.reading = function (arg, query) {
     const done = (state.game.readDone || {});
+    // Lọc theo trình độ (A2…C1), nhớ lựa chọn
+    const lvs = [...new Set(R().map(r => r.level).filter(Boolean))].sort();
+    let lv = (query && query.get && query.get('lv')) || '';
+    if (!lv) { try { lv = localStorage.getItem('vb.readLv') || 'all'; } catch (e) { lv = 'all'; } }
+    if (lv !== 'all' && !lvs.includes(lv)) lv = 'all';
+    try { localStorage.setItem('vb.readLv', lv); } catch (e) { /* bỏ qua */ }
+    const list = R().filter(r => lv === 'all' || r.level === lv);
+    const tab = (k, label, n) => `<a class="${k === lv ? 'on' : ''}" href="#/reading?lv=${k}" style="padding:.45rem .8rem;border-radius:10px;font-weight:700;text-decoration:none;color:inherit;${k === lv ? 'background:var(--surface);box-shadow:var(--shadow-sm)' : ''}">${label} <span class="tiny muted">${n}</span></a>`;
+    const tabs = lvs.length > 1 ? `<div class="tabs" style="display:inline-flex;flex-wrap:wrap;margin-bottom:1rem">${tab('all', t('Tất cả'), R().length)}${lvs.map(k => tab(k, k, R().filter(r => r.level === k).length)).join('')}</div>` : '';
     view.innerHTML = `
       <div class="page-head"><div><h1>${t('Bài đọc IELTS')}</h1><p class="muted">${t('Đọc bài theo phong cách IELTS Academic · chạm vào bất kỳ từ nào để tra nghĩa và lưu kèm câu gốc làm ngữ cảnh.')}</p></div></div>
-      <div class="grid auto">${R().map(r => `
+      ${tabs}
+      <div class="grid auto">${list.map(r => `
         <a class="card hover topic-card" href="#/read/${r.id}" style="color:var(--text)">
           <div class="row between"><span class="em">${r.emoji}</span>${levelChip(r.level)}</div>
           <h3>${esc(r.title)}</h3>
