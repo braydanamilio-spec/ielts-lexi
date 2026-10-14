@@ -126,6 +126,11 @@
             ${c.syn.length ? `<div class="small" style="margin-top:.3rem">≈ ${c.syn.map(esc).join(', ')}</div>` : ''}
             ${c.note ? `<div class="small" style="margin-top:.6rem">📝 ${esc(c.note)}</div>` : ''}
             ${SRS.retention(c.srs) != null ? `<div class="tiny muted" style="margin-top:.8rem">🧠 ${t('Khả năng còn nhớ trước lần ôn này: <b>{pct}%</b> · đã quên {n} lần', { pct: Math.round(SRS.retention(c.srs) * 100), n: c.srs.lapses })}</div>` : ''}
+            ${c.srs.lapses >= 3 ? `<div class="leech" data-leech><b>🐛 ${t('Từ khó nhớ – đã quên {n} lần', { n: c.srs.lapses })}</b>
+              <div class="tiny muted" style="margin:.2rem 0 .4rem">${t('Học lại theo cách khác thay vì ôn thêm lần nữa: tạo mẹo nhớ, đọc to theo, đặt câu về chính bạn.')}</div>
+              <div class="row" style="gap:.4rem"><button class="btn sm" data-mnem>💡 ${t('Tạo mẹo nhớ bằng AI')}</button><button class="btn sm ghost" data-shadow>🗣️ ${t('Đọc to theo 3 lần')}</button></div>
+              <div data-mnem-out class="small" style="margin-top:.4rem"></div>
+              <input class="input" data-note style="margin-top:.4rem" maxlength="200" placeholder="${t('Mẹo nhớ của riêng bạn (vd. liên tưởng âm thanh, hình ảnh)…')}" value="${esc(c.note || '')}"></div>` : ''}
             <details style="margin-top:.8rem" data-gen><summary class="small"><b>✍️ ${t('Tự đặt câu với “{word}”', { word: esc(c.word) })}</b> <span class="muted">${t('(+5 XP · giúp nhớ sâu hơn)')}</span></summary>
               <textarea class="input" id="genTxt" style="margin-top:.5rem;min-height:60px" placeholder="${t('Viết một câu về bản thân bạn có dùng từ này…')}"></textarea>
               <button class="btn sm" id="genSave" style="margin-top:.4rem">${t('Lưu câu của tôi')}</button></details>
@@ -149,6 +154,24 @@
       if (rev || state.settings.autoSpeak) say();
     };
     $('#flash').addEventListener('click', e => { if (!e.target.closest('button, details, textarea')) flip(); });
+    // Từ khó nhớ: mẹo nhớ AI (lưu vào ghi chú thẻ), đọc to theo, ghi mẹo riêng
+    const lb = $('[data-leech]');
+    if (lb) {
+      lb.addEventListener('click', e => e.stopPropagation());
+      const saveNote = async note => { c.note = note.slice(0, 200); await Cards.update(c); state.cards[key] = c; };
+      $('[data-note]', lb).onchange = e => saveNote(e.target.value.trim()).then(() => toast(t('Đã lưu mẹo nhớ')));
+      $('[data-shadow]', lb).onclick = async () => { for (let i = 0; i < 3; i++) { say(); await new Promise(r => setTimeout(r, 1600)); } };
+      $('[data-mnem]', lb).onclick = async ev => {
+        const out = $('[data-mnem-out]', lb), b = ev.currentTarget; b.disabled = true; out.textContent = '⏳ ' + t('AI đang nghĩ mẹo nhớ…');
+        try {
+          const r = await AI.ask(`Create a memory aid for the English word "${c.word}" (${c.pos || ''}) meaning "${c.vi}" for a ${I18N.learnLang() === 'vi' ? 'Vietnamese' : I18N.LANGS[I18N.learnLang()][0]} learner. Return ONLY JSON: {"mnemonic": "a vivid sound-alike or image association in the learner's language, max 30 words", "parts": "word parts / root meaning if useful, else empty", "confuse": "a commonly confused word and the difference, else empty"}`);
+          const tip = [r.mnemonic, r.parts, r.confuse].filter(Boolean).join(' · ');
+          out.innerHTML = `💡 ${esc(tip)}`;
+          if (r.mnemonic && !c.note) { await saveNote(r.mnemonic); $('[data-note]', lb).value = c.note; }
+        } catch (e) { out.innerHTML = `${esc(AI.errText ? AI.errText(e) : e.message)} ${e.message === 'NO_KEY' ? `<button class="btn sm" data-k>${t('Bật AI')}</button>` : ''}`; const k = $('[data-k]', out); if (k) k.onclick = () => AI.keyDialog(); }
+        b.disabled = false;
+      };
+    }
     $('#genSave').onclick = async ev => {
       ev.stopPropagation();
       const text = $('#genTxt').value.trim();

@@ -450,3 +450,10 @@
   'Điểm TOEIC từ 300 đến 990': 'TOEIC score must be between 300 and 990',
   'Đã lập kế hoạch! Chỉ tiêu tuần hiện trên Trang chủ.': 'Plan created! Your weekly targets now appear on the Home page.',
 }); })(typeof self !== 'undefined' ? self : this);
+/* Từ khó nhớ (leech) */
+(function (g) { Object.assign(g.I18N_DICT.en, {
+  'Từ khó nhớ – đã quên {n} lần': 'Hard word – forgotten {n} times',
+  'Học lại theo cách khác thay vì ôn thêm lần nữa: tạo mẹo nhớ, đọc to theo, đặt câu về chính bạn.': 'Relearn it differently instead of just reviewing again: make a memory aid, say it aloud, write a sentence about yourself.',
+  'Tạo mẹo nhớ bằng AI': 'Create a memory aid with AI', 'Đọc to theo 3 lần': 'Repeat aloud 3 times', 'AI đang nghĩ mẹo nhớ…': 'AI is thinking of a memory aid…',
+  'Mẹo nhớ của riêng bạn (vd. liên tưởng âm thanh, hình ảnh)…': 'Your own memory aid (e.g. a sound or image association)…', 'Đã lưu mẹo nhớ': 'Memory aid saved', 'Bật AI': 'Turn on AI',
+}); })(typeof self !== 'undefined' ? self : this);
