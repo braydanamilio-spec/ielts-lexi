@@ -39,7 +39,8 @@ for (let i = 0; i < keys.length;) {
   const res = await translate(prot.map(p => p.t));
   batch.forEach(([k, v], j) => {
     const tr = res && res[j] ? restore(res[j].trim(), prot[j].keep) : '';
-    if (tr && sameTokens(v, tr)) { out[k] = tr; ok++; } else kept++; // không lưu → giao diện tự dùng tiếng Anh, lần chạy sau thử dịch lại
+    const cased = tr && /^\p{Lu}/u.test(v) && /^\p{Ll}/u.test(tr) ? tr[0].toLocaleUpperCase(lang) + tr.slice(1) : tr; // viết hoa chữ đầu như bản tiếng Anh
+    if (cased && sameTokens(v, cased)) { out[k] = cased; ok++; } else kept++; // không lưu → giao diện tự dùng tiếng Anh, lần chạy sau thử dịch lại
   });
   process.stdout.write(`\r${i}/${keys.length}`);
 }

@@ -10,7 +10,7 @@
   const RTL = new Set(['ar']);
   // Ngôn ngữ đã có bản dịch giao diện đầy đủ (file js/i18n/<lang>.js). Ngôn ngữ khác → dùng English cho CẢ giao diện lẫn nội dung,
   // tránh giao diện một thứ tiếng, nội dung một thứ tiếng. Thêm ngôn ngữ mới: sinh file bằng scripts/gen-i18n.mjs rồi thêm mã vào đây.
-  const SUPPORTED = ['en', 'vi'];
+  const SUPPORTED = ['en', 'vi', 'es', 'pt', 'fr', 'de', 'id', 'th', 'zh', 'ja', 'ko', 'hi', 'ar', 'ru', 'tr'];
   const KEY = 'vb.uiLang';
   const read = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
   function detect() {

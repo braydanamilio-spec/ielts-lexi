@@ -904,3 +904,13 @@ button, .btn, .option, .tabs, .bottom-nav { -webkit-user-select: none; user-sele
 @media (display-mode: standalone) { body { overscroll-behavior: none; } .topbar { padding-top: env(safe-area-inset-top); } }
 .install-nudge { position: fixed; left: 12px; right: 12px; bottom: calc(84px + env(safe-area-inset-bottom)); z-index: 65; padding: .9rem; border-radius: 18px; box-shadow: var(--shadow-lg); animation: sheetUp .3s cubic-bezier(.2,.8,.2,1); }
 .lang-select { width: auto; padding: .35rem 2rem .35rem .7rem; font-size: .9rem; }
+/* Ngôn ngữ viết từ phải sang trái (tiếng Ả Rập…): lưới & flex tự đảo chiều; chỉnh các chỗ cố định trái/phải */
+[dir="rtl"] .sidebar { border-right: 0; border-left: 1px solid var(--line); }
+[dir="rtl"] .badge, [dir="rtl"] .suggest .vi, [dir="rtl"] .top-stats, [dir="rtl"] .lnow { margin-left: 0; margin-right: auto; }
+[dir="rtl"] .example-box, [dir="rtl"] .md-prompt { border-left: 0; border-right: 4px solid var(--accent); border-radius: 12px 0 0 12px; }
+[dir="rtl"] .md-prompt { border-right-color: var(--primary); }
+[dir="rtl"] .g-mistake { border-left: 1px solid var(--line); border-right: 4px solid var(--again); border-radius: 14px 0 0 14px; }
+[dir="rtl"] .pscore, [dir="rtl"] .mk-ov { text-align: left; }
+@media (min-width: 901px) { [dir="rtl"] body:not(.bare) .sheet { left: 0; right: var(--sidebar); } }
+/* Nội dung học tiếng Anh luôn trái → phải, kể cả khi giao diện là tiếng Ả Rập */
+[dir="rtl"] .entry-word, [dir="rtl"] .wi-word, [dir="rtl"] .ipa, [dir="rtl"] .ex, [dir="rtl"] .fi-ex, [dir="rtl"] .ctx, [dir="rtl"] .mk-pass, [dir="rtl"] .toeic-pass, [dir="rtl"] textarea, [dir="rtl"] .lq-item { direction: ltr; unicode-bidi: isolate; }
