@@ -8,6 +8,7 @@
       try { if (!chrome.runtime.id) return; } catch (x) { return; } // bản add-on cũ đã bị thay thế
       try {
         if (e.data.op === 'get') { const data = await chrome.storage.local.get(KEYS); window.postMessage({ vbBridge: 'res', id: e.data.id, data }, location.origin); }
+        else if (e.data.op === 'diag') { const { errLog } = await chrome.storage.local.get('errLog'); window.postMessage({ vbBridge: 'res', id: e.data.id, data: { v: chrome.runtime.getManifest().version, errLog: errLog || [] } }, location.origin); }
         else if (e.data.op === 'linked') { const d = e.data.data || {}; await chrome.storage.local.set({ linked: { email: String(d.email || '').slice(0, 120), name: String(d.name || '').slice(0, 80), at: Date.now() } }); window.postMessage({ vbBridge: 'res', id: e.data.id, data: { ok: true } }, location.origin); }
         else if (e.data.op === 'aiKeyGet') { const { aiKey } = await chrome.storage.local.get('aiKey'); window.postMessage({ vbBridge: 'res', id: e.data.id, data: { aiKey: aiKey || '' } }, location.origin); }
         else if (e.data.op === 'aiKeySet') { const k = String((e.data.data || {}).aiKey || ''); if (!k || /^AIza[\w-]{20,}$/.test(k)) await chrome.storage.local.set({ aiKey: k }); window.postMessage({ vbBridge: 'res', id: e.data.id, data: { ok: true } }, location.origin); }
@@ -18,6 +19,10 @@
   }
   // Bản content script cũ (trước khi add-on được cập nhật/tải lại) tự tắt khi bản mới chạy
   document.dispatchEvent(new CustomEvent('ielts-lexi-takeover'));
+  // Lỗi của chính content script (thế giới riêng của add-on) → ghi vào nhật ký lỗi để chẩn đoán
+  const report = (where, e) => { try { if (chrome.runtime.id) chrome.runtime.sendMessage({ type: 'logErr', where, m: String((e && (e.stack || e.message)) || e).slice(0, 600) + ' @' + location.hostname }).catch(() => {}); } catch (x) { /* bản cũ */ } };
+  window.addEventListener('error', e => { if (e.filename && e.filename.startsWith('chrome-extension://')) report('cs', e.error || e.message); });
+  window.addEventListener('unhandledrejection', e => report('cs-promise', e.reason));
   let dead = false;
   const alive = () => { try { return !dead && !!chrome.runtime.id; } catch (e) { return false; } };
   document.addEventListener('ielts-lexi-takeover', () => { dead = true; if (host) host.remove(); });

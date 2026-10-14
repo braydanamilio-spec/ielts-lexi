@@ -1,4 +1,8 @@
 /* Background service worker: tra từ, lưu thẻ, nhắc học hằng ngày, badge số thẻ cần ôn. */
+// Ghi lại lỗi (tối đa 20) để chẩn đoán từ xa qua trang Vocaband – không gửi đi đâu
+const logErr = (where, e) => { try { const m = String((e && (e.stack || e.message)) || e).slice(0, 600); chrome.storage.local.get('errLog').then(({ errLog }) => chrome.storage.local.set({ errLog: [...(errLog || []), { at: Date.now(), v: chrome.runtime.getManifest().version, where, m }].slice(-20) })); } catch (x) { /* bỏ qua */ } };
+self.addEventListener('error', e => logErr('bg', e.error || e.message));
+self.addEventListener('unhandledrejection', e => logErr('bg-promise', e.reason));
 // Chrome/Edge: service worker → importScripts; Firefox: manifest nạp sẵn các file này qua background.scripts
 if (typeof importScripts === 'function' && typeof Core === 'undefined') importScripts('app/js/data.js', 'app/js/core.js', 'app/js/vi-check.js', 'app/js/dictionary.js');
 const { Store, Cards, Stats, Golden, DEFAULT_SETTINGS, todayKey } = Core;
@@ -176,6 +180,7 @@ chrome.runtime.onMessage.addListener((msg, sender, reply) => {
       case 'translate': return reply({ vi: await Dict.translateVi(msg.text) });
       case 'explain': return reply(await aiExplain(msg.text, msg.sentence));
       case 'testNotify': await sendReminder(true); return reply({ ok: true });
+      case 'logErr': logErr(msg.where || 'cs', msg.m); return reply({ ok: true });
       case 'openApp': await openApp(msg.hash); return reply({ ok: true });
       case 'syncNow': {
         // Trang Vocaband (đã đăng nhập) tự gộp dữ liệu qua cầu nối rồi gửi 'linked' → chờ tín hiệu đó, tối đa 25 giây
