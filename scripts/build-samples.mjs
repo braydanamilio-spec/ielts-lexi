@@ -65,3 +65,28 @@ console.log(`✓ SEO: ${done.length} trang bài mẫu Task 2 + mục lục`);
   fs.writeFileSync(sm, fs.readFileSync(sm, 'utf8').replace('</urlset>', urls + '\n</urlset>'));
   console.log(`✓ SEO: ${made.length} trang chủ đề Speaking + mục lục`);
 }
+
+// ===== Từ vựng theo chủ đề: 1 trang / bộ từ (từ, phiên âm, nghĩa, ví dụ) =====
+{
+  const c3 = { self: {}, window: {}, t: s => s, localStorage: { getItem() {}, setItem() {} } }; c3.self = c3.window = c3; vm.createContext(c3);
+  vm.runInContext(fs.readFileSync('web/js/data.js', 'utf8'), c3);
+  for (const f of ['topics-more', 'skills', 'awl', 'ngsl', 'tsl-a', 'tsl-b', 'domain-a', 'domain-b', 'exam-vocab', 'exam-vocab2']) vm.runInContext(fs.readFileSync(`web/js/lib/${f}.js`, 'utf8'), c3);
+  const GROUP = { topics: 'Từ vựng IELTS theo chủ đề', writing: 'Từ vựng IELTS Writing', speaking: 'Từ vựng IELTS Speaking', awl: 'Từ học thuật AWL', core: 'Từ vựng cốt lõi NGSL', toeic: 'Từ vựng TOEIC', domain: 'Từ vựng chuyên ngành', exam: 'Từ vựng theo kỳ thi' };
+  const TP = c3.IELTS_DATA.TOPICS.filter(x => x.words && x.words.length >= 8);
+  fs.mkdirSync('dist/tu-vung', { recursive: true });
+  for (const x of TP) {
+    const g = GROUP[x.group] || 'Từ vựng', n = x.words.length;
+    const title = `${g}: ${x.name} – ${n} từ có phiên âm, nghĩa tiếng Việt, ví dụ`;
+    const desc = `${n} từ vựng ${x.name} (${g}) kèm phiên âm IPA, nghĩa tiếng Việt, định nghĩa và câu ví dụ: ${x.words.slice(0, 8).map(w => w.word).join(', ')}… Học flashcard miễn phí trên Vocaband.`;
+    const body = `<h1 style="font-size:24px;line-height:1.3">${esc(x.emoji || '📘')} ${esc(x.name)} <span style="font-size:15px;color:#888">· ${esc(g)} · ${n} từ</span></h1>${x.desc ? `<p>${esc(x.desc)}</p>` : ''}<a class="cta" href="/#/topic/${encodeURIComponent(x.id)}">🃏 Học bộ này bằng flashcard (miễn phí) →</a>
+<table>${x.words.map(w => `<tr><td><b>${esc(w.word)}</b><br><span style="color:#888;font-size:14px">${esc(w.ipa || '')} ${esc(w.pos || '')}</span></td><td>${esc(w.vi || '')}${w.ex ? `<br><i style="font-size:14px;color:#666">${esc(w.ex)}</i>` : ''}</td></tr>`).join('')}</table>`;
+    fs.writeFileSync(`dist/tu-vung/${x.id}.html`, page(title, desc, `${SITE}tu-vung/${x.id}.html`, body).replace(/<a href="\/samples\/">Bài mẫu Task 2<\/a>/, '<a href="/tu-vung/">Từ vựng</a>'));
+  }
+  const byG = {}; for (const x of TP) (byG[x.group] = byG[x.group] || []).push(x);
+  const total = TP.reduce((a, x) => a + x.words.length, 0);
+  fs.writeFileSync('dist/tu-vung/index.html', page(`Từ vựng IELTS, TOEIC, TOEFL theo chủ đề – ${TP.length} bộ, ${total.toLocaleString('vi')} từ – Vocaband`, `${TP.length} bộ từ vựng IELTS, TOEIC, TOEFL theo chủ đề và kỳ thi, có phiên âm, nghĩa tiếng Việt và ví dụ. Học flashcard miễn phí.`, `${SITE}tu-vung/`,
+    `<h1>Từ vựng theo chủ đề (${TP.length} bộ)</h1>${Object.entries(byG).map(([k, xs]) => `<h2>${esc(GROUP[k] || k)}</h2><ul class="l">${xs.map(x => `<li><a href="/tu-vung/${x.id}.html">${esc(x.name)}</a> – ${x.words.length} từ</li>`).join('')}</ul>`).join('')}`).replace(/<a href="\/samples\/">Bài mẫu Task 2<\/a>/, '<a href="/samples/">Bài mẫu Writing</a>'));
+  const urls = [`${SITE}tu-vung/`, ...TP.map(x => `${SITE}tu-vung/${x.id}.html`)].map(u => `  <url><loc>${u}</loc><changefreq>monthly</changefreq></url>`).join('\n');
+  fs.writeFileSync(sm, fs.readFileSync(sm, 'utf8').replace('</urlset>', urls + '\n</urlset>'));
+  console.log(`✓ SEO: ${TP.length} trang bộ từ vựng + mục lục`);
+}
