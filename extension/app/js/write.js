@@ -40,6 +40,7 @@
     T('p29', 'Two-part question', 'culture', 'Traditional clothing is being replaced by international fashion in many countries. Why is this happening? Is it a positive or negative trend?'),
     T('p30', 'Agree/Disagree', 'education', 'Art and music should be compulsory subjects for all secondary school students. To what extent do you agree or disagree?'),
   ];
+  window.WRITE_PROMPTS = PROMPTS;
   // Thống kê xu hướng (≈92 đề Task 2 thí sinh báo lại, 07–10/2026) – chỉ là số liệu tổng hợp
   const TRENDS = {
     types: [['Agree/Disagree', 45], ['Positive/Negative', 17], ['Discussion', 15], ['Problem–Solution', 14], ['Advantages–Disadvantages', 7], ['Khác', 2]],
@@ -71,7 +72,7 @@
               <button class="btn sm" id="rndP" title="Đề ngẫu nhiên">🎲</button></div></div>
             <p style="font-size:1.08rem;font-weight:600;margin:.8rem 0 0">${esc(p.text)}</p>
             <details style="margin-top:.6rem"><summary class="small"><b>🧭 Dàn ý gợi ý cho dạng ${esc(p.type)}</b></summary><ol class="small" style="margin:.4rem 0 0;padding-left:1.2rem">${(OUTLINE[p.type] || []).map(x => `<li style="margin:.25rem 0">${esc(x)}</li>`).join('')}</ol></details>
-            <p class="tiny muted" style="margin-top:.5rem">Viết ít nhất 250 từ · thời gian gợi ý 40 phút</p>
+            <div class="row between" style="margin-top:.5rem"><p class="tiny muted" style="margin:0">Viết ít nhất 250 từ · thời gian gợi ý 40 phút</p>${(window.MODELS || []).some(m => m.id === 't2-' + p.id) ? `<a class="btn sm" href="#/model/t2-${p.id}">📄 Bài mẫu band 8 có chú thích</a>` : ''}</div>
           </div>
           <div class="card">
             <textarea class="input" id="essay" style="min-height:340px;font-size:1.02rem;line-height:1.7" placeholder="Bắt đầu viết bài của bạn…" spellcheck="true">${esc(draft.prompt === p.id ? draft.text : '')}</textarea>

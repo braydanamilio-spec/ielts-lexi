@@ -10,5 +10,5 @@ shot() { "$CH" --headless=new --disable-gpu --hide-scrollbars --no-first-run --u
   --user-agent="Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1" \
   --virtual-time-budget=10000 --screenshot="$OUT/$1.png" "$APP/?demo=1&m=$RANDOM#/$2" >/dev/null 2>&1; echo "✓ $1"; }
 shot 00-seed home
-for p in home path review "dict/resilient" library "read/four-day-week" "practice/match?src=deck" stats write settings; do shot "$(echo "$p" | tr '/?=:' '----')" "$p"; done
+for p in ${PAGES:-home path review "dict/resilient" library "read/four-day-week" "practice/match?src=deck" stats write settings}; do shot "$(echo "$p" | tr '/?=:' '----')" "$p"; done
 rm -rf "$P"

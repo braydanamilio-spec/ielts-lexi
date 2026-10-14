@@ -1,5 +1,18 @@
 /* Content script: bấm đúp vào từ (hoặc bôi đen + Alt) để tra nhanh, lưu vào flashcard kèm câu ngữ cảnh. */
 (() => {
+  // Cầu nối đồng bộ: trên trang Vocaband (đã đăng nhập Google) web app đọc/ghi dữ liệu add-on để gộp chung theo tài khoản
+  if (window.top === window && /^(vocaband|ielts-lexi-2026)\.web\.app$/.test(location.hostname)) {
+    const KEYS = ['cards', 'stats', 'deleted'];
+    window.addEventListener('message', async e => {
+      if (e.source !== window || e.origin !== location.origin || !e.data || e.data.vbBridge !== 'req') return;
+      try { if (!chrome.runtime.id) return; } catch (x) { return; } // bản add-on cũ đã bị thay thế
+      try {
+        if (e.data.op === 'get') { const data = await chrome.storage.local.get(KEYS); window.postMessage({ vbBridge: 'res', id: e.data.id, data }, location.origin); }
+        else if (e.data.op === 'set') { const d = e.data.data || {}; const put = {}; KEYS.forEach(k => { if (d[k]) put[k] = d[k]; }); await chrome.storage.local.set(put); window.postMessage({ vbBridge: 'res', id: e.data.id, ok: true }, location.origin); }
+      } catch (err) { window.postMessage({ vbBridge: 'res', id: e.data.id, error: String(err) }, location.origin); }
+    });
+    window.postMessage({ vbBridge: 'hello', version: chrome.runtime.getManifest().version }, location.origin);
+  }
   // Bản content script cũ (trước khi add-on được cập nhật/tải lại) tự tắt khi bản mới chạy
   document.dispatchEvent(new CustomEvent('ielts-lexi-takeover'));
   let dead = false;
@@ -87,7 +100,7 @@
 
   function position(rect) {
     const b = box();
-    const W = Math.min(380, window.innerWidth - 16);
+    const W = Math.min(380, Math.max(240, window.innerWidth - 16));
     let left = Math.min(Math.max(8, rect.left + rect.width / 2 - W / 2), window.innerWidth - W - 8);
     let top = rect.bottom + 10;
     b.style.left = left + 'px';

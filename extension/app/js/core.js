@@ -137,9 +137,21 @@
   // Ghi tuần tự để các thao tác đọc-sửa-ghi không đè nhau
   let cardLock = Promise.resolve();
   const serial = fn => (cardLock = cardLock.then(fn, fn));
+  // Khóa duy nhất cho mỗi từ/cụm: chữ thường, gộp khoảng trắng, dấu nháy thẳng → không trùng lặp
+  const keyOf = w => String(w || '').toLowerCase().replace(/[’‘`]/g, "'").replace(/\s+/g, ' ').trim();
+  const activityOf = c => Math.max((c.srs && c.srs.last) || 0, c.mod || 0, c.added || 0);
   function normalize(map) {
     for (const [k, c] of Object.entries(map || {})) {
       if (!c || !c.word) { delete map[k]; continue; }
+      const nk = keyOf(c.word);
+      if (nk !== k) {
+        // gộp bản trùng: giữ bản hoạt động gần nhất, hợp nhất ngữ cảnh
+        const other = map[nk];
+        delete map[k];
+        if (other && activityOf(other) >= activityOf(c)) { other.contexts = [...(other.contexts || []), ...(c.contexts || []).filter(x => !(other.contexts || []).some(y => y.text === x.text))].slice(0, 5); continue; }
+        if (other) c.contexts = [...(c.contexts || []), ...(other.contexts || []).filter(x => !(c.contexts || []).some(y => y.text === x.text))].slice(0, 5);
+        map[nk] = c;
+      }
       c.contexts = Array.isArray(c.contexts) ? c.contexts : [];
       c.col = Array.isArray(c.col) ? c.col : [];
       c.syn = Array.isArray(c.syn) ? c.syn : [];
@@ -185,7 +197,7 @@
     add(entry, context) { return serial(() => Cards._add(entry, context)); },
     async _add(entry, context) {
       const map = await Cards.all();
-      const key = entry.word.toLowerCase();
+      const key = keyOf(entry.word);
       let card = map[key];
       if (!card) card = Cards.make(entry);
       else {
@@ -211,10 +223,10 @@
     remove(word) {
       return serial(async () => {
         const map = await Cards.all();
-        delete map[word.toLowerCase()];
+        delete map[keyOf(word)];
         await Store.set('cards', map);
         // dấu xóa để đồng bộ không khôi phục lại thẻ đã xóa
-        const del = await Store.get('deleted', {}); del[word.toLowerCase()] = Date.now(); await Store.set('deleted', del);
+        const del = await Store.get('deleted', {}); del[keyOf(word)] = Date.now(); await Store.set('deleted', del);
       });
     },
 
@@ -222,7 +234,7 @@
       return serial(async () => {
         const map = await Cards.all();
         card.mod = Date.now();
-        map[card.word.toLowerCase()] = card;
+        map[keyOf(card.word)] = card;
         await Store.set('cards', map);
       });
     },
@@ -230,7 +242,7 @@
     patch(word, fn) {
       return serial(async () => {
         const map = await Cards.all();
-        const c = map[word.toLowerCase()];
+        const c = map[keyOf(word)];
         if (!c) return null;
         fn(c); c.mod = Date.now();
         await Store.set('cards', map);
@@ -291,5 +303,5 @@
     },
   };
 
-  g.Core = { Golden, Store, SRS, Cards, Stats, DEFAULT_SETTINGS, todayKey, startOfToday, endOfToday, DAY };
+  g.Core = { keyOf, Golden, Store, SRS, Cards, Stats, DEFAULT_SETTINGS, todayKey, startOfToday, endOfToday, DAY };
 })(typeof self !== 'undefined' ? self : this);

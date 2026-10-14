@@ -60,7 +60,7 @@ const openApp = (hash = '#/review') => chrome.tabs.create({ url: APP_URL + hash 
 // Chạy content script ngay trên các tab đang mở (không cần tải lại trang sau khi cài/cập nhật)
 async function injectIntoOpenTabs() {
   const tabs = await chrome.tabs.query({ url: ['http://*/*', 'https://*/*'] });
-  await Promise.all(tabs.map(t => chrome.scripting.executeScript({ target: { tabId: t.id }, files: ['content.js'] }).catch(() => {})));
+  await Promise.all(tabs.map(t => chrome.scripting.executeScript({ target: { tabId: t.id, allFrames: true }, files: ['content.js'] }).catch(() => {})));
 }
 
 chrome.runtime.onInstalled.addListener(async ({ reason }) => {

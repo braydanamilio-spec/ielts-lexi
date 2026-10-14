@@ -555,6 +555,7 @@
         ${e.col.length ? `<div style="margin-top:1rem"><b>🔗 Collocations:</b> ${e.col.map(c => `<span class="chip">${esc(c)}</span>`).join(' ')}</div>` : ''}
         ${e.syn.length ? `<div style="margin-top:.6rem"><b>≈ Đồng nghĩa:</b> ${e.syn.map(s => `<a class="chip" href="#/dict/${encodeURIComponent(s)}">${esc(s)}</a>`).join(' ')}</div>` : ''}
         <div id="related"></div>
+        <div id="phraseBox"></div>
         ${(e.senses || []).length ? `<div style="margin-top:1.2rem"><h3>🇻🇳 Nghĩa tiếng Việt theo từ loại</h3>${e.senses.map(s => `
           <div class="meaning"><span class="chip pos">${esc(s.pos)}</span> ${s.terms.map(esc).join(', ')}</div>`).join('')}</div>` : ''}
         ${(e.oxford || []).length ? `<div style="margin-top:1rem"><h3>📕 Định nghĩa <span class="muted small">(Oxford Languages)</span></h3>${e.oxford.map(m => `
@@ -584,7 +585,7 @@
       </div>`;
     bindCommon();
     if (!spoke && state.settings.autoSpeak) { spoke = true; speak(e.word, state.settings.accent, state.settings.accent === 'en-US' ? e.audioUS : e.audio); }
-    if (final) loadRelated(e);
+    if (final) { loadRelated(e); drawPhrases(e); }
     if (keep) { $('#ctx').value = keep; }
 
     let ctxVi = '';
@@ -615,10 +616,24 @@
     }
   };
 
+  // Cụm từ & cấu trúc chứa từ đang tra: từ thư viện + sổ cụm từ của người học
+  function drawPhrases(e) {
+    const el = $('#phraseBox'); if (!el) return;
+    const re = UI.wordRegex(e.word);
+    const lib = Object.values(INDEX).filter(w => /\s/.test(w.word) && re.test(w.word)).slice(0, 10);
+    const mine = Object.values(state.cards).filter(c => /\s/.test(c.word) && re.test(c.word) && !lib.some(l => l.word === c.word)).slice(0, 10);
+    const row = (w, own) => `<div class="phr"><b>${esc(w.word)}</b> <span class="small" style="color:var(--accent);font-weight:700">${esc(w.vi || '')}</span>${w.ex ? `<div class="ex small">“${UI.highlight(w.ex, w.word)}”</div>` : ''}${w.note ? `<div class="tiny muted">📐 ${esc(w.note)}</div>` : ''}
+      <div class="row" style="margin-top:.2rem"><button class="icon-btn sm" data-speak="${esc(w.word)}">🔊</button>${own || inDeck(w.word) ? '<span class="chip ok">✓ Đã lưu</span>' : `<button class="btn sm ghost" data-add-seed="${esc(w.word)}">+ Lưu cụm</button>`}</div></div>`;
+    el.innerHTML = `<div style="margin-top:1rem"><div class="row between"><h3 style="margin:0">🧩 Cụm từ & cấu trúc với “${esc(e.word)}”</h3><button class="btn sm" id="addPhr">＋ Lưu cụm / cấu trúc của bạn</button></div>
+      ${lib.length || mine.length ? `<div class="phr-grid">${lib.map(w => row(w, false)).join('')}${mine.map(c => row(c, true)).join('')}</div>` : '<p class="small muted" style="margin:.4rem 0 0">Chưa có cụm nào trong thư viện. Mẹo: <b>bôi đen một cụm trong câu ví dụ</b> phía trên rồi bấm “🧩 Lưu cụm này”.</p>'}</div>`;
+    bindCommon();
+    $('#addPhr').onclick = () => App.savePhraseDialog({ phrase: e.word + ' ', sentence: e.ex || '' });
+  }
+
   // Từ liên quan (Datamuse): tính từ hay đi kèm, danh từ hay đi kèm, trái nghĩa, gần nghĩa
   async function loadRelated(e) {
     const w = encodeURIComponent(e.word);
-    const get = async u => { try { return await fetch(u).then(r => r.json()); } catch (x) { return []; } };
+    const get = async u => { try { const r = await fetch(u).then(r => r.json()); return Array.isArray(r) ? r : []; } catch (x) { return []; } };
     // Danh từ → tính từ hay đi kèm; tính từ → danh từ hay đi sau (tránh cụm vô nghĩa)
     const isNoun = /^n|danh/.test(e.pos || ''), isAdj = /^adj|tính/.test(e.pos || '');
     const STOP = new Set(['more', 'most', 'less', 'least', 'very', 'other', 'such', 'same', 'own', 'many', 'much', 'few', 'several', 'certain', 'various', 'error', 'orthogonal']);

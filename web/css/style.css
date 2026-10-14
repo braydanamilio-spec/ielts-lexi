@@ -543,3 +543,28 @@ mark.cbt-hl { background: #fde047; color: #111; cursor: pointer; }
 .pcredit { position: absolute; right: 6px; bottom: 6px; width: 20px; height: 20px; border-radius: 50%; background: rgba(0,0,0,.55); color: #fff; font-size: .72rem; display: grid; place-items: center; text-decoration: none; }
 .pcredit:hover { background: rgba(0,0,0,.8); }
 .chap-nav { display: flex; gap: .35rem; flex-wrap: wrap; position: sticky; top: 64px; z-index: 5; background: var(--bg); padding: .5rem 0; }
+
+/* Bài mẫu có chú thích (học theo cụm) */
+.annot { font-size: 1.08rem; line-height: 2.1; }
+.annot p { margin: 0 0 1.2rem; }
+.an-ch, .an-gl, .an-lk, .an-role { border-radius: 6px; }
+.annot.an-ch .an-ch { background: #c5f6fa; padding: .1rem .25rem; cursor: pointer; color: #0b4f58; }
+.annot.an-ch .an-ch:hover { outline: 2px solid #0ea5a4; }
+.annot .an-gl { display: none; }
+.annot.an-gl .an-gl { display: inline; background: #ffe0e6; color: #9f1239; font-size: .82rem; padding: .15rem .45rem; margin: 0 .25rem; white-space: nowrap; }
+.annot.an-lk .an-lk { background: #fff3a3; padding: .05rem .2rem; }
+.annot .an-role { display: none; }
+.annot.an-role .an-role { display: inline-block; background: #16a34a; color: #fff; font-size: .78rem; font-weight: 700; padding: .12rem .55rem; margin-right: .35rem; line-height: 1.6; }
+:root[data-theme="dark"] .annot.an-ch .an-ch { background: #0e3d42; color: #a5f3fc; }
+:root[data-theme="dark"] .annot.an-gl .an-gl { background: #4c0519; color: #fecdd3; }
+:root[data-theme="dark"] .annot.an-lk .an-lk { background: #4d4108; }
+.sel-fab { position: fixed; z-index: 70; box-shadow: var(--shadow-lg); }
+.phr-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: .6rem; margin-top: .6rem; }
+.phr { background: var(--surface-2); border-radius: 12px; padding: .6rem .8rem; }
+
+/* Bài tập từ bài mẫu */
+.bank { display: flex; flex-wrap: wrap; gap: .35rem; padding: .7rem; background: var(--surface-2); border-radius: 12px; }
+.gap { border: 0; border-bottom: 2px solid var(--primary); background: var(--primary-soft); border-radius: 6px 6px 0 0; padding: .1rem .35rem; font: inherit; color: inherit; margin: 0 .1rem; }
+.gap.ok { border-color: var(--good); background: var(--good-soft); } .gap.no { border-color: var(--again); background: var(--again-soft); }
+.gsel { padding: .05rem .2rem; }
+.line { padding: .7rem 0; border-bottom: 1px dashed var(--line); } .line .lin { margin-top: .4rem; } .lhint { font-family: var(--ipa); letter-spacing: .02em; }

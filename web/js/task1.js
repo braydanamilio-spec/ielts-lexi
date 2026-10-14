@@ -124,6 +124,7 @@
         </div>
         <div class="stack" style="position:sticky;top:80px">
           <div class="card"><h3>🧭 Cấu trúc 4 đoạn</h3><ol class="small" style="padding-left:1.1rem;line-height:1.7;margin:.3rem 0"><li><b>Mở bài:</b> viết lại đề (paraphrase).</li><li><b>Tổng quan:</b> 2 đặc điểm nổi bật nhất, không số liệu.</li><li><b>Thân bài 1:</b> nhóm số liệu thứ nhất + so sánh.</li><li><b>Thân bài 2:</b> nhóm còn lại + so sánh.</li></ol>
+            ${(window.MODELS || []).some(m => m.id === 't1-' + d.id) ? `<a class="btn sm primary block" href="#/model/t1-${d.id}" style="margin:.4rem 0">📄 Bài mẫu band 8 có chú thích</a>` : ''}
             <details><summary class="small"><b>👀 Xem câu tổng quan mẫu</b></summary><div class="example-box small" style="margin-top:.4rem">${esc(d.overview)}</div></details></div>
           <div class="card"><h3>💡 Từ vựng cho ${TYPE_VI[d.type].toLowerCase()}</h3><div class="row" style="margin-top:.4rem">${VOCAB[d.type].map(v => `<button class="chip" data-ins="${esc(v.split(' / ')[0].replace(/ \\(.*\\)/, ''))}" style="border:0;cursor:pointer">${esc(v)}</button>`).join('')}</div><div class="tiny muted" style="margin-top:.4rem">Bấm để chèn vào bài</div></div>
           <div class="card"><h3>⚠️ Lưu ý</h3><ul class="small" style="padding-left:1.1rem;margin:.3rem 0;line-height:1.6"><li>Không nêu ý kiến cá nhân (I think…).</li><li>Thì động từ theo mốc thời gian của biểu đồ (quá khứ / hiện tại / dự đoán).</li><li>Không cần mô tả mọi con số – chọn số liệu nổi bật.</li></ul></div>

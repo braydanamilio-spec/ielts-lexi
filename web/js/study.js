@@ -11,7 +11,7 @@
   // ---------- Nguồn từ ----------
   const norm = w => ({ word: w.word, ipa: w.ipa || '', vi: w.vi || '', ex: w.ex || '', def: w.def || '', pos: w.pos || '', emoji: w.emoji || '📘', image: w.image || '', audio: w.audio || '', level: w.level || '', topic: w.topic || '' });
   function sourceList() {
-    const opts = [['deck', `📒 Sổ từ của tôi (${Object.keys(state.cards).length})`], ['due', '🔁 Thẻ đến hạn hôm nay'], ['forgetting', '⚠️ Từ sắp quên (độ nhớ < 85%)'], ['weak', '🧩 Từ hay quên'], ...[1, 2, 3, 4, 5].map(i => [`level:${i}`, `📶 Cấp độ nhớ ${i}`])];
+    const opts = [['deck', `📒 Sổ từ của tôi (${Object.keys(state.cards).length})`], ['due', '🔁 Thẻ đến hạn hôm nay'], ['forgetting', '⚠️ Từ sắp quên (độ nhớ < 85%)'], ['phrases', '🧩 Cụm từ & cấu trúc của tôi'], ['weak', '🧩 Từ hay quên'], ...[1, 2, 3, 4, 5].map(i => [`level:${i}`, `📶 Cấp độ nhớ ${i}`])];
     Object.entries(App.ORIGINS).forEach(([k, o]) => opts.push([`origin:${k}`, `${o.emoji} ${o.name}`]));
     TOPICS.forEach(t => opts.push([`topic:${t.id}`, `${t.emoji} ${t.name}`]));
     return opts;
@@ -22,6 +22,7 @@
     if (src === 'due') list = cards.filter(c => (c.srs.reps > 0 || c.srs.last) && c.srs.due <= endOfToday());
     else if (src === 'weak') list = cards.filter(c => c.srs.lapses > 0 || (c.srs.ef && c.srs.ef < 2.3));
     else if (src === 'forgetting') list = App.forgetting();
+    else if (src === 'phrases') list = cards.filter(c => App.isPhrase && App.isPhrase(c));
     else if (src && src.startsWith('level:')) list = cards.filter(c => SRS.level5(c.srs) === +src.slice(6));
     else if (src && src.startsWith('origin:')) list = cards.filter(c => App.origin(c) === src.slice(7));
     else if (src && src.startsWith('topic:')) { const t = TOPICS.find(x => x.id === src.slice(6)); list = t ? t.words : []; }
