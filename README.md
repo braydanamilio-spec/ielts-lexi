@@ -12,7 +12,7 @@
 - **Thư viện khoảng 1.200 từ:** 24 chủ đề IELTS, toàn bộ AWL (570 từ), phrasal verb, idiom, tính từ miêu tả, từ nối, collocation band 7+, cụm nêu quan điểm.
 - **Thư viện cá nhân tự phân loại theo nguồn:** YouTube, trang web, bài đọc, từ điển, thư viện.
 - **Ôn tập khoa học:**
-  - SM-2 kèm bước học 1→10 phút.
+  - FSRS-5 (thuật toán mặc định của Anki) kèm bước học 1→10 phút; mục tiêu ghi nhớ chỉnh được 80–95%.
   - Đường cong quên lãng (% còn nhớ), danh sách "Sắp quên".
   - **Thời điểm vàng** có giờ yên lặng.
   - 5 cấp độ nhớ, giới hạn số thẻ mỗi phiên.

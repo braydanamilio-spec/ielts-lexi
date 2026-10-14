@@ -33,7 +33,7 @@ Vocaband giúp bạn học từ vựng IELTS ngay khi đang đọc báo, xem You
 • Thư viện cá nhân tự phân loại: Từ YouTube, Từ trang web, Từ bài đọc, Từ tra từ điển.
 
 🧠 ÔN TẬP THÔNG MINH THEO KHOA HỌC GHI NHỚ
-• Lặp lại ngắt quãng (SM-2) với bước học 1 → 10 phút cho từ mới.
+• Lặp lại ngắt quãng bằng thuật toán FSRS (như Anki) với bước học 1 → 10 phút cho từ mới.
 • “Thời điểm vàng”: nhắc đúng lúc từ sắp bị quên, có giờ yên lặng và giới hạn số thẻ mỗi phiên.
 • 5 cấp độ nhớ, chỉ số % còn nhớ cho từng từ.
 
@@ -58,7 +58,7 @@ Vocaband turns everything you read and watch into IELTS vocabulary practice – 
 • Select a sentence or paragraph and click 🌐 to translate it into Vietnamese, listen to it or copy it.
 • YouTube: turn on English subtitles and tap any word in the captions – the video pauses and you get the meaning plus a translation of the whole line. Save it with the timestamp.
 • Every saved word keeps the sentence where you found it (context learning).
-• Spaced repetition (SM-2 + learning steps), golden-time reminders with quiet hours, 5 memory levels.
+• Spaced repetition (FSRS + learning steps), golden-time reminders with quiet hours, 5 memory levels.
 • Companion web app with 1,200+ curated IELTS words (24 topics, the Academic Word List, phrasal verbs, idioms, linking words, band-7+ collocations), games, pronunciation scoring, reading passages, XP and badges.
 • No ads, no browsing-history tracking.
 

@@ -1,5 +1,5 @@
 /* Service worker: cache giao diện để dùng offline + mở app khi bấm thông báo. */
-const CACHE = 'vocaband-20261014111217';
+const CACHE = 'vocaband-20261014112737';
 const SHELL = ['./', 'index.html', 'css/style.css', 'js/data.js', 'js/lib/topics-more.js', 'js/lib/skills.js', 'js/lib/awl.js', 'js/lib/ngsl.js', 'js/readings.js', 'js/lexis.js', 'js/core.js', 'js/write.js', 'js/speaking.js', 'js/grammar/tenses.js', 'js/grammar/verbs.js', 'js/grammar/sentences.js', 'js/grammar/foundation.js', 'js/grammar/academic.js', 'js/grammar/chapters.js', 'js/grammar/book2.js', 'js/grammar/drills-a.js', 'js/grammar/drills-b.js', 'js/grammar/drills-c.js', 'js/grammar.js', 'js/pron/sounds.js', 'js/pron/skills.js', 'js/pron.js', 'js/plan.js', 'js/cbt.js', 'js/task1.js', 'js/models.js', 'js/phrases.js', 'js/path.js', 'js/dictionary.js', 'js/game.js', 'js/ui.js', 'js/app.js', 'js/study.js', 'js/reading.js', 'js/listen/test1.js', 'js/listen/test2.js', 'js/listening.js', 'js/firebase-config.js', 'js/sync.js', 'manifest.webmanifest', 'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png'];
 
 self.addEventListener('install', e => {

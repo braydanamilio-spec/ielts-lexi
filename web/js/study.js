@@ -20,7 +20,7 @@
     const cards = Object.values(state.cards).filter(c => c.vi);
     let list = [];
     if (src === 'due') list = cards.filter(c => (c.srs.reps > 0 || c.srs.last) && c.srs.due <= endOfToday());
-    else if (src === 'weak') list = cards.filter(c => c.srs.lapses > 0 || (c.srs.ef && c.srs.ef < 2.3));
+    else if (src === 'weak') list = cards.filter(c => c.srs.lapses > 0 || (c.srs.D != null ? c.srs.D >= 7 : c.srs.ef && c.srs.ef < 2.3));
     else if (src === 'forgetting') list = App.forgetting();
     else if (src === 'phrases') list = cards.filter(c => App.isPhrase && App.isPhrase(c));
     else if (src && src.startsWith('level:')) list = cards.filter(c => SRS.level5(c.srs) === +src.slice(6));

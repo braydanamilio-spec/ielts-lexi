@@ -26,12 +26,13 @@
     if (c.topic === 'mine' || !c.topic) return 'dict';
     return 'library';
   }
-  const forgetting = () => Object.values(state.cards).filter(c => c.srs.reps > 0 && SRS.retention(c.srs) < 0.85);
+  const forgetting = () => Object.values(state.cards).filter(c => c.srs.reps > 0 && SRS.retention(c.srs) < Math.min(0.85, SRS.retentionTarget - 0.05));
 
   // ---------- Dữ liệu ----------
   async function load() {
     state.cards = await Cards.all();
     state.settings = { ...DEFAULT_SETTINGS, theme: 'auto', sfx: true, ...(await Store.get('settings', {})) };
+    SRS.retentionTarget = state.settings.retention || 0.9;
     state.stats = await Stats.get();
     state.game = await Game.get();
     Core.sfxOff = !state.settings.sfx;
@@ -815,8 +816,8 @@
   // ================= PHƯƠNG PHÁP HỌC =================
   routes.method = function () {
     const P = [
-      ['📉', 'Đường cong quên lãng', 'Hermann Ebbinghaus (1885)', 'Trí nhớ về một thông tin mới giảm rất nhanh trong vài ngày đầu nếu không được ôn lại; mỗi lần ôn đúng lúc làm đường cong thoải dần.', 'Mỗi từ có chỉ số <b>🧠 % còn nhớ</b>. Từ dưới 85% được đưa vào danh sách <b>Sắp quên</b> để ôn ngay.', '#/deck?from=forget', 'Xem từ sắp quên'],
-      ['🔁', 'Lặp lại ngắt quãng', 'Pimsleur (1967) · Leitner (1972) · Woźniak – SM-2 (1987)', 'Ôn với khoảng cách tăng dần (10 phút → 1 ngày → 3 ngày → 1 tuần → 1 tháng…) hiệu quả hơn nhiều so với học dồn.', 'Flashcard dùng SM-2 kèm <b>bước học 1→10 phút</b> cho từ mới (giống Anki); mỗi lựa chọn Quên/Khó/Nhớ/Dễ hiển thị lần ôn tiếp theo.', '#/review', 'Ôn tập ngay'],
+      ['📉', 'Đường cong quên lãng', 'Hermann Ebbinghaus (1885)', 'Trí nhớ về một thông tin mới giảm rất nhanh trong vài ngày đầu nếu không được ôn lại; mỗi lần ôn đúng lúc làm đường cong thoải dần.', 'Mỗi từ có chỉ số <b>🧠 % còn nhớ</b>. Từ tụt dưới mức mục tiêu được đưa vào danh sách <b>Sắp quên</b> để ôn ngay.', '#/deck?from=forget', 'Xem từ sắp quên'],
+      ['🔁', 'Lặp lại ngắt quãng', 'Pimsleur (1967) · Leitner (1972) · Woźniak – SM-2 (1987) · Ye – FSRS (2022)', 'Ôn với khoảng cách tăng dần (10 phút → 1 ngày → 3 ngày → 1 tuần → 1 tháng…) hiệu quả hơn nhiều so với học dồn.', 'Flashcard dùng <b>FSRS</b> – thuật toán Anki chọn làm mặc định, được huấn luyện trên hàng trăm triệu lượt ôn: mỗi từ có độ ổn định &amp; độ khó riêng, lịch ôn tính đúng lúc bạn còn nhớ ~90% (chỉnh được trong Cài đặt). Kèm <b>bước học 1→10 phút</b> cho từ mới; mỗi lựa chọn Quên/Khó/Nhớ/Dễ hiển thị lần ôn tiếp theo.', '#/review', 'Ôn tập ngay'],
       ['🎯', 'Chủ động nhớ lại (Testing effect)', 'Roediger & Karpicke (2006)', 'Tự kiểm tra – cố gắng nhớ lại trước khi xem đáp án – giúp nhớ lâu hơn hẳn việc đọc lại nhiều lần.', 'Thẻ luôn bắt bạn <b>đoán trước khi lật</b>; Học thông minh đi từ nhận diện (trắc nghiệm) đến <b>tự gõ lại từ</b>.', '#/practice/learn', 'Học thông minh'],
       ['📖', 'Ngữ liệu dễ hiểu (Comprehensible input)', 'Stephen Krashen', 'Ta tiếp thu ngôn ngữ tốt nhất khi gặp nó trong nội dung có ý nghĩa, hơi vượt trình độ hiện tại một chút (i+1).', 'Lưu từ <b>kèm câu gốc</b> từ bài đọc, trang web, phụ đề YouTube; bài đọc chia cấp độ B1 → C1.', '#/reading', 'Đọc bài'],
       ['✍️', 'Hiệu ứng tự tạo & mức độ dấn thân', 'Slamecka & Graf (1978) · Laufer & Hulstijn (2001)', 'Thông tin do chính mình tạo ra (tự đặt câu, tự tìm nghĩa) được nhớ tốt hơn thông tin được cho sẵn.', 'Mặt sau flashcard có ô <b>Tự đặt câu</b> (+5 XP); câu của bạn trở thành ngữ cảnh cho lần ôn sau.', '#/review', 'Thử đặt câu'],
@@ -867,6 +868,8 @@
           <label class="field"><span>Từ mới mỗi ngày: <b id="vNew">${s.dailyNew}</b></span><input type="range" min="0" max="50" id="sNew" value="${s.dailyNew}" style="width:100%"></label>
           <label class="field" style="margin-top:.6rem"><span>Mục tiêu lượt ôn mỗi ngày: <b id="vGoal">${s.dailyGoal}</b></span><input type="range" min="5" max="200" step="5" id="sGoal" value="${s.dailyGoal}" style="width:100%"></label>
           <label class="field" style="margin-top:.6rem"><span>Tối đa thẻ mỗi phiên ôn: <b id="vCap">${s.sessionCap || 'Không giới hạn'}</b></span><input type="range" min="0" max="200" step="10" id="sCap" value="${s.sessionCap}" style="width:100%"></label>
+          <label class="field" style="margin-top:.6rem"><span>🧠 Mục tiêu ghi nhớ (thuật toán FSRS): <b id="vRet">${Math.round((s.retention || 0.9) * 100)}%</b></span><input type="range" min="0.8" max="0.95" step="0.01" id="sRet" value="${s.retention || 0.9}" style="width:100%"></label>
+          <div class="tiny muted">Khả năng còn nhớ mỗi từ khi đến lượt ôn. 90% là cân bằng tốt nhất; 95% nhớ chắc hơn nhưng số lượt ôn gần gấp đôi; 85% ít ôn hơn, hợp khi bận.</div>
         </div>
         <div class="card">
           <h2>🔊 Âm thanh & phát âm</h2>
@@ -899,6 +902,7 @@
     $('#sTime').onchange = e => { s.reminderTime = e.target.value || '20:00'; save(); toast(`Sẽ nhắc lúc ${s.reminderTime} mỗi ngày`); };
     $('#sNew').oninput = e => { s.dailyNew = +e.target.value; $('#vNew').textContent = s.dailyNew; save(); };
     $('#sGoal').oninput = e => { s.dailyGoal = +e.target.value; $('#vGoal').textContent = s.dailyGoal; save(); };
+    $('#sRet').oninput = e => { s.retention = +e.target.value; SRS.retentionTarget = s.retention; $('#vRet').textContent = Math.round(s.retention * 100) + '%'; save(); };
     $('#sGold').onchange = e => { s.goldenOn = e.target.checked; save(); };
     $('#sGMin').oninput = e => { s.goldenMin = +e.target.value; $('#vGMin').textContent = s.goldenMin; save(); };
     $('#sQ1').onchange = e => { s.quietStart = e.target.value || '22:30'; save(); };

@@ -57,42 +57,79 @@
   const startOfToday = () => { const d = new Date(); d.setHours(0, 0, 0, 0); return d.getTime(); };
   const endOfToday = () => startOfToday() + DAY - 1;
 
-  // ---------- SRS: SM-2 + bước học (learning steps) kiểu Anki + đường cong quên lãng ----------
-  // grade: 0 = Quên, 1 = Khó, 2 = Nhớ, 3 = Dễ
-  // Thẻ mới/quên đi qua các bước 1 phút → 10 phút trước khi "tốt nghiệp" sang lịch theo ngày.
+  // ---------- SRS: FSRS-5 (Free Spaced Repetition Scheduler – thuật toán Anki dùng từ 2023) + bước học ----------
+  // grade: 0 = Quên, 1 = Khó, 2 = Nhớ, 3 = Dễ  (FSRS: Again/Hard/Good/Easy = 1..4)
+  // Mỗi thẻ có độ ổn định S (số ngày để khả năng nhớ giảm còn 90%) và độ khó D (1–10).
+  // Khả năng nhớ R(t) = (1 + 19/81 · t/S)^-0.5 → ôn đúng lúc R chạm mức mục tiêu (mặc định 90%).
+  // Thẻ mới/quên vẫn đi qua bước 1 phút → 10 phút trước khi xếp lịch theo ngày.
   const MIN = 60 * 1000;
+  const W = [0.40255, 1.18385, 3.173, 15.69105, 7.1949, 0.5345, 1.4604, 0.0046, 1.54575, 0.1192, 1.01925, 1.9395, 0.11, 0.29605, 2.2698, 0.2315, 2.9898, 0.51655, 0.6621];
+  const DECAY = -0.5, FACTOR = 19 / 81, MAX_IVL = 3650;
+  const clampD = d => Math.min(10, Math.max(1, d));
+  const F = {
+    R: (t, S) => Math.pow(1 + FACTOR * t / S, DECAY),
+    ivl: (S, r) => S / FACTOR * (Math.pow(r, 1 / DECAY) - 1),
+    S0: G => W[G - 1],
+    D0: G => clampD(W[4] - Math.exp(W[5] * (G - 1)) + 1),
+    nextD(D, G) { const d1 = D + (-W[6] * (G - 3)) * (10 - D) / 9; return clampD(W[7] * F.D0(4) + (1 - W[7]) * d1); },
+    recallS(D, S, R, G) { return S * (Math.exp(W[8]) * (11 - D) * Math.pow(S, -W[9]) * (Math.exp(W[10] * (1 - R)) - 1) * (G === 2 ? W[15] : 1) * (G === 4 ? W[16] : 1) + 1); },
+    forgetS(D, S, R) { return Math.min(S, W[11] * Math.pow(D, -W[12]) * (Math.pow(S + 1, W[13]) - 1) * Math.exp(W[14] * (1 - R))); },
+    shortS: (S, G) => S * Math.exp(W[17] * (G - 3 + W[18])),
+  };
+  // Thẻ cũ (SM-2) → ước lượng S, D từ khoảng cách và hệ số dễ
+  const ensureFsrs = s => {
+    if (s.S != null && s.D != null) return s;
+    if (s.reps > 0) { s.S = Math.max(0.5, s.interval || 1); s.D = clampD(10 - ((s.ef || 2.5) - 1.3) * 5); }
+    return s;
+  };
   const SRS = {
+    retentionTarget: 0.9, // khả năng nhớ mục tiêu khi đến hạn (0.8–0.95), chỉnh trong Cài đặt
     newState: () => ({ ef: 2.5, interval: 0, reps: 0, lapses: 0, due: Date.now(), last: null, step: 0 }),
 
     isLearning: s => s.reps === 0,
 
-    review(s, grade, now = Date.now()) {
-      s = { step: 0, ...s };
+    // Khoảng cách (ngày) cho Khó/Nhớ/Dễ của thẻ đang ôn theo ngày, đảm bảo Khó ≤ Nhớ < Dễ
+    _reviewIvls(s, now) {
+      const t = Math.max(0, (now - (s.last || now)) / DAY), R = F.R(t, s.S), r = SRS.retentionTarget;
+      const out = {};
+      [2, 3, 4].forEach(G => { const S = F.recallS(s.D, s.S, R, G); out[G] = { S, ivl: Math.min(MAX_IVL, Math.max(1, Math.round(F.ivl(S, r)))) }; });
+      out[2].ivl = Math.min(out[2].ivl, out[3].ivl);
+      out[3].ivl = Math.max(out[3].ivl, out[2].ivl + 1);
+      out[4].ivl = Math.max(out[4].ivl, out[3].ivl + 1);
+      return out;
+    },
+
+    review(s, grade, now = Date.now(), noFuzz) {
+      s = ensureFsrs({ step: 0, ...s });
+      const G = grade + 1, r = SRS.retentionTarget;
       const toDay = days => {
         // giãn ngẫu nhiên ±5% để các thẻ không dồn cùng một ngày
-        const fuzz = days >= 3 ? Math.round(days * (Math.random() * 0.1 - 0.05)) : 0;
-        s.interval = Math.max(1, days + fuzz);
+        const fuzz = days >= 3 && !noFuzz ? Math.round(days * (Math.random() * 0.1 - 0.05)) : 0;
+        s.interval = Math.min(MAX_IVL, Math.max(1, days + fuzz));
         const d = new Date(now); d.setHours(4, 0, 0, 0);
         s.due = d.getTime() + s.interval * DAY;
       };
       if (s.reps === 0) {
-        // Đang học / học lại
-        if (grade === 0) { s.step = 0; s.due = now + MIN; if (s.last) s.ef = Math.max(1.3, s.ef - 0.05); }
+        // Đang học / học lại: lần đầu khởi tạo S, D; các lần trong ngày dùng công thức ngắn hạn
+        if (s.S == null) { s.S = F.S0(G); s.D = F.D0(G); }
+        else if (s.last) { s.S = Math.max(0.1, F.shortS(s.S, G)); s.D = F.nextD(s.D, G); }
+        if (grade === 0) { s.step = 0; s.due = now + MIN; }
         else if (grade === 1) { s.due = now + (s.step === 0 ? 6 : 10) * MIN; }
         else if (grade === 2 && s.step === 0) { s.step = 1; s.due = now + 10 * MIN; }
-        else { s.reps = 1; s.step = 0; toDay(grade === 3 ? 4 : 1); if (grade === 3) s.ef += 0.15; }
+        else { s.reps = 1; s.step = 0; toDay(Math.max(grade === 3 ? 2 : 1, Math.round(F.ivl(s.S, r)))); }
       } else if (grade === 0) {
-        // Quên → về bước học lại, giảm độ dễ
+        // Quên → giảm độ ổn định theo FSRS, về bước học lại
+        const t = Math.max(0, (now - (s.last || now)) / DAY);
+        s.S = Math.max(0.1, F.forgetS(s.D, s.S, F.R(t, s.S))); s.D = F.nextD(s.D, G);
         s.lapses += 1; s.reps = 0; s.step = 0; s.interval = 0;
-        s.ef = Math.max(1.3, s.ef - 0.2);
         s.due = now + MIN;
       } else {
-        const overdue = Math.max(0, (now - s.due) / DAY); // ôn muộn mà vẫn nhớ → thưởng khoảng dài hơn
-        if (grade === 1) { s.ef = Math.max(1.3, s.ef - 0.15); toDay(Math.max(s.interval + 1, Math.round(s.interval * 1.2))); }
-        else if (grade === 2) toDay(s.reps === 1 ? 3 : Math.max(s.interval + 1, Math.round((s.interval + overdue / 2) * s.ef)));
-        else { s.ef += 0.15; toDay(s.reps === 1 ? 5 : Math.max(s.interval + 2, Math.round((s.interval + overdue) * s.ef * 1.3))); }
+        const iv = SRS._reviewIvls(s, now)[G];
+        s.S = iv.S; s.D = F.nextD(s.D, G);
+        toDay(iv.ivl);
         s.reps += 1;
       }
+      s.S = Math.round(s.S * 1000) / 1000; s.D = Math.round(s.D * 1000) / 1000;
       s.last = now;
       return s;
     },
@@ -103,19 +140,20 @@
         if (grade === 1) return (s.step || 0) === 0 ? '6 phút' : '10 phút';
         if (grade === 2 && !(s.step > 0)) return '10 phút';
       } else if (grade === 0) return '1 phút';
-      const n = SRS.review({ ...s }, grade);
+      const n = SRS.review({ ...s }, grade, Date.now(), true);
       const d = Math.round((n.due - Date.now()) / DAY);
       return d <= 1 ? '1 ngày' : d < 30 ? `${d} ngày` : d < 365 ? `${Math.round(d / 30)} tháng` : `${(d / 365).toFixed(1)} năm`;
     },
 
-    // Xác suất còn nhớ theo đường cong quên lãng Ebbinghaus: R = 0.9^(t / I)
-    // (thiết kế để lúc đến hạn ôn, khả năng nhớ ≈ 90%)
+    // Khả năng còn nhớ lúc này theo đường cong quên lãng của FSRS
     retention(s, now = Date.now()) {
       if (!s || !s.last) return null;
       if (s.reps === 0) return Math.max(0.3, 0.9 ** ((now - s.last) / (10 * MIN)));
-      const t = (now - s.last) / DAY;
+      const t = Math.max(0, (now - s.last) / DAY);
+      if (s.S != null) return F.R(t, s.S);
       return Math.pow(0.9, t / Math.max(1, s.interval));
     },
+    F,
 
     // 5 cấp độ nhớ (kiểu MochiVocab): 1 < 1 ngày · 2 ≤ 3 ngày · 3 ≤ 10 ngày · 4 ≤ 30 ngày · 5 > 30 ngày; 0 = chưa học
     level5(s) {
