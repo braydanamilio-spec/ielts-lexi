@@ -36,3 +36,32 @@ fs.writeFileSync('dist/samples/index.html', page(`${done.length} bài mẫu IELT
 const sm = 'dist/sitemap.xml', urls = [`${SITE}samples/`, ...done.map(([p]) => `${SITE}samples/${p.id}.html`)].map(u => `  <url><loc>${u}</loc><changefreq>monthly</changefreq></url>`).join('\n');
 fs.writeFileSync(sm, fs.readFileSync(sm, 'utf8').replace('</urlset>', urls + '\n</urlset>'));
 console.log(`✓ SEO: ${done.length} trang bài mẫu Task 2 + mục lục`);
+
+// ===== IELTS Speaking: 1 trang / chủ đề (Part 1–3 + câu trả lời mẫu) =====
+{
+  const sp = fs.readFileSync('web/js/speaking.js', 'utf8'), i0 = sp.indexOf('const BANK = [') + 13;
+  const BANK = vm.runInNewContext(sp.slice(i0, sp.indexOf('\n  ];', i0) + 4), { t: s => s });
+  const c2 = { self: {}, window: {} }; c2.self = c2.window = c2; vm.createContext(c2);
+  for (const f of ['speak/samples', 'speak/more', 'speak/more2', 'speak/more3']) vm.runInContext(fs.readFileSync(`web/js/${f}.js`, 'utf8'), c2);
+  for (const x of c2.SPEAK_MORE || []) if (!BANK.some(b => b.title === x.title)) BANK.push(x);
+  const S = c2.SPEAK_SAMPLES || {};
+  fs.mkdirSync('dist/speaking', { recursive: true });
+  const slug = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  const qa = (q, part) => { const s = S[q]; return `<h3>${esc(q)}</h3>${part === 2 ? '' : ''}${s ? `<div class="ess"><p>${esc(s.a)}</p></div>${s.vocab && s.vocab.length ? `<table>${s.vocab.map(([e, v]) => `<tr><td><b>${esc(e)}</b></td><td>${esc(v)}</td></tr>`).join('')}</table>` : ''}` : ''}`; };
+  const made = [];
+  BANK.forEach((b, i) => {
+    const id = slug(b.title), title = `IELTS Speaking chủ đề ${b.title}: câu hỏi Part 1, 2, 3 & câu trả lời mẫu`;
+    const desc = `Bộ câu hỏi IELTS Speaking chủ đề ${b.title} (Part 1–3) kèm câu trả lời mẫu band 8 và từ vựng nghĩa tiếng Việt. Cue card: ${b.p2.q}`;
+    const body = `<h1 style="font-size:24px;line-height:1.3">IELTS Speaking – ${esc(b.title)}</h1><a class="cta" href="/#/speaking/p1/${i}">🎙️ Luyện nói chủ đề này (ghi âm & chấm) →</a>
+<h2>Part 1</h2>${b.p1.map(q => qa(q, 1)).join('')}
+<h2>Part 2 – Cue card</h2><div class="q">${esc(b.p2.q)}<ul class="l">${b.p2.points.map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>${qa(b.p2.q, 2).replace(/^<h3>[^<]*<\/h3>/, '')}
+<h2>Part 3</h2>${b.p3.map(q => qa(q, 3)).join('')}<a class="cta" href="/#/speaking/p2/${i}">🗣️ Thử nói Part 2 với đồng hồ đếm giờ →</a>`;
+    fs.writeFileSync(`dist/speaking/${id}.html`, page(title, desc, `${SITE}speaking/${id}.html`, body).replace(/<a href="\/samples\/">Bài mẫu Task 2<\/a>/, '<a href="/speaking/">IELTS Speaking</a>'));
+    made.push([id, b]);
+  });
+  fs.writeFileSync('dist/speaking/index.html', page(`${made.length} chủ đề IELTS Speaking có câu trả lời mẫu – Vocaband`, `Trọn bộ ${made.length} chủ đề IELTS Speaking Part 1, 2, 3 với câu trả lời mẫu band 8 và từ vựng tiếng Việt, luyện nói miễn phí.`, `${SITE}speaking/`,
+    `<h1>${made.length} chủ đề IELTS Speaking</h1><p>Câu hỏi Part 1–3, cue card Part 2 và câu trả lời mẫu tự biên soạn.</p><ul class="l">${made.map(([id, b]) => `<li><a href="/speaking/${id}.html">${esc(b.title)}</a> – ${esc(b.p2.q)}</li>`).join('')}</ul>`).replace(/<a href="\/samples\/">Bài mẫu Task 2<\/a>/, '<a href="/samples/">Bài mẫu Writing</a>'));
+  const urls = [`${SITE}speaking/`, ...made.map(([id]) => `${SITE}speaking/${id}.html`)].map(u => `  <url><loc>${u}</loc><changefreq>monthly</changefreq></url>`).join('\n');
+  fs.writeFileSync(sm, fs.readFileSync(sm, 'utf8').replace('</urlset>', urls + '\n</urlset>'));
+  console.log(`✓ SEO: ${made.length} trang chủ đề Speaking + mục lục`);
+}
