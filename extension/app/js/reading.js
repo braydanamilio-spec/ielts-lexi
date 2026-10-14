@@ -88,7 +88,8 @@
       pop.innerHTML = `<div class="muted">⏳ Đang tra “${esc(word)}”…</div>`;
       paper.appendChild(pop);
       const mine = pop;
-      const e = await Dict.lookup(word, { examples: false });
+      // Tra nhanh (~0,4 giây); âm thanh/ảnh sẽ được bổ sung ngầm khi lưu thẻ
+      const e = (await Dict.quick(word)) || (await Dict.lookup(word, { examples: false, image: false }));
       if (pop !== mine) return;
       if (!e || !e.found) { pop.innerHTML = `<div class="muted">Không tìm thấy “${esc(word)}”.${e && e.vi ? ` Dịch: <b>${esc(e.vi)}</b>` : ''}</div>`; return; }
       const saved = App.inDeck(e.word);

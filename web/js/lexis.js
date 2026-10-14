@@ -97,7 +97,10 @@
     score += diversity > 0.75 ? 0.7 : diversity > 0.6 ? 0.4 : 0;
     score -= Math.min(1, overused.length * 0.25);     // lặp từ
     if (words.length < 250) score -= 0.5;
-    const band = Math.max(4, Math.min(8.5, Math.round(score * 2) / 2));
+    let band = Math.max(4, Math.min(8.5, Math.round(score * 2) / 2));
+    // IELTS phạt nặng bài thiếu độ dài → đặt trần điểm cho bài ngắn
+    if (words.length < 150) band = Math.min(band, 5);
+    else if (words.length < 250) band = Math.min(band, 6);
     return { words: words.length, sentences: sents.length, avg, sd, diversity, awl, link, topics, phrases, overused, awlRatio, band, lens };
   }
 

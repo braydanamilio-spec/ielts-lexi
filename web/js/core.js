@@ -3,8 +3,10 @@
  */
 (function (g) {
   // ---------- Storage: chrome.storage.local trong add-on, localStorage trên web ----------
-  const hasChrome = typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local;
-  const PREFIX = 'ielts.';
+  const hasChrome = typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local && !(typeof location !== 'undefined' && /[?&]sandbox=1/.test(location.search));
+  // ?sandbox=1 → dữ liệu thử nghiệm tách riêng, không đụng dữ liệu học thật (dùng khi kiểm thử)
+  const SANDBOX = typeof location !== 'undefined' && /[?&]sandbox=1/.test(location.search);
+  const PREFIX = SANDBOX ? 'sbx.' : 'ielts.';
 
   const Store = {
     async get(key, fallback) {
@@ -31,6 +33,7 @@
       }
     },
     isExtension: !!hasChrome,
+    sandbox: SANDBOX,
   };
 
   const DEFAULT_SETTINGS = {

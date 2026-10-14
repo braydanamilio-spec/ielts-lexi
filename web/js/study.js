@@ -81,6 +81,8 @@
     const key = session.queue[0];
     const c = state.cards[key];
     if (!c) { session.queue.shift(); return session.queue.length ? showCard() : reviewDone(false); }
+    // Thẻ thêm hàng loạt chưa có phiên âm/định nghĩa → bổ sung ngầm cho thẻ này và vài thẻ kế tiếp
+    session.queue.slice(0, 3).forEach(k => { const x = state.cards[k]; if (x && (!x.ipa || !x.def) && App.enrichLater) App.enrichLater(k); });
     let flipped = false;
     const ctx = c.contexts[0];
     const isNew = c.srs.reps === 0 && !c.srs.last;
@@ -102,7 +104,7 @@
       <div class="study-top">
         <a class="icon-btn" href="#/home" title="Thoát">✕</a>
         <div class="progress"><i style="width:${pct}%"></i></div>
-        <span class="small muted" style="white-space:nowrap"><b>${session.queue.length}</b> còn lại</span>
+        <span class="small muted" style="white-space:nowrap" title="Thẻ đang ở bước học (1–10 phút) sẽ quay lại trong phiên">✅ ${session.done} · <b>${new Set(session.queue).size}</b> thẻ còn lại</span>
       </div>
       <div class="row between small" style="margin-bottom:.6rem">
         <span>${isNew ? '<span class="chip lv">✨ TỪ MỚI</span>' : App.masteryDots(c.srs)}</span>

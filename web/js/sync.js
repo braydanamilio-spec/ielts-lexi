@@ -12,7 +12,7 @@
   window.Sync = Sync;
   let fb = null, db = null, timer = null, box = null;
 
-  const supported = !Store.isExtension && window.FIREBASE_CONFIG && location.protocol.startsWith('http');
+  const supported = !Store.isExtension && !Store.sandbox && window.FIREBASE_CONFIG && location.protocol.startsWith('http');
 
   function loadScript(src) {
     return new Promise((res, rej) => { const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = rej; document.head.appendChild(s); });

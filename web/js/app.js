@@ -131,7 +131,8 @@
     const isNew = !inDeck(entry.word);
     const card = await Cards.add(entry, context);
     state.cards[card.word.toLowerCase()] = card;
-    if (isNew) enrichLater(card.word.toLowerCase());
+    // Thêm lẻ → bổ sung dữ liệu ngay; thêm hàng loạt → để dành tới khi thẻ được ôn (tránh hàng trăm lượt gọi API)
+    if (isNew && !silent) enrichLater(card.word.toLowerCase());
     updateChrome();
     if (window.Sync) Sync.schedule();
     if (!silent) Sfx.pop();
@@ -140,7 +141,7 @@
 
   // ---------- Router ----------
   const routes = {};
-  const App = { ORIGINS, origin, forgetting, state, routes, load, reward, addWord, inDeck, allWords, topicOf, updateChrome, saveSettings, streak, activeDays, masteredCount, masteryDots, view };
+  const App = { enrichLater, ORIGINS, origin, forgetting, state, routes, load, reward, addWord, inDeck, allWords, topicOf, updateChrome, saveSettings, streak, activeDays, masteredCount, masteryDots, view };
   window.App = App;
 
   function parseHash() {
@@ -329,7 +330,10 @@
           <div class="muted small">Còn <b style="color:var(--primary);font-size:1.1rem">${h ? `${h} giờ ` : ''}${m} phút</b> · ${nx.count} từ sẽ cần ôn</div></div></div>
           <p class="small muted" style="margin:.6rem 0 0">Vocaband sẽ nhắc bạn đúng lúc từ sắp bị quên. Trong lúc chờ, hãy học thêm từ mới hoặc chơi Ghép thẻ.</p>`;
       } else {
-        el.innerHTML = `<div class="row nowrap"><div style="font-size:2.4rem">🌱</div><div><h3 style="margin:0">Chưa có lịch ôn</h3><div class="muted small">Học vài từ mới để Vocaband tính thời điểm vàng cho bạn.</div></div></div>`;
+        const fresh = Cards.dueCount(state.cards, state.settings, state.stats).newCount;
+        el.innerHTML = `<div class="row nowrap"><div style="font-size:2.4rem">🌱</div><div><h3 style="margin:0">Chưa có lịch ôn</h3><div class="muted small">Học từ mới đầu tiên – Vocaband sẽ tự tính “thời điểm vàng” để nhắc bạn ôn đúng lúc sắp quên.</div></div></div>
+          <div class="row" style="margin-top:.9rem">${fresh ? `<a class="btn primary" href="#/review">✨ Học ${fresh} từ mới ngay</a>` : '<a class="btn primary" href="#/library">📚 Chọn bộ từ</a>'}<a class="btn" href="#/method">Thời điểm vàng là gì?</a></div>
+          <div class="tiny muted" style="margin-top:.8rem">Đường cong quên lãng: sau 1 ngày bạn quên ~50% từ mới học – ôn đúng lúc giúp nhớ gần như mãi mãi.</div>`;
       }
     };
     drawGolden();
@@ -347,6 +351,7 @@
   function levelBars() {
     const n = [0, 0, 0, 0, 0, 0];
     Object.values(state.cards).forEach(c => n[SRS.level5(c.srs)]++);
+    if (!n.slice(1).some(Boolean)) return `<div class="empty" style="padding:1.2rem .5rem"><div style="font-size:2rem">📶</div><div class="small">Từ của bạn sẽ đi qua <b>5 cấp độ nhớ</b>: từ “mới học” (cấp 1) đến “nhớ lâu dài” (cấp 5) sau mỗi lần ôn đúng lúc.</div><div class="row center" style="margin-top:.6rem;gap:.3rem">${[1, 2, 3, 4, 5].map(i => `<span class="chip">Cấp ${i}</span>`).join('→')}</div></div>`;
     const max = Math.max(1, ...n.slice(1));
     const col = ['', '#e5484d', '#f59e0b', '#eab308', '#22c55e', '#0ea5a4'];
     const lab = ['', '< 1 ngày', '1–3 ngày', '4–10 ngày', '11–30 ngày', '> 1 tháng'];
@@ -621,7 +626,7 @@
       isNoun || !isAdj ? get(`https://api.datamuse.com/words?rel_jjb=${w}&max=14`) : [],
       isAdj ? get(`https://api.datamuse.com/words?rel_jja=${w}&max=10`) : [],
       get(`https://api.datamuse.com/words?rel_ant=${w}&max=6`),
-      get(`https://api.datamuse.com/words?ml=${w}&max=10`),
+      get(`https://api.datamuse.com/words?ml=${w}&max=16&md=f`),
     ]);
     const jjb = isAdj ? [] : jjb0.filter(x => !STOP.has(x.word) && x.score > 300).slice(0, 10);
     const el = $('#related'); if (!el || parseHash().arg !== e.word && parseHash().arg.toLowerCase() !== e.word) return;
@@ -631,7 +636,8 @@
     if (jja.length) html += `<div style="margin-top:.6rem"><b>🧩 Danh từ hay đi sau:</b> ${chips(jja, x => `${e.word} ${x}`)}</div>`;
     if (ant.length) html += `<div style="margin-top:.6rem"><b>↔ Trái nghĩa:</b> ${chips(ant, x => x)}</div>`;
     const syn = new Set(e.syn);
-    const mlf = ml.filter(x => !syn.has(x.word) && !/\s/.test(x.word)).slice(0, 8);
+    const stemE = e.word.slice(0, Math.max(5, e.word.length - 4));
+    const mlf = ml.filter(x => !syn.has(x.word) && !/\s/.test(x.word) && !x.word.startsWith(stemE) && !e.word.startsWith(x.word.slice(0, 6)) && +(((x.tags || []).find(t => t.startsWith('f:')) || 'f:0').slice(2)) >= 1).slice(0, 8);
     if (mlf.length) html += `<div style="margin-top:.6rem"><b>🔀 Từ gần nghĩa:</b> ${chips(mlf, x => x)}</div>`;
     el.innerHTML = html;
   }
@@ -1104,6 +1110,7 @@
   // ---------- Khởi động ----------
   App.ready = (async function init() {
     if (/[?&]demo=1/.test(location.search)) await seedDemo();
+    if (Store.sandbox) setTimeout(() => toast('🧪 Chế độ thử nghiệm – dữ liệu tách riêng, không đồng bộ'), 800);
     await load();
     document.addEventListener('error', e => {
       const img = e.target;

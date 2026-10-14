@@ -169,7 +169,8 @@
     let score = 5;
     if (words >= 150) score += .5; if (overview) score += 1; if (numbers >= 4 || ['process', 'map'].includes(d.type)) score += .5;
     if (trend >= 3 || ['bar', 'map', 'process'].includes(d.type)) score += .5; if (compare >= 2) score += .5; if (paras >= 3) score += .5; if (opinion) score -= .5;
-    const band = Math.max(4, Math.min(8, score));
+    let band = Math.max(4, Math.min(8, score));
+    if (words < 100) band = Math.min(band, 4.5); else if (words < 150) band = Math.min(band, 5.5);
     if (!notes.length) notes.push('Bài có đủ các yếu tố chính của Task 1. Hãy tự kiểm tra lại độ chính xác của số liệu, ngữ pháp và chính tả.');
     $('#t1Res').innerHTML = `<div class="card stack">
       <div class="row nowrap" style="gap:1.2rem"><div class="score-ring" style="--p:${(band - 4) / 4 * 100};--c:${band >= 7 ? 'var(--good)' : band >= 6 ? 'var(--hard)' : 'var(--again)'}"><b>${band}</b></div>

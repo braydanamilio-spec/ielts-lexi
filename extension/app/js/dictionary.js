@@ -119,13 +119,20 @@
     const photo = r => r.thumbnail && !r.mature && !/svg|gif/i.test(r.filetype || '') && !/maki|icon|logo|symbol|emblem|coat of arms|\.svg|\.tif|\.pdf|diagram|chart|map of/i.test(r.title || '')
       && (!r.width || r.width >= 400) && (!r.height || !r.width || (r.width / r.height > 0.6 && r.width / r.height < 2.2));
     const pick = d => d && Array.isArray(d.results) && (d.results.find(r => photo(r) && titleHit(r)) || d.results.find(r => photo(r) && relevant(r)));
-    const api = qs => fetchJSON(`https://api.openverse.org/v1/images/?q=${q}&page_size=12&mature=false&${qs}`, 4000);
-    let r = pick(await api('license=cc0,pdm&source=stocksnap,rawpixel,nappy,wikimedia'))      // ảnh stock CC0 chất lượng cao
-      || pick(await api('license=cc0,pdm'))                                                      // mọi nguồn CC0 / phạm vi công cộng
-      || pick(await api('license_type=commercial&source=wikimedia,flickr'));                     // CC BY / BY-SA (ghi nguồn)
+    const api = qs => fetchJSON(`https://api.openverse.org/v1/images/?q=${q}&page_size=12&mature=false&${qs}`, 3000);
+    // 3 truy vấn chạy song song, chọn theo thứ tự ưu tiên: stock CC0 → mọi CC0/PD → CC BY (ghi nguồn)
+    const [a1, a2, a3] = await Promise.all([api('license=cc0,pdm&source=stocksnap,rawpixel,nappy,wikimedia'), api('license=cc0,pdm'), api('license_type=commercial&source=wikimedia,flickr')]);
+    let r = pick(a1) || pick(a2) || pick(a3);
     if (!r) return null;
+    // Ảnh thu nhỏ lấy thẳng từ nguồn (dịch vụ thumb của Openverse đôi khi lỗi 424)
+    const thumbOf = r => {
+      const u = r.url || '';
+      if (/upload\.wikimedia\.org/.test(u)) { const f = decodeURIComponent(u.split('/').pop()); return `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(f)}?width=480`; }
+      if (/staticflickr\.com/.test(u)) return u.replace(/(_[a-z])?\.jpg$/, '_n.jpg');
+      return u || r.thumbnail;
+    };
     const lic = (r.license || '').toUpperCase() + (r.license_version && !/cc0|pdm/i.test(r.license) ? ' ' + r.license_version : '');
-    return { src: r.thumbnail, link: r.foreign_landing_url || r.url, license: lic,
+    return { src: thumbOf(r), link: r.foreign_landing_url || r.url, license: lic,
       credit: `“${(r.title || word).slice(0, 60)}” – ${r.creator || 'không rõ tác giả'} · ${/pdm/i.test(r.license) ? 'Public Domain' : lic} · qua Openverse` };
   }
   // Giữ tên cũ cho mã gọi trước đây
@@ -195,7 +202,7 @@
     const saved = await persist.get(word);
     if (saved && Date.now() - saved._t < FRESH) { cache.set(word, saved); return saved; }
     const local = (g.IELTS_DATA && g.IELTS_DATA.INDEX[word]) || null;
-    const [gg, wk] = await Promise.all([fromGoogle(word), local && local.ipa ? null : wiktIPA(word)]);
+    const [gg, wk] = await Promise.all([fromGoogle(word), wiktIPA(word)]);
     const hasGoogle = gg && (gg.senses.length || gg.defs.length);
     if (!local && !hasGoogle) return null;
     const e = { ...build(word, local, gg, null, wk, '', []), partial: true };
@@ -215,7 +222,7 @@
     let [gg, fd, wk, img, sents] = await Promise.all([
       fromGoogle(word),
       fromFreeDict(word),
-      local && local.ipa ? null : wiktIPA(word),
+      wiktIPA(word),
       image ? freeImage(word) : null,
       examples ? sentences(word) : [],
     ]);

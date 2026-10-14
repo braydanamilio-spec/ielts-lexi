@@ -4,7 +4,7 @@
   const App = window.App;
   const { state, routes } = App;
   const view = App.view;
-  const L = () => (window.GRAMMAR || []).slice().sort((a, b) => (UNITS.findIndex(u => u.id === a.unit) - UNITS.findIndex(u => u.id === b.unit)) || (a.order - b.order));
+  const L = () => CHAPTERS.flatMap(c => lessonsOf(c));
   const UNITS = [
     { id: 'foundation', name: 'Nền tảng', emoji: '🧱', desc: 'Từ loại, cấu tạo từ, đại từ, câu hỏi, số liệu – gốc rễ cho người mới', color: '#16a34a' },
     { id: 'tenses', name: 'Thì động từ', emoji: '⏳', desc: '12 thì & cách diễn đạt tương lai – nền tảng cho mọi câu', color: '#6d5dfc' },
@@ -13,28 +13,61 @@
     { id: 'sentences', name: 'Câu phức & nâng band', emoji: '🏗️', desc: 'Mệnh đề quan hệ, mệnh đề danh từ, liên kết, đảo ngữ – band 7+', color: '#c026d3' },
     { id: 'academic', name: 'Học thuật nâng cao', emoji: '🎓', desc: 'Mệnh đề phân từ, giả định, nominalisation, hedging, dấu câu – band 7.5+', color: '#1d4ed8' },
   ];
+  const CHAPTERS = [
+    { n: 1, name: 'Các thì', emoji: '⏳', color: '#6d5dfc', desc: '12 thì từ cơ bản đến nâng cao và cách diễn đạt tương lai',
+      ids: ['present-simple', 'present-continuous', 'present-perfect', 'present-perfect-continuous', 'past-simple', 'past-continuous', 'past-perfect', 'past-perfect-continuous', 'future-forms', 'future-continuous-perfect', 'used-to-would', 'stative-dynamic'] },
+    { n: 2, name: 'Sự phối hợp các thì', emoji: '🔗', color: '#7c3aed', desc: 'Phối hợp thì trong câu phức, mệnh đề thời gian, chọn thì cho IELTS',
+      ids: ['sequence-of-tenses', 'future-in-past', 'tenses-ielts'] },
+    { n: 3, name: 'Mệnh đề & cụm từ', emoji: '🧩', color: '#0ea5a4', desc: 'Câu điều kiện, wish, mệnh đề quan hệ, danh từ, trạng ngữ, phân từ, mục đích – kết quả',
+      ids: ['conditionals-0-1', 'conditionals-2-3', 'mixed-conditionals-wish', 'alternatives-to-if', 'relative-clauses', 'noun-clauses', 'adverbial-clauses', 'participle-clauses', 'so-such-too-enough', 'gerund-infinitive'] },
+    { n: 4, name: 'Diễn tả số lượng', emoji: '🔢', color: '#f59e0b', desc: 'Danh từ đếm được, lượng từ, từ hạn định, số liệu, hòa hợp chủ – vị',
+      ids: ['countable-uncountable', 'determiners', 'quantity-advanced', 'numbers-data-language', 'subject-verb-agreement'] },
+    { n: 5, name: 'Văn phong & viết lại câu', emoji: '🖋️', color: '#16a34a', desc: 'Diễn đạt một ý bằng nhiều cách – paraphrase, hedging, danh từ hóa, liên kết, dấu câu',
+      ids: ['paraphrase-structures', 'paraphrase-ielts', 'hedging', 'nominalisation', 'parallel-structure', 'reference-substitution', 'punctuation'] },
+    { n: 6, name: 'Dạng nhấn mạnh', emoji: '📣', color: '#e5484d', desc: 'Đảo ngữ, câu chẻ, nhấn mạnh với do/does/did (nhấn mạnh khi nói: xem Thư viện phát âm)',
+      ids: ['emphasis-variety', 'inversion-cleft'] },
+    { n: 7, name: 'Từ loại', emoji: '🧱', color: '#0369a1', desc: 'Danh từ, động từ, động từ khuyết thiếu, tính từ, trạng từ, đại từ, mạo từ, giới từ, liên từ',
+      ids: ['parts-of-speech-patterns', 'word-formation', 'nouns', 'articles', 'pronouns', 'verb-types', 'modals-ability-permission', 'modals-obligation-advice', 'modals-deduction', 'preference-advice', 'subjunctive', 'adjectives-adverbs', 'ing-ed-adjectives-prepositions', 'comparatives-superlatives', 'adverbs-position', 'prepositions', 'dependent-prepositions', 'phrasal-verbs-grammar', 'conjunctions', 'there-is-empty-it'] },
+    { n: 8, name: 'Lời nói gián tiếp', emoji: '💬', color: '#c026d3', desc: 'Lùi thì, câu hỏi, mệnh lệnh và các động từ tường thuật',
+      ids: ['reported-speech', 'reported-advanced'] },
+    { n: 9, name: 'Câu chủ động – bị động', emoji: '🔄', color: '#1d4ed8', desc: 'Bị động mọi thì, bị động tường thuật, thể sai khiến',
+      ids: ['passive-voice', 'passive-reporting-causative'] },
+    { n: 10, name: 'Câu', emoji: '🏗️', color: '#64748b', desc: 'Phân loại câu, câu hỏi, câu hỏi đuôi, câu mệnh lệnh, câu phức band 7+',
+      ids: ['sentence-types', 'questions', 'question-tags-short-answers', 'imperatives-suggestions', 'complex-sentences'] },
+  ];
+  const UNIT_FALLBACK = { tenses: 1, verbs: 7, words: 7, sentences: 10, foundation: 7, academic: 5 };
+  const chapterOf = id => { const c = CHAPTERS.find(c => c.ids.includes(id)); if (c) return c; const l = (window.GRAMMAR || []).find(x => x.id === id); return CHAPTERS.find(c => c.n === UNIT_FALLBACK[l && l.unit]) || CHAPTERS[6]; };
+  const lessonsOf = c => { const all = window.GRAMMAR || []; const listed = c.ids.map(id => all.find(x => x.id === id)).filter(Boolean); const extra = all.filter(x => !CHAPTERS.some(cc => cc.ids.includes(x.id)) && chapterOf(x.id) === c); return [...listed, ...extra]; };
   const done = () => state.game.grammarDone || {};
   const sayBtn = t => `<button class="icon-btn sm" data-speak-text="${esc(t)}" title="Nghe">🔊</button>`;
 
   routes.grammar = function (id) {
-    if (id === 'mix') return mix();
+    if (id === 'mix') return mix(arguments[1]);
     if (id) return lesson(id, arguments[1]);
     const all = L();
     const d = done();
     view.innerHTML = `
       <div class="page-head"><div><h1>📐 Ngữ pháp IELTS</h1><p class="muted">${all.length} bài học trực quan: dòng thời gian, công thức tô màu, sơ đồ biến đổi câu, lỗi người Việt hay mắc và bài tập chấm điểm ngay.</p></div>
         <div class="row">${ring(all.length ? Object.keys(d).length / all.length * 100 : 0, `${Object.keys(d).length}/${all.length}`, 'var(--good)')}<a class="btn primary" href="#/grammar/mix">🔀 Luyện tổng hợp 20 câu</a></div></div>
-      ${UNITS.map(u => {
-        const ls = all.filter(x => x.unit === u.id);
+      <div class="chap-nav">${CHAPTERS.map(c => `<a href="#chap${c.n}" class="chip" data-chap="${c.n}">${c.emoji} Ch.${c.n}</a>`).join('')}<a class="chip" href="#chap11" data-chap="11">📝 Ch.11</a></div>
+      ${CHAPTERS.map(c => {
+        const ls = lessonsOf(c);
         if (!ls.length) return '';
-        return `<div class="section-title"><h2>${u.emoji} ${esc(u.name)}</h2><span class="muted small">${esc(u.desc)}</span></div>
+        const u = { color: c.color };
+        const dn = ls.filter(x => d[x.id] >= 80).length;
+        return `<div class="section-title" id="chap${c.n}"><h2>${c.emoji} Chương ${c.n} · ${esc(c.name)} <span class="muted small">(${dn}/${ls.length})</span></h2>
+            <a class="btn sm" href="#/grammar/mix?ch=${c.n}">📝 Kiểm tra chương</a></div><p class="muted small" style="margin-top:-.6rem">${esc(c.desc)}</p>
           <div class="grid auto">${ls.map(x => `
             <a class="card hover topic-card" href="#/grammar/${x.id}" style="color:var(--text);border-top:4px solid ${u.color}">
               <div class="row between"><span class="em">${x.emoji}</span>${d[x.id] ? `<span class="chip ok">✓ ${d[x.id]}%</span>` : levelChip(x.level)}</div>
               <h3>${esc(x.title)}</h3><div class="tiny muted" style="font-weight:700">${esc(x.en)}</div>
               <div class="muted small">${esc(x.summary)}</div>
             </a>`).join('')}</div>`;
-      }).join('') || '<div class="card empty"><div class="em">📐</div>Đang cập nhật bài học…</div>'}`;
+      }).join('') || '<div class="card empty"><div class="em">📐</div>Đang cập nhật bài học…</div>'}
+      <div class="section-title" id="chap11"><h2>📝 Chương 11 · Kiểm tra tổng hợp</h2></div>
+      <div class="grid auto"><a class="card hover topic-card" href="#/grammar/mix" style="color:var(--text)"><span class="em">🔀</span><h3>Đề tổng hợp 20 câu</h3><div class="muted small">Trộn câu hỏi từ các bài đã học (hoặc mọi bài)</div></a>
+        <a class="card hover topic-card" href="#/grammar/mix?n=40" style="color:var(--text)"><span class="em">🏁</span><h3>Đề tổng hợp 40 câu</h3><div class="muted small">Ôn toàn bộ chương trình – như bài thi cuối khóa</div></a></div>`;
+    $$('.chap-nav a[data-chap]').forEach(a => a.onclick = e => { e.preventDefault(); const el = document.getElementById('chap' + a.dataset.chap); if (el) el.scrollIntoView({ behavior: 'smooth' }); });
   };
   const levelChip = l => l ? `<span class="chip lv ${esc(l)}">${esc(l)}</span>` : '';
 
@@ -70,10 +103,12 @@
   const R = { timeline, formula, uses, signals, table, tip, mistake, ielts, diagram, scale, sort };
 
   // Trộn câu hỏi từ các bài đã học (hoặc mọi bài) – học xen kẽ giúp nhớ lâu hơn
-  function mix() {
-    const all = L(), d = done();
-    const pool = (Object.keys(d).length >= 3 ? all.filter(x => d[x.id] != null) : all).flatMap(x => x.quiz.map(q => ({ q, x })));
-    const qs = UI.shuffle(pool).slice(0, 20);
+  function mix(query) {
+    const ch = query && +query.get('ch'), n = (query && +query.get('n')) || 20;
+    const chap = ch && CHAPTERS.find(c => c.n === ch);
+    const all = chap ? lessonsOf(chap) : L(), d = done();
+    const pool = (!chap && Object.keys(d).length >= 3 ? all.filter(x => d[x.id] != null) : all).flatMap(x => x.quiz.map(q => ({ q, x })));
+    const qs = UI.shuffle(pool).slice(0, n);
     let i = 0, right = 0;
     const next = () => {
       if (i >= qs.length) {
@@ -133,7 +168,7 @@
     }));
   }
   const heroHtml = (x, unit) => `<div class="card hero-main" style="margin:.7rem 0 1rem;background:linear-gradient(135deg, ${unit.color}, #1e1b4b 160%)">
-      <div class="row nowrap"><div style="font-size:3rem">${x.emoji}</div><div><div class="muted small">${esc(unit.name)} · ${esc(x.level)}</div>
+      <div class="row nowrap"><div style="font-size:3rem">${x.emoji}</div><div><div class="muted small">Chương ${chapterOf(x.id).n} · ${esc(chapterOf(x.id).name)} · ${esc(x.level)}</div>
         <h1 style="margin:0;color:#fff">${esc(x.title)}</h1><div style="opacity:.9;font-weight:700">${esc(x.en)}</div></div></div>
       <p style="margin:.6rem 0 0;opacity:.95">${esc(x.summary)}</p></div>`;
 

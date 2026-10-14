@@ -120,7 +120,7 @@
     // Ngữ pháp: bài chưa đạt / bài kế tiếp phù hợp trình độ
     const G = window.GRAMMAR || [], gd = g.grammarDone || {};
     const weakG = G.find(l => gd[l.id] != null && gd[l.id] < 80) || G.find(l => gd[l.id] == null && (!s.placement || s.placement.grammar < 70 || l.level !== 'A2'));
-    if (weakG) tasks.push({ em: '📐', t: `Ngữ pháp: ${weakG.title}`, sub: gd[weakG.id] != null ? `Lần trước ${gd[weakG.id]}% – làm lại cho chắc` : 'Bài học trực quan + 6 câu luyện tập', href: `#/grammar/${weakG.id}`, done: (d.quizzes || 0) > 0 && gd[weakG.id] >= 80 });
+    if (weakG) tasks.push({ em: '📐', t: `Ngữ pháp: ${weakG.title}`, sub: gd[weakG.id] != null ? `Lần trước ${gd[weakG.id]}% – làm lại cho chắc` : `Học từng bước + ${weakG.quiz.length} câu luyện tập`, href: `#/grammar/${weakG.id}`, done: (d.quizzes || 0) > 0 && gd[weakG.id] >= 80 });
     // Phát âm
     const PR = window.PRON || [], pd = g.pronDone || {};
     const nextP = PR.find(p => pd[p.id] == null);
