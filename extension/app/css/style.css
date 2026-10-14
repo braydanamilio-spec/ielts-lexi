@@ -874,3 +874,5 @@ kbd { font-family: ui-monospace, Menlo, monospace; font-size: .75em; padding: .0
 .mk-qmap button { width: 28px; height: 26px; border-radius: 6px; border: 1px solid var(--line); background: var(--surface); color: var(--text); font-size: .72rem; cursor: pointer; padding: 0; }
 .mk-qmap button.on { background: var(--primary); border-color: var(--primary); color: #fff; }
 @media (max-width: 700px) { .mk-qmap { order: 3; flex-basis: 100%; margin: .4rem 0 0; } }
+.listen-big { width: 110px; height: 110px; border-radius: 50%; border: 0; font-size: 2.6rem; cursor: pointer; background: linear-gradient(135deg, var(--primary), #8b5cf6); color: #fff; box-shadow: 0 8px 24px color-mix(in srgb, var(--primary) 35%, transparent); margin: 1.2rem auto .4rem; display: block; transition: transform .12s; }
+.listen-big:active { transform: scale(.95); }

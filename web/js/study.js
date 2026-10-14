@@ -101,7 +101,11 @@
 
     // Nhớ chủ động: thẻ đã ôn ≥ 2 lần thỉnh thoảng (1/3) chuyển sang gõ lại từ từ nghĩa – nhớ sâu hơn nhận diện, đổi nhịp cho đỡ nhàm
     const typeMode = !rev && !isNew && c.srs.reps >= 2 && state.settings.typeReview !== false && c.word.length <= 30 && Math.random() < 1 / 3;
-    const front = typeMode ? `
+    // Nghe & nhớ nghĩa: thẻ đã ôn ≥ 1 lần thỉnh thoảng chỉ phát âm, không hiện chữ – luyện nhận diện từ qua tai như khi nghe thật
+    const listenMode = !typeMode && !rev && !isNew && c.srs.reps >= 1 && Math.random() < 0.15;
+    const front = listenMode ? `
+        <button class="listen-big" data-say aria-label="${t('Nghe')}">🔊</button>
+        <div class="muted small" style="margin-top:1rem">${t('Nghe từ, nhớ lại nghĩa rồi chạm để lật')} <span class="kbd">Space</span> · <span class="kbd">P</span> ${t('nghe lại')}</div>` : typeMode ? `
         ${pic(c)}
         <div class="vi" style="font-size:1.5rem">${esc(mean(c))}</div>${posChip(c.pos)}
         ${c.ex ? `<div class="ctx">“${cloze(c.ex, c.word)}”</div>` : ''}
@@ -160,6 +164,7 @@
     App.bindCommon();
     const say = () => speak(c.word, accent(), c.audio);
     $$('[data-say]').forEach(b => b.onclick = e => { e.stopPropagation(); say(); });
+    if (listenMode) setTimeout(say, 250);
 
     const flip = () => {
       if (flipped) return;
