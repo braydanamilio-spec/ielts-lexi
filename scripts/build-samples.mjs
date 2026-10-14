@@ -70,7 +70,7 @@ console.log(`✓ SEO: ${done.length} trang bài mẫu Task 2 + mục lục`);
 {
   const c3 = { self: {}, window: {}, t: s => s, localStorage: { getItem() {}, setItem() {} } }; c3.self = c3.window = c3; vm.createContext(c3);
   vm.runInContext(fs.readFileSync('web/js/data.js', 'utf8'), c3);
-  for (const f of ['topics-more', 'skills', 'awl', 'ngsl', 'tsl-a', 'tsl-b', 'domain-a', 'domain-b', 'exam-vocab', 'exam-vocab2']) vm.runInContext(fs.readFileSync(`web/js/lib/${f}.js`, 'utf8'), c3);
+  for (const f of ['topics-more', 'skills', 'awl', 'ngsl', 'tsl-a', 'tsl-b', 'domain-a', 'domain-b', 'exam-vocab', 'exam-vocab2', 'exam-vocab3']) vm.runInContext(fs.readFileSync(`web/js/lib/${f}.js`, 'utf8'), c3);
   const GROUP = { topics: 'Từ vựng IELTS theo chủ đề', writing: 'Từ vựng IELTS Writing', speaking: 'Từ vựng IELTS Speaking', awl: 'Từ học thuật AWL', core: 'Từ vựng cốt lõi NGSL', toeic: 'Từ vựng TOEIC', domain: 'Từ vựng chuyên ngành', exam: 'Từ vựng theo kỳ thi' };
   const TP = c3.IELTS_DATA.TOPICS.filter(x => x.words && x.words.length >= 8);
   fs.mkdirSync('dist/tu-vung', { recursive: true });

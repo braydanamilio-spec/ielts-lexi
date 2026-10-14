@@ -58,7 +58,7 @@ const NAV = '<span><a href="/en/samples/">Writing</a> · <a href="/en/speaking/"
 
 // ---- Vocabulary ----
 {
-  const c = load(['data', ...['topics-more', 'skills', 'awl', 'ngsl', 'tsl-a', 'tsl-b', 'domain-a', 'domain-b', 'exam-vocab', 'exam-vocab2'].map(f => 'lib/' + f)]);
+  const c = load(['data', ...['topics-more', 'skills', 'awl', 'ngsl', 'tsl-a', 'tsl-b', 'domain-a', 'domain-b', 'exam-vocab', 'exam-vocab2', 'exam-vocab3'].map(f => 'lib/' + f)]);
   const G = { topics: 'IELTS Vocabulary by Topic', writing: 'IELTS Writing Vocabulary', speaking: 'IELTS Speaking Vocabulary', awl: 'Academic Word List (AWL)', core: 'Core Vocabulary (NGSL)', toeic: 'TOEIC Vocabulary', domain: 'Vocabulary for Specific Fields', exam: 'Vocabulary by Exam' };
   const TP = c.IELTS_DATA.TOPICS.filter(x => x.words && x.words.length >= 8);
   const D = load(['i18n/en']).I18N_DICT.en || {};

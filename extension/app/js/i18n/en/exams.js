@@ -310,4 +310,5 @@
   'Ô tô màu = đã trả lời · bấm số để nhảy tới câu': 'Filled = answered · tap a number to jump', '{a}/{b} câu đã làm': '{a}/{b} answered',
   'Còn {n} câu chưa làm. Vẫn nộp bài?': '{n} questions unanswered. Submit anyway?', 'Kết quả theo từng Part': 'Results by part',
   'Luyện theo Part': 'Practise by part', 'Nên luyện thêm: <b>{p}</b> – phần có tỉ lệ đúng thấp nhất.': 'Practise more: <b>{p}</b> – your lowest-scoring part.', 'Luyện theo Part →': 'Practise by part →', 'Xem lại {n} câu sai': 'Review {n} wrong answers',
+  'Thi IELTS General Training? Chọn đề Reading “General” – Writing Task 1 sẽ là viết thư.': 'Taking IELTS General Training? Choose a “General” Reading test – Writing Task 1 will be a letter.',
 }); })(typeof self !== 'undefined' ? self : this);

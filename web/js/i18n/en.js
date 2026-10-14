@@ -263,7 +263,7 @@
 }); })(typeof self !== 'undefined' ? self : this);
 (function (g) { Object.assign(g.I18N_DICT.en, {
   'Từ vựng theo kỳ thi': 'Exam vocabulary',
-  '1.249 từ & cụm hay gặp theo từng kỳ thi: IELTS Listening · Reading · Writing · Speaking, TOEFL iBT, TOEIC Listening & Reading': '1,249 high-frequency words & phrases by exam: IELTS Listening · Reading · Writing · Speaking, TOEFL iBT, TOEIC Listening & Reading',
+  '1.459 từ & cụm hay gặp theo từng kỳ thi: IELTS Listening · Reading · Writing · Speaking, TOEFL iBT, TOEIC Listening & Reading': '1,459 high-frequency words & phrases by exam: IELTS Listening · Reading · Writing · Speaking, TOEFL iBT, TOEIC Listening & Reading',
   'IELTS Listening – Section 1–4 hay gặp': 'IELTS Listening – Sections 1–4 essentials',
   'Điền form (đánh vần, số, mã), nhà ở, đi lại – bản đồ, tiện ích, thảo luận & bài giảng học thuật': 'Form filling (spelling, numbers, codes), housing, travel & maps, facilities, academic discussions & lectures',
   'IELTS Reading – từ học thuật & paraphrase': 'IELTS Reading – academic words & paraphrase',
@@ -286,6 +286,10 @@
   'Hóa đơn, hoàn tiền, báo cáo quý, thu mua, kế toán, tuyển dụng, lương thưởng, cuộc họp & quy trình nội bộ': 'Invoices, reimbursements, quarterly reports, procurement, accounting, hiring, payroll, meetings & internal procedures',
   'TOEIC – du lịch, khách sạn, sự kiện, sản xuất': 'TOEIC – travel, hotels, events, manufacturing',
   'Lịch trình, quá cảnh, đặt phòng, tiện nghi khách sạn, địa điểm tổ chức – hội chợ, dây chuyền lắp ráp, kiểm soát chất lượng, kho vận': 'Itineraries, layovers, bookings, hotel amenities, venues & trade fairs, assembly lines, quality control, logistics',
+  'IELTS General – đời sống, nhà ở, dịch vụ, công việc': 'IELTS General – everyday life, housing, services, work',
+  'Thuê nhà, hóa đơn tiện ích, đổi trả & hoàn tiền, bảo hành, trung tâm thể thao, tin tuyển dụng, nội quy nơi làm việc, an toàn lao động – từ vựng Reading GT Section 1–2': 'Renting, utility bills, returns & refunds, guarantees, leisure centres, job adverts, workplace rules, health & safety – vocabulary for GT Reading Sections 1–2',
+  'IELTS General – cụm từ viết thư': 'IELTS General – letter-writing phrases',
+  'Mở đầu, nêu mục đích, phàn nàn, đề nghị, xin lỗi, cảm ơn, mời, khuyên, kết thư – theo giọng trang trọng, bán trang trọng và thân mật (Writing Task 1 GT)': 'Openings, stating your purpose, complaining, requesting, apologising, thanking, inviting, advising, closings – in formal, semi-formal and informal tone (GT Writing Task 1)',
 }); })(typeof self !== 'undefined' ? self : this);
 
 /* English UI strings – phrases.js, write.js, task1.js, ideas.js, assist.js */
@@ -1179,6 +1183,7 @@
   'Ô tô màu = đã trả lời · bấm số để nhảy tới câu': 'Filled = answered · tap a number to jump', '{a}/{b} câu đã làm': '{a}/{b} answered',
   'Còn {n} câu chưa làm. Vẫn nộp bài?': '{n} questions unanswered. Submit anyway?', 'Kết quả theo từng Part': 'Results by part',
   'Luyện theo Part': 'Practise by part', 'Nên luyện thêm: <b>{p}</b> – phần có tỉ lệ đúng thấp nhất.': 'Practise more: <b>{p}</b> – your lowest-scoring part.', 'Luyện theo Part →': 'Practise by part →', 'Xem lại {n} câu sai': 'Review {n} wrong answers',
+  'Thi IELTS General Training? Chọn đề Reading “General” – Writing Task 1 sẽ là viết thư.': 'Taking IELTS General Training? Choose a “General” Reading test – Writing Task 1 will be a letter.',
 }); })(typeof self !== 'undefined' ? self : this);
 
 /* English UI strings – study.js, plan.js, path.js, method.js, goal.js */
