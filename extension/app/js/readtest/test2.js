@@ -49,8 +49,8 @@
         ],
         vocab: [
           { w: 'supply chain', vi: 'chuỗi cung ứng' },
-          { w: 'globalisation', vi: 'toàn cầu hoá' },
-          { w: 'cargo', vi: 'hàng hoá (trên tàu)' },
+          { w: 'globalisation', vi: 'toàn cầu hóa' },
+          { w: 'cargo', vi: 'hàng hóa (trên tàu)' },
           { w: 'dockworker', vi: 'công nhân bến cảng' },
           { w: 'insight', vi: 'ý tưởng sâu sắc, sự thấu hiểu' },
           { w: 'breakthrough', vi: 'bước đột phá' },
@@ -64,7 +64,7 @@
       },
 
       /* ───────────────────────── PASSAGE 2 ───────────────────────── */
-      { n: 2, title: 'Saving Endangered Languages', titleVi: 'Cứu các ngôn ngữ đang bị đe doạ', topic: 'Language', level: 'B2',
+      { n: 2, title: 'Saving Endangered Languages', titleVi: 'Cứu các ngôn ngữ đang bị đe dọa', topic: 'Language', level: 'B2',
         paras: [
           { k: 'A', t: "Of the roughly seven thousand languages spoken in the world today, linguists estimate that around forty per cent are endangered, and many have only a handful of elderly speakers. It is often said that a language dies every few weeks, although such figures are difficult to check, since the last fluent speaker of a language may live in a remote village and pass away without any record being made. What is clear is that linguistic diversity is distributed very unevenly: a small number of major languages are spoken by more than half the world's population, while thousands of others are used by communities of a few hundred or a few thousand people." },
           { k: 'B', t: "Languages rarely disappear because their speakers die out. Far more often, a community gradually shifts to another language over two or three generations. The process usually begins when a more powerful language becomes necessary for education, employment and contact with government. Parents who have experienced discrimination may decide that their children will have better opportunities if they grow up speaking the dominant language, and so stop using the heritage language at home. The grandparents may remain fluent, the parents may understand it but speak it poorly, and the children may know only a few words. Once a language is no longer passed from parent to child, linguists consider it seriously endangered, even if thousands of people still speak it." },
@@ -121,7 +121,7 @@
           { w: 'dominant language', vi: 'ngôn ngữ chiếm ưu thế' },
           { w: 'heritage language', vi: 'ngôn ngữ của cộng đồng gốc, tiếng mẹ đẻ truyền thống' },
           { w: 'discrimination', vi: 'sự phân biệt đối xử' },
-          { w: 'encode', vi: 'mã hoá, lưu giữ (thông tin)' },
+          { w: 'encode', vi: 'mã hóa, lưu giữ (thông tin)' },
           { w: 'ancestral', vi: 'thuộc về tổ tiên' },
           { w: 'indigenous', vi: 'bản địa' },
           { w: 'inevitable', vi: 'không thể tránh khỏi' },
@@ -200,7 +200,7 @@
           { w: 'a substitute for', vi: 'sự thay thế cho' },
           { w: 'liberty', vi: 'quyền tự do' },
           { w: 'transparency', vi: 'sự minh bạch' },
-          { w: 'legitimise', vi: 'hợp thức hoá, chính danh hoá' },
+          { w: 'legitimise', vi: 'hợp thức hóa, chính danh hóa' },
           { w: 'widen the gap', vi: 'nới rộng khoảng cách' },
           { w: 'exaggerated claims', vi: 'những tuyên bố phóng đại' },
         ],

@@ -179,7 +179,7 @@
     pron: ['js/pron/sounds.js', 'js/pron/skills.js', 'js/pron.js'],
     listening: ['js/qengine.js', ...[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => `js/listen/test${n}.js`), 'js/listening.js'],
     writing: ['js/write/task2-more.js', 'js/write/task1-more.js', 'js/write/task1-more2.js', 'js/write/ideas.js', 'js/write.js', 'js/task1.js', 'js/models.js', 'js/write/models2.js', 'js/write/models3.js', 'js/write/models4.js', 'js/write/models5.js', 'js/ideas.js'],
-    mock: ['js/qengine.js', 'js/readtest/test1.js', 'js/readtest/test2.js', 'js/readtest/test3.js', 'js/readtest/test4.js', 'js/readtest/test5.js', 'js/readtest/test6.js', 'js/readtest/test7.js', 'js/readtest/test8.js', 'js/readtest/explain-a.js', 'js/readtest/explain-b.js', 'js/readtest/explain-c.js', 'js/readtest/explain-d.js', 'js/readtest/explain-e.js', 'js/mock.js', 'js/rtype.js'],
+    mock: ['js/qengine.js', 'js/readtest/test1.js', 'js/readtest/test2.js', 'js/readtest/test3.js', 'js/readtest/test4.js', 'js/readtest/test5.js', 'js/readtest/test6.js', 'js/readtest/test7.js', 'js/readtest/test8.js', 'js/readtest/test9.js', 'js/readtest/test10.js', 'js/readtest/explain-a.js', 'js/readtest/explain-b.js', 'js/readtest/explain-c.js', 'js/readtest/explain-d.js', 'js/readtest/explain-e.js', 'js/readtest/explain-f.js', 'js/readtest/explain-g.js', 'js/mock.js', 'js/rtype.js'],
     tsl: ['js/lib/tsl-a.js', 'js/lib/tsl-b.js', 'js/lib/domain-a.js', 'js/lib/domain-b.js', 'js/lib/exam-vocab.js', 'js/lib/exam-vocab2.js'],
     speak: ['js/speak/samples.js', 'js/speak/more2.js', 'js/speak/more3.js'],
     toefl: ['js/qengine.js', 'js/toefl/data1.js', 'js/toefl/data2.js', 'js/toefl/data3.js', 'js/toefl.js'],
@@ -254,7 +254,7 @@
   const notesFile = w => { const c = /^[a-z]/.test(w) ? w[0] : '_'; return notesCache[c] || (notesCache[c] = fetch(`js/notes/${c}.json`).then(r => r.ok ? r.json() : {}).catch(() => { delete notesCache[c]; return {}; })); };
   App.notesHtml = word => `<div class="wn-slot" data-notes="${esc(String(word || '').toLowerCase())}"></div>`;
   const renderNotes = n => { const row = (ic, lb, v) => v ? `<div class="wn-row"><span class="wn-lb">${ic} ${lb}</span><div>${esc(v)}</div></div>` : ''; return `<div class="wn">${row('💡', t('Mẹo nhớ'), n.m)}${row('⚠️', t('Lỗi hay gặp'), n.e)}${row('🎯', t('Cách dùng khi thi'), n.u)}${row('🌳', t('Họ từ'), n.f)}</div>`; };
-  const fillNotes = () => document.querySelectorAll('.wn-slot[data-notes]:not([data-done])').forEach(el => { el.dataset.done = 1; const w = el.dataset.notes; notesFile(w).then(m => { const n = m[w]; if (n && el.isConnected) el.innerHTML = renderNotes(n); }); });
+  const fillNotes = () => document.querySelectorAll('.wn-slot[data-notes]:not([data-done])').forEach(el => { el.dataset.done = 1; const w = el.dataset.notes; notesFile(w).then(m => { const n = Object.hasOwn(m, w) && m[w]; if (n && el.isConnected) el.innerHTML = renderNotes(n); }); });
   new MutationObserver(() => fillNotes()).observe(view, { childList: true, subtree: true });
   // Gợi ý giọng đọc hay hơn (miễn phí) khi máy chỉ có giọng "robot" – theo đúng hệ điều hành/trình duyệt
   App.voiceTipHtml = accent => {

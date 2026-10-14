@@ -335,7 +335,7 @@
           <div class="row center" style="margin:1rem 0"><button class="btn" id="dPrev" title="${t('Câu trước')} (Shift+←)">‹ ${t('Câu trước')}</button><button class="btn primary lg" id="dPlay" title="${t('Nghe lại')} (\\)">🔊 ${t('Nghe')}</button><button class="btn" id="dSlow">🐢</button><button class="btn" id="dNext" title="${t('Câu sau')} (Shift+→)">${t('Câu sau')} ›</button></div>
           ${body}
           <div id="dFb" style="margin-top:.6rem"></div>
-          <div class="row between" style="margin-top:.6rem"><div class="row"><button class="btn primary" id="dChk">${t('Kiểm tra')}</button><button class="btn ghost" id="dAns">${t('Đáp án')}</button><button class="btn ghost" id="dClr">${t('Xoá hết')}</button></div>
+          <div class="row between" style="margin-top:.6rem"><div class="row"><button class="btn primary" id="dChk">${t('Kiểm tra')}</button><button class="btn ghost" id="dAns">${t('Đáp án')}</button><button class="btn ghost" id="dClr">${t('Xóa hết')}</button></div>
             <label class="md-sw"><input type="checkbox" id="dAuto" ${auto ? 'checked' : ''}><span></span>${t('Tự động phát lại câu')}</label></div>
           <div class="tiny muted" style="margin-top:.6rem">${t('Phím tắt: <kbd>Space</kbd>/<kbd>Tab</kbd> sang ô sau · <kbd>Enter</kbd> kiểm tra / câu tiếp · <kbd>\\</kbd> nghe lại · <kbd>Shift</kbd>+<kbd>←</kbd>/<kbd>→</kbd> đổi câu · <kbd>Backspace</kbd> ở ô trống để về ô trước')}</div></div></div>`;
       const hs = $$('.dict-h');

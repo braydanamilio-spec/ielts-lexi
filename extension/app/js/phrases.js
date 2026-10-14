@@ -64,7 +64,7 @@
         <div>
           <div class="md-tools" id="anBar">
             ${[['ch', t('Cụm từ hay')], ['gl', t('Nghĩa dưới cụm')], ['lk', t('Từ nối')], ['role', t('Vai trò câu')]].map(([k, l]) => `<label class="md-sw"><input type="checkbox" data-an="${k}" ${on(k) ? 'checked' : ''}><span></span>${l}</label>`).join('')}
-            <button class="btn sm ghost" id="hlMode" title="${t('Bôi đen chữ trong bài để tô màu – tự lưu')}">🖍 ${t('Tô sáng')}</button><button class="btn sm ghost" id="hlClear" title="${t('Xoá mọi chỗ tô sáng của bạn')}">↺</button>
+            <button class="btn sm ghost" id="hlMode" title="${t('Bôi đen chữ trong bài để tô màu – tự lưu')}">🖍 ${t('Tô sáng')}</button><button class="btn sm ghost" id="hlClear" title="${t('Xóa mọi chỗ tô sáng của bạn')}">↺</button>
           </div>
           <article class="card annot md-paper ${['ch', 'gl', 'lk', 'role'].filter(on).map(k => 'an-' + k).join(' ')}" id="annot">${renderAnnotated(m.text)}</article>
           <p class="tiny muted" style="margin-top:.5rem">💡 ${t('Di chuột / chạm vào cụm tô màu để xem nghĩa, bấm để lưu. Bôi đen bất kỳ chữ nào để tra nghĩa hoặc lưu cấu trúc của riêng bạn.')}</p>
@@ -110,7 +110,7 @@
     Core.Store.get(hlKey, null).then(sv => { if (sv && sv.v === hlVer && $('#annot')) $('#annot').innerHTML = sv.h; });
     let hlOn = false;
     $('#hlMode').onclick = () => { hlOn = !hlOn; $('#hlMode').classList.toggle('primary', hlOn); $('#annot').classList.toggle('hl-mode', hlOn); toast(hlOn ? `🖍 ${t('Bôi đen chữ trong bài để tô sáng')}` : t('Đã tắt tô sáng')); };
-    $('#hlClear').onclick = async () => { await Core.Store.remove(hlKey); $('#annot').innerHTML = renderAnnotated(m.text); toast(t('Đã xoá tô sáng')); };
+    $('#hlClear').onclick = async () => { await Core.Store.remove(hlKey); $('#annot').innerHTML = renderAnnotated(m.text); toast(t('Đã xóa tô sáng')); };
     $('#annot').addEventListener('mouseup', () => setTimeout(async () => {
       if (!hlOn) return; const sel = getSelection(); if (!sel.rangeCount || sel.isCollapsed || !$('#annot').contains(sel.anchorNode)) return;
       const r = sel.getRangeAt(0), mk = document.createElement('mark'); mk.className = 'uhl';
@@ -280,7 +280,7 @@
     box.innerHTML = `<div class="card"><div class="row between"><p class="small muted" style="margin:0">${t('Gõ lại <b>cả bài mẫu</b> – mỗi ô là một từ (độ dài ô = độ dài từ). Gõ xong bấm <kbd>Space</kbd> để sang ô tiếp theo.')}</p>
       <label class="md-sw"><input type="checkbox" id="slotHint"><span></span>${t('Gợi ý chữ đầu')}</label></div>
       <div class="slot-wrap">${html}</div>
-      <div class="row" style="margin-top:1rem"><button class="btn primary" id="chk">${t('Kiểm tra')}</button><button class="btn ghost" id="clr">${t('Xoá hết')}</button><span class="small muted" id="slotProg">${t('{done}/{n} từ', { done: 0, n })}</span></div></div>`;
+      <div class="row" style="margin-top:1rem"><button class="btn primary" id="chk">${t('Kiểm tra')}</button><button class="btn ghost" id="clr">${t('Xóa hết')}</button><span class="small muted" id="slotProg">${t('{done}/{n} từ', { done: 0, n })}</span></div></div>`;
     const ins = $$('.slot', box);
     const prog = () => { $('#slotProg', box).textContent = t('{done}/{n} từ', { done: ins.filter(x => x.value.trim()).length, n }); };
     ins.forEach((inp, k) => inp.addEventListener('keydown', e => {

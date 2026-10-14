@@ -52,7 +52,7 @@
           { w: 'decline sharply', vi: 'suy giảm mạnh' },
           { w: 'locally produced', vi: 'được sản xuất tại địa phương' },
           { w: 'environmental responsibility', vi: 'trách nhiệm với môi trường' },
-          { w: 'domesticated', vi: 'được thuần hoá' },
+          { w: 'domesticated', vi: 'được thuần hóa' },
           { w: 'outcompete', vi: 'cạnh tranh vượt trội, lấn át' },
           { w: 'at the expense of', vi: 'gây thiệt hại cho, đánh đổi bằng' },
           { w: 'parasitic', vi: 'ký sinh' },
@@ -136,7 +136,7 @@
       },
 
       /* ───────────────────────── PASSAGE 3 ───────────────────────── */
-      { n: 3, title: 'Does Testing Make Schools Better?', titleVi: 'Thi cử chuẩn hoá có giúp trường học tốt hơn?', topic: 'Education', level: 'C1',
+      { n: 3, title: 'Does Testing Make Schools Better?', titleVi: 'Thi cử chuẩn hóa có giúp trường học tốt hơn?', topic: 'Education', level: 'C1',
         paras: [
           { k: 'A', t: "Few policies in modern education have generated as much heat as the standardised test. To its supporters, a common examination taken by every pupil at a given age is the only fair way to discover whether schools are doing their job; to its critics, it is a blunt instrument that narrows teaching, demoralises teachers and reveals little that a good teacher did not already know. Both camps tend to present the question as a simple choice between accountability and freedom. I want to argue that this framing is mistaken, and that the real issue is not whether we test but what we do with the results." },
           { k: 'B', t: "The case for testing begins with a problem of information. Before national assessments were introduced in many countries, parents and governments had remarkably little reliable knowledge about how well children in different schools were learning. Inspections took place infrequently, and a school's reputation often reflected the social background of its pupils rather than the quality of its teaching. The economist Helena Marchetti, in her analysis of school records from three countries, found that once results were published, the gap between the highest- and lowest-performing schools serving similar communities narrowed noticeably over the following decade. Her interpretation is that publication exposed weak schools that had previously escaped attention, and that local authorities then directed support towards them. This seems to me a genuine achievement, and one that critics of testing too rarely acknowledge." },
@@ -193,7 +193,7 @@
             ] },
         ],
         vocab: [
-          { w: 'standardised test', vi: 'bài kiểm tra chuẩn hoá' },
+          { w: 'standardised test', vi: 'bài kiểm tra chuẩn hóa' },
           { w: 'blunt instrument', vi: 'công cụ thô thiển, thiếu tinh tế' },
           { w: 'accountability', vi: 'trách nhiệm giải trình' },
           { w: 'framing', vi: 'cách đặt vấn đề' },
@@ -203,7 +203,7 @@
           { w: 'high-stakes', vi: 'có hệ quả lớn, mang tính quyết định' },
           { w: 'narrowing of the curriculum', vi: 'sự thu hẹp chương trình học' },
           { w: 'literacy and numeracy', vi: 'kỹ năng đọc viết và tính toán' },
-          { w: 'well-being', vi: 'sức khoẻ tinh thần, sự an lạc' },
+          { w: 'well-being', vi: 'sức khỏe tinh thần, sự an lạc' },
           { w: 'diagnosis', vi: 'sự chẩn đoán' },
           { w: 'incentive', vi: 'động cơ khuyến khích' },
           { w: 'manipulate', vi: 'thao túng, gian lận' },

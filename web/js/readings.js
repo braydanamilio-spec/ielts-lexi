@@ -107,7 +107,7 @@ So what can learners do? Experts generally recommend keeping a regular routine, 
       topic: 'language',
       level: 'C1',
       emoji: '🗣️',
-      summaryVi: 'Nhiều ngôn ngữ đang biến mất do áp lực kinh tế và xã hội; mất ngôn ngữ là mất tri thức văn hoá, và nỗ lực phục hồi cần cộng đồng chủ động tham gia.',
+      summaryVi: 'Nhiều ngôn ngữ đang biến mất do áp lực kinh tế và xã hội; mất ngôn ngữ là mất tri thức văn hóa, và nỗ lực phục hồi cần cộng đồng chủ động tham gia.',
       text: `Linguists broadly agree that a substantial proportion of the world's languages are at risk of disappearing within the coming generations. Unlike the extinction of a plant or animal species, however, the loss of a language rarely attracts headlines. It tends to occur quietly, as each successive generation uses the ancestral tongue a little less until, eventually, no fluent speakers remain.
 
 The forces driving this decline are rarely a matter of deliberate prohibition alone, although historical policies of forced assimilation have certainly played a part in many regions. More commonly, the shift is propelled by economic and social pressures. Parents who perceive a dominant language as the key to education and employment may choose not to pass on their own, believing they are acting in their children's best interests. Urban migration, mass media and the internet can accelerate this process by exposing young people predominantly to a handful of global languages.
@@ -132,7 +132,7 @@ The prevailing view among specialists is that external intervention can support,
       topic: 'space',
       level: 'C1',
       emoji: '🛰️',
-      summaryVi: 'Rác vũ trụ quanh Trái Đất ngày càng nhiều, đe doạ vệ tinh và đòi hỏi cả giải pháp kỹ thuật lẫn hợp tác quốc tế.',
+      summaryVi: 'Rác vũ trụ quanh Trái Đất ngày càng nhiều, đe dọa vệ tinh và đòi hỏi cả giải pháp kỹ thuật lẫn hợp tác quốc tế.',
       text: `Since the first artificial satellite was launched in the late 1950s, the region of space surrounding the Earth has become increasingly congested. Alongside functioning spacecraft, it now contains a vast quantity of debris: defunct satellites, discarded rocket stages, and countless fragments produced by collisions and explosions. Because these objects travel at extremely high velocities, even a fragment no larger than a fingernail can inflict serious damage on an operational satellite.
 
 Of particular concern is a scenario sometimes referred to as cascading collisions. The theory proposes that, once the density of debris in a given orbit exceeds a critical threshold, each collision would generate further fragments, which would in turn trigger additional collisions. In its most extreme form, this chain reaction could render certain orbits unusable for decades, jeopardising services on which modern societies have come to depend, including weather forecasting, navigation and global communications.
@@ -232,7 +232,7 @@ Most experts agree that technology should support, not replace, the traditional 
       topic: 'society',
       level: 'C1',
       emoji: '👵',
-      summaryVi: 'Dân số già hoá gây áp lực lên hệ thống y tế; các giải pháp gồm phòng bệnh, chăm sóc tại cộng đồng và công nghệ, nhưng đều có hạn chế.',
+      summaryVi: 'Dân số già hóa gây áp lực lên hệ thống y tế; các giải pháp gồm phòng bệnh, chăm sóc tại cộng đồng và công nghệ, nhưng đều có hạn chế.',
       text: `Across much of the world, populations are growing older. Rising life expectancy, combined with declining birth rates, means that the proportion of people over the age of sixty-five is increasing steadily in many countries. While this demographic shift is in many respects a testament to advances in medicine and living standards, it also poses profound challenges for healthcare systems that were largely designed around the treatment of acute, short-term illness.
 
 Older adults are more likely to live with chronic conditions, such as heart disease, diabetes and arthritis, and many experience several of these simultaneously. Managing multiple long-term conditions tends to be both complex and costly, requiring ongoing monitoring, numerous medications and coordination between different specialists. Consequently, health economists frequently warn that expenditure may rise faster than the revenue available to fund it, particularly where a shrinking working-age population contributes a smaller share of taxes.

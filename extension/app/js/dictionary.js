@@ -29,7 +29,7 @@
   const fixDeep = o => o == null ? o : JSON.parse(JSON.stringify(o), (k, v) => typeof v === 'string' ? fixVi(v) : v);
   // Lỗi sai dấu nguyên âm có sẵn trong dữ liệu Google (âm tiết sai vẫn là từ có thật nên chỉ sửa theo cụm)
   const VI_PHRASE = [[/\bcọng chung\b/giu, 'cộng chung']];
-  const fixVi = s => { if (typeof s !== 'string') return s; s = s.normalize('NFC').replace(/[a-zA-ZÀ-ỹđĐ]+/g, w => { const r = VI_TYPO[w.toLowerCase()]; return !r ? w : w[0] === w[0].toUpperCase() && w[0] !== w[0].toLowerCase() ? r[0].toUpperCase() + r.slice(1) : r; }); for (const [re, to] of VI_PHRASE) s = s.replace(re, to); return s; };
+  const fixVi = s => { if (typeof s !== 'string') return s; s = s.normalize('NFC').replace(/[a-zA-ZÀ-ỹđĐ]+/g, w => { const r = Object.hasOwn(VI_TYPO, w.toLowerCase()) && VI_TYPO[w.toLowerCase()]; return !r ? w : w[0] === w[0].toUpperCase() && w[0] !== w[0].toLowerCase() ? r[0].toUpperCase() + r.slice(1) : r; }); for (const [re, to] of VI_PHRASE) s = s.replace(re, to); return s; };
   // Nghĩa đáng ngờ: chứa âm tiết hiếm dễ nhầm dấu (cọng/cộng…) đứng cạnh âm tiết chưa từng đi cùng nó trong từ điển tiếng Việt
   let RARE = null;
   const rare = () => RARE || (RARE = new Map(String(g.VI_RARE || '').split('|').filter(Boolean).map(x => { const [k, v] = x.split(':'); return [k, new Set((v || '').split(','))]; })));

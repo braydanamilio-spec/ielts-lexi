@@ -190,7 +190,7 @@
   'Điền từ (khó)': 'Fill in words (hard)',
   'Chép cả câu': 'Full sentence',
   'Câu sau': 'Next',
-  'Xoá hết': 'Clear all',
+  'Xóa hết': 'Clear all',
   'Tự động phát lại câu': 'Auto-replay sentence',
   'Phím tắt: <kbd>Space</kbd>/<kbd>Tab</kbd> sang ô sau · <kbd>Enter</kbd> kiểm tra / câu tiếp · <kbd>\\</kbd> nghe lại · <kbd>Shift</kbd>+<kbd>←</kbd>/<kbd>→</kbd> đổi câu · <kbd>Backspace</kbd> ở ô trống để về ô trước': 'Shortcuts: <kbd>Space</kbd>/<kbd>Tab</kbd> next blank · <kbd>Enter</kbd> check / next sentence · <kbd>\\</kbd> replay · <kbd>Shift</kbd>+<kbd>←</kbd>/<kbd>→</kbd> change sentence · <kbd>Backspace</kbd> in an empty blank to go back',
   '{p}% chính xác': '{p}% accurate',

@@ -184,7 +184,7 @@
   const dkind = k => { const K = { verb: '🔤 ' + t('Chia động từ'), form: '🧬 ' + t('Dạng đúng của từ'), fill: '✏️ ' + t('Điền từ'), rewrite: '🔁 ' + t('Viết lại câu'), combine: '🔗 ' + t('Nối câu'), error: '🕵️ ' + t('Tìm lỗi sai') }; return K[k] || K.fill; };
   const dnorm = s => ' ' + String(s || '').toLowerCase().replace(/[’‘`]/g, "'").replace(/won't/g, 'will not').replace(/can't|can not/g, 'cannot').replace(/n't\b/g, ' not').replace(/'re\b/g, ' are').replace(/'ve\b/g, ' have').replace(/'ll\b/g, ' will').replace(/'m\b/g, ' am')
     .replace(/[.,!?;:"“”()]/g, ' ').replace(/\s+/g, ' ').trim() + ' ';
-  // Chuẩn hoá thêm: chính tả Anh–Mỹ (-ize/-ise), "per cent"/"percent" → "%"
+  // Chuẩn hóa thêm: chính tả Anh–Mỹ (-ize/-ise), "per cent"/"percent" → "%"
   const dnorm2 = s => dnorm(s).replace(/(\w)iz(e|ed|es|ing|ation|ations)\b/g, '$1is$2').replace(/(\d)\s*(?:per cent|percent)\b/g, '$1%').replace(/\s+%/g, '%');
   // Câu người học có thể viết tắt 'd (would/had) và 's (is/has/sở hữu) → thử mọi cách hiểu
   function variants(given) {

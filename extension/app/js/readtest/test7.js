@@ -134,7 +134,7 @@
           { w: 'smother', vi: 'làm ngạt, vùi lấp' },
           { w: 'common heritage of mankind', vi: 'di sản chung của nhân loại' },
           { w: 'materialise', vi: 'trở thành hiện thực' },
-          { w: 'commodity market', vi: 'thị trường hàng hoá cơ bản' },
+          { w: 'commodity market', vi: 'thị trường hàng hóa cơ bản' },
         ],
       },
 

@@ -196,7 +196,7 @@
     { id: 'awl', name: 'Academic Word List', emoji: '🎓', desc: t('570 họ từ học thuật (Coxhead) – nền tảng cho Reading & Writing band 7+') },
   ];
 
-  const INDEX = {};
+  const INDEX = Object.create(null); // không kế thừa prototype: tra "constructor", "toString"… không bị nhầm
   const indexTopic = t => t.words.forEach(w => { const k = w.word.toLowerCase(); if (!INDEX[k]) INDEX[k] = w; });
   TOPICS.forEach(t => { if (t.id === 'task1' || t.id === 'task2') t.group = 'writing'; indexTopic(t); });
 
