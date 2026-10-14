@@ -202,9 +202,9 @@
   // add(id, name, emoji, desc, rows, group)
   function add(id, name, emoji, desc, rows, group) {
     if (TOPICS.some(t => t.id === id)) return;
-    const t = T(id, name, emoji, desc, rows, group);
-    TOPICS.push(t);
-    indexTopic(t);
+    const tp = T(id, t(name), emoji, t(desc), rows, group);
+    TOPICS.push(tp);
+    indexTopic(tp);
   }
 
   g.IELTS_DATA = { TOPICS, INDEX, GROUPS, add };

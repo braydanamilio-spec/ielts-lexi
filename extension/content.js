@@ -258,18 +258,35 @@
     return vs.map(v => [v, score(v)]).filter(x => x[1] > 0).sort((a, b) => b[1] - a[1]).map(x => x[0])[0] || null;
   }
   if (window.speechSynthesis) speechSynthesis.getVoices();
+  // Phát âm phản hồi tức thì: audio thật được tải sẵn khi mở khung; chưa phát được sau 0,7s (mạng chậm/trang chặn) → đọc bằng giọng máy
+  const audioCache = new Map();
+  let playing = null;
+  function preloadAudio(url) {
+    if (!url || audioCache.has(url)) return;
+    try { const a = new Audio(); a.preload = 'auto'; a.src = url; audioCache.set(url, a); } catch (e) { /* trang chặn media */ }
+  }
   function speak(text, url, accent, rate) {
     const tts = () => {
       if (!window.speechSynthesis) return;
       speechSynthesis.cancel();
-      // đọc từng câu để giữ ngữ điệu tự nhiên
-      (String(text).match(/[^.!?;]+[.!?;]*/g) || [text]).forEach(part => {
+      if (speechSynthesis.paused) speechSynthesis.resume(); // Chrome đôi khi kẹt ở trạng thái tạm dừng
+      // đọc từng câu để giữ ngữ điệu tự nhiên; chờ 1 nhịp sau cancel() để Chrome không bỏ mất lượt đọc
+      setTimeout(() => (String(text).match(/[^.!?;]+[.!?;]*/g) || [text]).forEach(part => {
         const u = new SpeechSynthesisUtterance(part.trim()); u.lang = accent || 'en-GB'; u.rate = rate || prefs.ttsRate || .92;
         const v = bestVoice(u.lang); if (v) u.voice = v;
         speechSynthesis.speak(u);
-      });
+      }), 30);
     };
-    if (url) { try { const a = new Audio(url); a.play().catch(tts); } catch (e) { tts(); } } else tts();
+    if (playing) { try { playing.pause(); } catch (e) { /* bỏ qua */ } playing = null; }
+    if (window.speechSynthesis) speechSynthesis.cancel();
+    if (!url) return tts();
+    let a; try { a = audioCache.get(url) || new Audio(url); audioCache.set(url, a); } catch (e) { return tts(); }
+    let started = false, gaveUp = false;
+    const fb = setTimeout(() => { if (!started) { gaveUp = true; try { a.pause(); } catch (e) { /* bỏ qua */ } tts(); } }, 700);
+    a.onplaying = () => { started = true; clearTimeout(fb); if (gaveUp) a.pause(); };
+    try { a.currentTime = 0; } catch (e) { /* chưa tải xong */ }
+    playing = a;
+    const p = a.play(); if (p) p.catch(() => { clearTimeout(fb); if (!started && !gaveUp) { gaveUp = true; tts(); } });
   }
 
   // Tra lồng nhau: bấm vào từ trong ví dụ/định nghĩa để tra tiếp, có nút quay lại
@@ -301,6 +318,7 @@
     const paintCtx = () => { const el = b.querySelector('.ctxvi'); if (el && current === word) el.textContent = ctxVi ? '🇻🇳 ' + ctxVi : ''; };
 
     function render() {
+      preloadAudio(audioFor('en-GB')); preloadAudio(audioFor('en-US'));
       // Gom theo từ loại như từ điển lớn: mỗi từ loại = nghĩa Việt + định nghĩa Anh + ví dụ của đúng nghĩa đó
       const POSV = { noun: 'danh từ', verb: 'động từ', adjective: 'tính từ', adverb: 'trạng từ', preposition: 'giới từ', conjunction: 'liên từ', pronoun: 'đại từ', interjection: 'thán từ', determiner: 'từ hạn định', abbreviation: 'viết tắt', phrase: 'cụm từ', 'phrasal verb': 'cụm động từ' };
       const toEn = x => { x = String(x || '').toLowerCase(); const hit = Object.keys(POSV).find(k => POSV[k] === x); return hit || x; };
