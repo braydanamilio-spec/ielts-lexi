@@ -12,7 +12,7 @@ BASE="https://cdn.jsdelivr.net/gh/braydanamilio-spec/ielts-lexi@${SHA}/web/"
 FILES=$(node -e "const s=require('fs').readFileSync('web/js/app.js','utf8');const a=s.indexOf(\"const G = 'js/grammar/', BUNDLES = {\"),b=s.indexOf('\n  };',a);const B=new Function(s.slice(a,b+4)+';return BUNDLES')();console.log([...new Set(Object.values(B).flat())].join('\n'))")
 warm() { echo "$1" | grep . | xargs -P 8 -I{} sh -c 'c=$(curl -s -o /dev/null -w "%{http_code}" -m 60 "'"$BASE"'{}"); [ "$c" = 200 ] || echo "{}"'; }
 TODO="$FILES"
-for try in 1 2 3; do
+for try in 1 2 3 4 5 6; do
   TODO=$(warm "$TODO")
   [ -z "$TODO" ] && break
   echo "… $(echo "$TODO" | wc -l | tr -d ' ') file chưa sẵn sàng trên CDN, thử lại sau 30s (lần $try)"; sleep 30

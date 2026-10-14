@@ -10,3 +10,6 @@ qa/
 
 dist/
 dist-firefox/
+
+# Thông tin tài khoản hệ thống – chỉ lưu trên máy, không đưa lên GitHub (repo công khai)
+ACCOUNTS.local.md
