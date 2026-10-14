@@ -192,11 +192,15 @@
       if (docs.meta && docs.meta.hs) { const all = await Store.get('pulledHashes', {}); all[Sync.user.uid] = docs.meta.hs; await Store.set('pulledHashes', all); }
       await push();
       toast(docs.meta ? '☁️ Đã đồng bộ dữ liệu học' + (extReady ? ' (kể cả add-on)' : '') : '☁️ Đã sao lưu dữ liệu lên tài khoản');
-    } catch (e) { console.warn('sync', e); setStatus('error', e.message); }
+    } catch (e) {
+      if (e && (e.code === 'resource-exhausted' || /quota/i.test(e.message || ''))) { await Store.set('syncPausedUntil', Date.now() + 6 * 3600e3); setStatus('ok', 'Đồng bộ tạm nghỉ – dữ liệu vẫn trên máy.'); return; }
+      console.warn('sync', e); setStatus('error', e.message);
+    }
   }
 
   async function push() {
     if (!Sync.user || !db) return;
+    if (Date.now() < await Store.get('syncPausedUntil', 0)) return;
     setStatus('syncing');
     try {
       const cards = await Cards.all();
@@ -225,7 +229,11 @@
       dirty = false;
       Sync.lastSync = Date.now();
       setStatus('ok');
-    } catch (e) { console.warn('push', e); setStatus('error', e.message); }
+    } catch (e) {
+      // Hết hạn mức miễn phí trong ngày → tạm dừng đồng bộ đến hôm sau; dữ liệu vẫn an toàn trên máy
+      if (e && (e.code === 'resource-exhausted' || /quota/i.test(e.message || ''))) { await Store.set('syncPausedUntil', Date.now() + 6 * 3600e3); setStatus('ok', 'Đồng bộ tạm nghỉ vài giờ (máy chủ miễn phí đã đủ lượt hôm nay) – dữ liệu vẫn lưu trên máy và sẽ tự đồng bộ sau.'); return; }
+      console.warn('push', e); setStatus('error', e.message);
+    }
   }
 
   let dirty = false;

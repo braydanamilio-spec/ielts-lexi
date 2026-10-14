@@ -9,5 +9,6 @@ cp "$ROOT"/web/icons/icon-{16,32,48,128}.png "$ROOT/web/icons/icon.svg" "$ROOT/e
 echo "✓ Đã build add-on vào $ROOT/extension"
 if [[ "${1:-}" == "--zip" ]]; then
   (cd "$ROOT/extension" && rm -f ../vocaband-extension.zip && zip -qr ../vocaband-extension.zip . -x '.*')
-  echo "✓ Đã tạo vocaband-extension.zip (để đăng lên Chrome Web Store)"
+  mkdir -p "$ROOT/store" && cp "$ROOT/vocaband-extension.zip" "$ROOT/store/vocaband-extension.zip"
+  echo "✓ Đã tạo vocaband-extension.zip (Chrome Web Store / Edge Add-ons) – bản sao trong store/"
 fi

@@ -9,3 +9,4 @@ qa/
 *.pdf
 
 dist/
+dist-firefox/
