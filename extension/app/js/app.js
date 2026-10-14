@@ -434,7 +434,7 @@
             <div class="tiny muted" style="font-weight:700;text-transform:uppercase;letter-spacing:.06em">${t('Từ của ngày')}</div>
             <div class="row"><a href="#/dict/${encodeURIComponent(w.word)}" style="font-size:1.4rem;font-weight:800;color:var(--text)">${esc(w.word)}</a>${posChip(w.pos)}${levelChip(w.level)}</div>
             <div class="row"><span class="ipa small">${esc(w.ipa)}</span><button class="icon-btn sm" data-speak="${esc(w.word)}">🔊</button></div>
-            <div class="vi" style="font-size:1.05rem">${esc(w.vi)}</div>
+            <div class="vi" style="font-size:1.05rem">${esc(I18N.meanLang() === 'en' && w.def ? w.def : w.vi)}</div>
             <div class="row" style="margin-top:.4rem">${inDeck(w.word) ? `<span class="chip ok">✓ ${t('Đã có trong sổ')}</span>` : `<button class="btn sm primary" data-add-seed="${esc(w.word)}">+ Flashcard</button>`}</div>
           </div>
         </div>
@@ -620,7 +620,7 @@
           <div style="min-width:0">
             <div class="row"><a class="w" href="#/dict/${encodeURIComponent(w.word)}">${esc(w.word)}</a>${posChip(w.pos)}${levelChip(w.level)}
               ${w.ipa ? `<span class="ipa small">${esc(w.ipa)}</span>` : ''}<button class="icon-btn sm" data-speak="${esc(w.word)}" aria-label="${t('Phát âm')}">🔊</button></div>
-            <div><b class="vi" style="font-size:1rem">${esc(w.vi)}</b>${w.def ? ` <span class="muted small">— ${esc(w.def)}</span>` : ''}</div>
+            <div>${I18N.meanLang() === 'en' && w.def ? `<b class="vi" style="font-size:1rem">${esc(w.def)}</b>` : `<b class="vi" style="font-size:1rem">${esc(w.vi)}</b>${w.def ? ` <span class="muted small">— ${esc(w.def)}</span>` : ''}`}</div>
             ${w.ex ? `<div class="ex small">“${highlight(w.ex, w.word)}”</div>` : ''}
             ${w.col.length ? `<div class="small" style="margin-top:.2rem">🔗 ${w.col.map(esc).join(' · ')}</div>` : ''}
           </div>
@@ -692,7 +692,7 @@
               <span><b class="small">🇺🇸 US</b> <span class="ipa">${esc(e.ipaUS || '—')}</span><button class="icon-btn sm" data-speak="${esc(e.word)}" data-accent="en-US" data-url="${esc(e.audioUS || '')}">🔊</button></span>
               <span><b class="small">🐢 ${t('Chậm')}</b><button class="icon-btn sm" data-slow="${esc(e.word)}" title="${t('Nghe chậm')}">🔊</button></span>
             </div>
-            <div class="vi">${esc(e.vi)}</div>
+            ${I18N.meanLang() === 'en' ? '' : `<div class="vi">${esc(e.vi)}</div>`}
             ${e.def ? `<div style="margin-top:.4rem">${esc(e.def)}</div>` : ''}
             <div class="row" style="margin-top:.8rem">
               ${card ? `<span class="chip ok">✓ ${t('Đã có trong flashcard')}</span>` : `<button class="btn primary" id="quickSave">+ ${t('Lưu flashcard')}</button>`}
@@ -837,7 +837,7 @@
       $('#deckList').innerHTML = rows.length ? rows.slice(0, 400).map(c => `
         <div class="deck-row">
           <div class="em">${c.image ? `<img src="${esc(c.image)}" alt="" loading="lazy" referrerpolicy="no-referrer">` : esc(c.emoji)}</div>
-          <div style="min-width:0"><a href="#/dict/${encodeURIComponent(c.word)}"><b>${esc(c.word)}</b></a> <span class="ipa small">${esc(c.ipa)}</span><div class="small">${esc(c.vi)}</div></div>
+          <div style="min-width:0"><a href="#/dict/${encodeURIComponent(c.word)}"><b>${esc(c.word)}</b></a> <span class="ipa small">${esc(c.ipa)}</span><div class="small">${esc(I18N.meanLang() === 'en' && c.def ? c.def : c.vi)}</div></div>
           <div class="small muted hide-sm">${c.contexts[0] ? `📌 “${highlight(c.contexts[0].text.slice(0, 110), c.word)}${c.contexts[0].text.length > 110 ? '…' : ''}”` : esc((c.def || '').slice(0, 110))}</div>
           <div class="hide-sm small muted" style="text-align:right" title="${t('Đến hạn {date}', { date: new Date(c.srs.due).toLocaleDateString(I18N.lang()) })}">${masteryDots(c.srs)}${SRS.retention(c.srs) != null ? `<div class="tiny">🧠 ${Math.round(SRS.retention(c.srs) * 100)}%</div>` : ''}</div>
           <div class="row nowrap" style="gap:.3rem"><button class="icon-btn sm" data-speak="${esc(c.word)}" data-url="${esc(c.audio)}">🔊</button><button class="icon-btn sm" data-edit="${esc(c.word)}" title="${t('Sửa')}">✏️</button></div>
