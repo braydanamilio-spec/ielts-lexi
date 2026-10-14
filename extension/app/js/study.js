@@ -449,7 +449,7 @@
                   <button class="fi-btn sm" id="sayI" aria-label="${t('Nghe')}" title="${t('Nghe')}">🔊</button><button class="fi-btn sm" id="slowI" aria-label="${t('Nghe chậm')}" title="${t('Nghe chậm')}">🐢</button></div>
                 <div class="wi-vi vi">${esc(w.vi)}</div></div></div>
             ${w.def ? `<div class="wi-sec"><span class="wi-lb">📖 ${t('Định nghĩa')}</span><div>${esc(w.def)}</div></div>` : ''}
-            ${w.ex ? `<div class="wi-sec wi-ex"><span class="wi-lb">💬 ${t('Ví dụ')}</span><div class="fi-ex">${highlight(w.ex, w.word)} <button class="ctx-say" data-saysent="${esc(w.ex)}" title="${t('Nghe cả câu')}">🔊</button><button class="ctx-say" data-saysent="${esc(w.ex)}" data-slow="1" title="${t('Nghe chậm')}">🐢</button></div><div class="fi-tr small muted vi" id="fiTr"></div></div>` : ''}
+            ${w.ex ? `<div class="wi-sec wi-ex"><span class="wi-lb">💬 ${t('Ví dụ')}</span><div class="fi-ex">${highlight(w.ex, w.word)} <button class="ctx-say" data-saysent="${esc(w.ex)}" title="${t('Nghe cả câu')}">🔊</button><button class="ctx-say" data-saysent="${esc(w.ex)}" data-slow="1" title="${t('Nghe chậm')}">🐢</button></div><div class="fi-tr small muted" data-keep-vi id="fiTr"></div></div>` : ''}
             ${col.length || syn.length ? `<div class="wi-sec wi-chips">${col.length ? `<span class="wi-lb">🔗 ${t('Hay đi với')}</span>${col.map(x => `<span class="chip">${esc(x)}</span>`).join('')}` : ''}${syn.length ? `<span class="wi-lb" style="margin-left:${col.length ? '.6rem' : '0'}">≈ ${t('Đồng nghĩa')}</span>${syn.map(x => `<span class="chip">${esc(x)}</span>`).join('')}` : ''}</div>` : ''}
             ${w.note ? `<div class="wi-sec wi-tip">💡 ${esc(w.note)}</div>` : ''}
           </div>
