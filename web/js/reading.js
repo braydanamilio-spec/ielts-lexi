@@ -23,17 +23,9 @@
     const r = R().find(x => x.id === id);
     if (!r) return routes.reading();
     const kw = new Set(r.keywords.map(k => k.toLowerCase()));
-    // Bọc từng từ thành phần tử chạm được; giữ nguyên câu để làm ngữ cảnh
-    const paras = r.text.split(/\n\s*\n/).map(p => {
-      const sentences = p.match(/[^.!?]+[.!?]+["”’)]*\s*|[^.!?]+$/g) || [p];
-      return '<p>' + sentences.map((s, si) => `<span class="sent">${s.split(/(\s+)/).map(tok => {
-        const m = tok.match(/^([^A-Za-z]*)([A-Za-z][A-Za-z'’-]*[A-Za-z]|[A-Za-z])([^A-Za-z]*)$/);
-        if (!m) return esc(tok);
-        const w = m[2].toLowerCase().replace(/’/g, "'");
-        const cls = ['tw', kw.has(w) ? 'kw' : '', App.inDeck(w) ? 'mine' : ''].filter(Boolean).join(' ');
-        return `${esc(m[1])}<span class="${cls}" data-w="${esc(w)}">${esc(m[2])}</span>${esc(m[3])}`;
-      }).join('')}</span>`).join('') + '</p>';
-    }).join('');
+    // Bọc từng từ thành phần tử chạm được + tô sáng AWL / từ nối / collocation / từ của tôi
+    const paras = Lexis.markText(r.text, { keywords: kw, mine: w => App.inDeck(w) });
+    const hl = (state.settings.hl || 'kw awl link mine').split(' ');
 
     view.innerHTML = `
       <a href="#/reading" class="small">← Tất cả bài đọc</a>
@@ -42,9 +34,13 @@
           <div class="row between"><div class="row">${levelChip(r.level)}<span class="chip">${r.emoji} ${esc(r.topic)}</span></div>
             <button class="btn sm" id="readAloud">🔊 Nghe cả bài</button></div>
           <h1 style="margin:.8rem 0 .3rem">${esc(r.title)}</h1>
-          <p class="muted" style="margin-bottom:1.2rem">${esc(r.summaryVi)}</p>
-          <div class="passage" id="passage">${paras}</div>
-          <div class="small muted">💡 Gạch chân chấm = từ khóa IELTS · nền xanh = từ đã có trong sổ của bạn</div>
+          <p class="muted" style="margin-bottom:.8rem">${esc(r.summaryVi)}</p>
+          <div class="hl-bar" id="hlBar">
+            <span class="tiny muted" style="font-weight:700">TÔ SÁNG:</span>
+            ${[['kw', '🔑 Từ khóa'], ['awl', '🎓 Học thuật AWL'], ['link', '🧷 Từ nối & cụm'], ['mine', '📒 Từ của tôi']].map(([k, l]) => `<button class="hl-chip ${k} ${hl.includes(k) ? 'on' : ''}" data-hl="${k}">${l} <b data-count="${k}"></b></button>`).join('')}
+          </div>
+          <div class="passage ${hl.map(x => 'hl-' + x).join(' ')}" id="passage">${paras}</div>
+          <div class="small muted">💡 Chạm vào từ để tra · bấm đúp vào câu để nghe câu đó · gạch chấm = từ khóa IELTS · nền xanh = từ đã có trong sổ</div>
         </div>
         <div style="position:sticky;top:80px" class="stack">
           <div class="card"><h3>🔑 Từ khóa</h3><div class="row">${r.keywords.map(k => `<button class="chip" data-kw="${esc(k)}" style="border:0;cursor:pointer">${esc(k)}</button>`).join('')}</div>
@@ -62,15 +58,27 @@
       </div>`;
     if (innerWidth < 900) $('#readGrid').style.gridTemplateColumns = '1fr';
 
+    // Thanh tô sáng
+    const count = k => new Set($$(`#passage .tw.${k === 'link' ? 'link, #passage .tw.col' : k}`).map(x => x.dataset.ph || x.dataset.w)).size;
+    const paintCounts = () => ['kw', 'awl', 'link', 'mine'].forEach(k => { const el = $(`[data-count="${k}"]`); if (el) el.textContent = count(k); });
+    paintCounts();
+    $$('[data-hl]').forEach(b => b.onclick = () => {
+      b.classList.toggle('on');
+      $('#passage').classList.toggle('hl-' + b.dataset.hl, b.classList.contains('on'));
+      state.settings.hl = $$('[data-hl].on').map(x => x.dataset.hl).join(' ');
+      App.saveSettings();
+    });
+
     // Popover tra từ
     let pop = null;
     const closePop = () => { if (pop) { pop.remove(); pop = null; } $$('.tw.active').forEach(x => x.classList.remove('active')); };
-    App.cleanup = () => { closePop(); if (window.speechSynthesis) speechSynthesis.cancel(); };
+    App.cleanup = () => { closePop(); UI.stopSpeak(); };
     async function openPop(el) {
       closePop();
       el.classList.add('active');
       const word = el.dataset.w;
       const sentence = el.closest('.sent').textContent.replace(/\s+/g, ' ').trim();
+      const phrase = el.dataset.ph;
       pop = document.createElement('div');
       pop.className = 'pop';
       const paper = $('#paper');
@@ -98,6 +106,7 @@
         await App.addWord(e, { text: sentence, vi, title: `Bài đọc: ${r.title}` });
         b.textContent = '✓ Đã lưu kèm ngữ cảnh';
         $$(`.tw[data-w="${CSS.escape(word)}"]`).forEach(x => x.classList.add('mine'));
+        paintCounts();
       };
       if (state.settings.autoSpeak) speak(e.word, state.settings.accent, e.audio);
     }
@@ -124,15 +133,23 @@
       Sfx.win(); toast(`Đã lưu ${n} từ khóa kèm câu ngữ cảnh`);
       $('#addKw').textContent = '✓ Đã lưu';
     };
+    let reading = false;
     $('#readAloud').onclick = () => {
       if (!window.speechSynthesis) return toast('Trình duyệt không hỗ trợ đọc văn bản');
-      if (speechSynthesis.speaking) { speechSynthesis.cancel(); $('#readAloud').textContent = '🔊 Nghe cả bài'; return; }
-      const u = new SpeechSynthesisUtterance(r.text.replace(/\n+/g, ' '));
-      u.lang = state.settings.accent; u.rate = 0.92;
-      u.onend = () => { const b = $('#readAloud'); if (b) b.textContent = '🔊 Nghe cả bài'; };
-      speechSynthesis.cancel(); speechSynthesis.speak(u);
-      $('#readAloud').textContent = '⏹ Dừng đọc';
+      const sents = $$('#passage .sent');
+      const clear = () => sents.forEach(x => x.classList.remove('reading'));
+      if (reading) { UI.stopSpeak(); reading = false; clear(); $('#readAloud').textContent = '🔊 Nghe cả bài'; return; }
+      reading = true; $('#readAloud').textContent = '⏹ Dừng đọc';
+      // Đọc từng câu theo đúng câu hiển thị → ngữ điệu tự nhiên + tô sáng câu đang đọc
+      const text = sents.map(x => x.textContent.trim()).join(' ');
+      const idx = []; sents.forEach((x, i) => UI.splitSentences(x.textContent).forEach(() => idx.push(i)));
+      UI.tts(text, state.settings.accent, null, {
+        onSentence: i => { clear(); const el = sents[idx[i]]; if (el) { el.classList.add('reading'); el.scrollIntoView({ behavior: 'smooth', block: 'center' }); } },
+        onEnd: () => { reading = false; clear(); const b = $('#readAloud'); if (b) b.textContent = '🔊 Nghe cả bài'; },
+      });
     };
+    // Bấm đúp vào câu → nghe riêng câu đó
+    $('#passage').addEventListener('dblclick', e => { const s = e.target.closest('.sent'); if (s) { e.preventDefault(); UI.tts(s.textContent, state.settings.accent); } });
 
     // Câu hỏi
     const answers = {};

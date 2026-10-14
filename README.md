@@ -1,59 +1,72 @@
-# Vocaband – Từ điển & Flashcard luyện từ vựng IELTS
+# Vocaband – Từ vựng IELTS thông minh
 
-Gồm 2 phần dùng **chung một mã nguồn** (`web/`):
+**Vocaband** (Vocabulary + Band) là bộ công cụ học từ vựng cho người luyện thi IELTS, gồm 2 phần dùng **chung một mã nguồn**:
 
-| Phần | Thư mục | Dùng để |
+| Phần | Thư mục | Địa chỉ |
 |---|---|---|
-| Web app (PWA) | `web/` | Học trên máy tính / điện thoại, cài như app, dùng offline |
-| Add-on Chrome | `extension/` | Bấm đúp vào từ trên **mọi trang web** để tra & lưu kèm ngữ cảnh, nhắc học hằng ngày |
+| Web app (PWA, cài được như app) | `web/` | https://vocaband.web.app |
+| Add-on Chrome | `extension/` (bản sao `web/` trong `extension/app`) | Chrome Web Store (xem `store/LISTING.md`) |
 
-## Tính năng
-- **Từ điển Anh–Việt**: phiên âm IPA giọng Anh–Anh (chuẩn Oxford) và Anh–Mỹ, nghe phát âm UK/US, nghĩa tiếng Việt, định nghĩa, ví dụ, từ đồng nghĩa, **hình minh họa**.
-- **144 từ IELTS chọn lọc** theo 12 chủ đề (Giáo dục, Môi trường, Công nghệ, Sức khỏe, Công việc, Xã hội, Tội phạm, Truyền thông, Đô thị, Du lịch, Writing Task 1, Writing Task 2) – mỗi từ có cấp độ CEFR, collocation, câu ví dụ học thuật, emoji minh họa.
-- **Flashcard lặp lại ngắt quãng (SRS, thuật toán SM-2 kiểu Anki)**: 4 mức Quên / Khó / Nhớ / Dễ, hiển thị trước khoảng ôn tiếp theo, giới hạn số từ mới mỗi ngày, lật 2 chiều (Anh→Việt, Việt→Anh với câu điền khuyết), phím tắt `Space`, `1–4`, `P`.
-- **Từ gắn theo ngữ cảnh**: khi lưu từ (từ trang web qua add-on hoặc tự dán), câu gốc được lưu lại và hiện trên thẻ với từ được tô sáng.
-- **Luyện tập**: trắc nghiệm nghĩa, điền từ vào câu IELTS, nghe & chép chính tả.
-- **Nhắc học hằng ngày**: thông báo theo giờ đã đặt (add-on: `chrome.alarms`, chạy cả khi chưa mở app; web: thông báo khi trang đang mở + file lịch `.ics` lặp hằng ngày cho điện thoại), số thẻ cần ôn trên biểu tượng add-on.
-- Chuỗi ngày học 🔥, biểu đồ 14 ngày, mục tiêu ngày, sổ từ có lọc/sửa/ghi chú mẹo nhớ, xuất/nhập JSON.
+## Tính năng chính
+- **Từ điển Anh–Việt:** định nghĩa Oxford Languages, phiên âm UK/US, nghe chuẩn và chậm, nghĩa theo từ loại, câu song ngữ, collocation, từ liên quan. Kết quả hiện ngay rồi bổ sung dần, có lưu đệm.
+- **Thư viện khoảng 1.200 từ:** 24 chủ đề IELTS, toàn bộ AWL (570 từ), phrasal verb, idiom, tính từ miêu tả, từ nối, collocation band 7+, cụm nêu quan điểm.
+- **Thư viện cá nhân tự phân loại theo nguồn:** YouTube, trang web, bài đọc, từ điển, thư viện.
+- **Ôn tập khoa học:**
+  - SM-2 kèm bước học 1→10 phút.
+  - Đường cong quên lãng (% còn nhớ), danh sách "Sắp quên".
+  - **Thời điểm vàng** có giờ yên lặng.
+  - 5 cấp độ nhớ, giới hạn số thẻ mỗi phiên.
+  - Ô tự đặt câu (hiệu ứng tự tạo).
+- **Luyện tập:** Học thông minh (thẻ giới thiệu → trắc nghiệm → gõ từ), Ghép thẻ tính giờ, Trắc nghiệm, Điền từ, Nghe & chép, **Luyện phát âm có chấm điểm**, Bài kiểm tra ước tính band.
+- **10 bài đọc IELTS (B1–C1):** chạm vào từ để tra và lưu kèm câu, có câu hỏi True/False/Not Given và trắc nghiệm.
+- **Gamification:** XP, cấp độ, 3 nhiệm vụ mỗi ngày, 16 huy hiệu, chuỗi ngày, lịch học 6 tháng, dự báo số thẻ đến hạn.
+- **Tài khoản:** đăng nhập Google, đồng bộ Firestore gọn nhẹ (chỉ gửi phần thay đổi, tối đa 1 lần mỗi phút).
+- **Add-on:**
+  - Bấm đúp để tra từ, bôi đen để dịch câu (có nút 🌐), menu chuột phải.
+  - **Chạm vào từ trong phụ đề YouTube:** video tự dừng; từ được lưu kèm câu phụ đề và mốc thời gian.
+  - Badge số thẻ cần ôn, nhắc học hằng ngày và thời điểm vàng.
 
-## Chạy web app
+## Chạy & phát triển
 ```bash
-cd web && python3 -m http.server 5173
+cd web && python3 -m http.server 5173          # chạy thử web app
+./scripts/build-extension.sh                   # chép web/ vào extension/app
+./scripts/build-extension.sh --zip             # tạo vocaband-extension.zip để nộp Chrome Web Store
+./scripts/deploy.sh "mô tả thay đổi"           # build + commit + push GitHub + deploy Firebase
+./scripts/store-assets.sh                      # chụp ảnh Store bằng Chrome headless (dữ liệu mẫu ?demo=1)
+./scripts/deploy-cloudflare.sh                 # (tùy chọn) deploy lên Cloudflare Pages
+python3 scripts/make_icons.py web/icons 16 32 48 128 192 512 128:16   # vẽ lại icon
 ```
-Mở http://localhost:5173 . Để đưa lên mạng, deploy thư mục `web/` lên bất kỳ host tĩnh nào (GitHub Pages, Netlify, Vercel, Cloudflare Pages) – cần HTTPS để PWA và thông báo hoạt động.
-
-## Cài add-on Chrome
-```bash
-./scripts/build-extension.sh
-```
-Sau đó mở `chrome://extensions` → bật **Developer mode** → **Load unpacked** → chọn thư mục `extension/`.
-- Bấm đúp vào một từ → hiện bảng tra; **bôi đen cụm từ + giữ Alt** khi thả chuột để tra cụm (vd. *life expectancy*); hoặc chuột phải → *Tra “…” với Vocaband*.
-- `Alt+L` mở popup tra nhanh.
-- `./scripts/build-extension.sh --zip` tạo file zip để đăng lên Chrome Web Store.
-
-> Sau khi sửa code trong `web/`, chạy lại `build-extension.sh` rồi bấm ↻ ở trang `chrome://extensions`.
+Cài add-on khi phát triển: `chrome://extensions` → bật Developer mode → **Load unpacked** → chọn `extension/`. Mỗi lần sửa code, chạy lại script build rồi bấm ↻ trên thẻ add-on.
 
 ## Cấu trúc
 ```
 web/
-  index.html, css/style.css, sw.js, manifest.webmanifest, icons/
-  js/data.js        bộ từ IELTS theo chủ đề
-  js/core.js        lưu trữ (localStorage / chrome.storage), SRS, thẻ, thống kê
-  js/dictionary.js  tra từ: bộ từ có sẵn + API miễn phí
-  js/app.js         giao diện: trang chủ, tra từ, chủ đề, ôn tập, luyện tập, sổ từ, cài đặt
-extension/
-  manifest.json, background.js (nhắc học, badge, tra từ), content.js (bảng tra trên trang), popup.*
-  app/  ← bản sao của web/ do build-extension.sh tạo
-scripts/  build-extension.sh, make_icons.py
+  index.html, privacy.html, sw.js, manifest.webmanifest, css/style.css, icons/
+  js/data.js            bộ từ gốc + registry IELTS_DATA.add()
+  js/lib/*.js           thư viện mở rộng: topics-more (240), skills (290), awl (570)
+  js/readings.js        10 bài đọc IELTS
+  js/core.js            lưu trữ, SRS (SM-2 + learning steps + retention), thời điểm vàng, thống kê
+  js/dictionary.js      tra từ nhanh/đầy đủ + cache bền
+  js/game.js            XP, cấp độ, nhiệm vụ, huy hiệu, âm thanh, pháo giấy
+  js/ui.js              tiện ích giao diện
+  js/app.js             khung app, trang chủ, thư viện, từ điển, sổ từ, tiến độ, phương pháp, cài đặt, onboarding
+  js/study.js           ôn tập & 7 chế độ luyện tập
+  js/reading.js         bài đọc tương tác
+  js/sync.js            đăng nhập Google & đồng bộ Firestore
+extension/               manifest MV3, background.js, content.js (tra từ/dịch/YouTube), popup.*
+brand/                   logo SVG/PNG
+store/                   ảnh & hồ sơ đăng Chrome Web Store (LISTING.md)
+firestore.rules          mỗi người chỉ đọc/ghi dữ liệu của mình
 ```
 
-## Nguồn dữ liệu (miễn phí, không cần API key)
-- [dictionaryapi.dev](https://dictionaryapi.dev) – phiên âm, audio, định nghĩa, ví dụ
-- [MyMemory](https://mymemory.translated.net) – dịch nghĩa sang tiếng Việt cho từ ngoài bộ IELTS (giới hạn ~5.000 từ/ngày/IP)
-- [Wikipedia REST API](https://en.wikipedia.org/api/rest_v1/) – hình minh họa
+## Chi phí khi mở rộng
+- **Tra từ:** trình duyệt của mỗi người dùng gọi thẳng các API miễn phí, không qua máy chủ riêng, nên không phát sinh chi phí máy chủ. Kết quả được lưu đệm trên máy.
+- **Dữ liệu học:** lưu ngay trên thiết bị (local-first). Đồng bộ đám mây là tùy chọn. Mỗi lượt đồng bộ chỉ gửi phần thay đổi và đã được thu gọn khoảng 72%.
+- **Hosting:** Firebase Spark miễn phí khoảng 10 GB băng thông mỗi tháng, đủ cho khoảng 50.000 lượt mở app đầu tiên (mỗi lượt khoảng 190 KB gzip; các lần sau dùng cache). Khi lớn hơn, chuyển sang **Cloudflare Pages** (miễn phí, băng thông không giới hạn) bằng `scripts/deploy-cloudflare.sh`.
+- **Firestore (gói miễn phí):** 20.000 lượt ghi và 50.000 lượt đọc mỗi ngày, tương đương vài nghìn người đồng bộ mỗi ngày. Khi vượt mức này, cần bật Blaze (khoảng 0,18 USD mỗi 100.000 lượt ghi), hoặc chuyển đồng bộ sang Google Drive appData của chính người dùng (miễn phí với nhà phát triển).
 
-Phiên âm/nghĩa trong bộ 144 từ do dự án biên soạn theo chuẩn IPA Anh–Anh, không phải dữ liệu chính thức của Oxford University Press. Hình từ Wikipedia lấy tự động nên đôi khi chưa sát nghĩa – sửa trong **Sổ từ → ✏️**.
+## Lộ trình app di động
+Toàn bộ là HTML/CSS/JS thuần, local-first, nên có thể đóng gói thành app iOS/Android bằng **Capacitor** mà gần như không phải viết lại. Khi đó thêm thông báo đẩy native cho "thời điểm vàng" và widget từ của ngày.
 
-## Lưu ý
-- Dữ liệu học lưu cục bộ: web dùng `localStorage`, add-on dùng `chrome.storage` (riêng biệt). Dùng **Xuất / Nhập** trong Sổ từ để chuyển qua lại.
-- Hướng phát triển: tài khoản & đồng bộ đám mây (Supabase/Firebase), mở rộng lên Oxford 3000/5000 + AWL, chấm phát âm bằng Web Speech Recognition, bộ đề Reading có tra từ trực tiếp.
+---
+“IELTS” là nhãn hiệu của British Council, IDP: IELTS Australia và Cambridge University Press & Assessment. Vocaband là sản phẩm độc lập, không liên kết với các tổ chức này.

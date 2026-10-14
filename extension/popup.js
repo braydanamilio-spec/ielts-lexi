@@ -18,6 +18,8 @@
   $('#dbl').checked = settings.dblclickOn !== false;
   $('#selMode').value = settings.selectMode || 'icon';
   $('#selMode').onchange = async e => { settings.selectMode = e.target.value; await Store.set('settings', settings); };
+  $('#markK').checked = settings.markKnown !== false;
+  $('#markK').onchange = async e => { settings.markKnown = e.target.checked; await Store.set('settings', settings); };
   $('#dbl').onchange = async e => { settings.dblclickOn = e.target.checked; await Store.set('settings', settings); };
 
   const speak = (w, url) => {

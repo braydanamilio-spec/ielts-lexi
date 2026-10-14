@@ -60,24 +60,77 @@
   }
 
   // ---------- Phát âm ----------
-  let audioEl = null;
-  function tts(text, accent = 'en-GB', rate = 0.92) {
-    if (!('speechSynthesis' in g)) return;
-    speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(text);
-    u.lang = accent; u.rate = rate;
-    const vs = speechSynthesis.getVoices();
-    const v = vs.find(v => v.lang === accent && /Google|Daniel|Serena|Samantha|Natural/i.test(v.name)) || vs.find(v => v.lang === accent) || vs.find(v => v.lang.startsWith('en'));
-    if (v) u.voice = v;
-    speechSynthesis.speak(u);
+  // Xếp hạng giọng đọc: ưu tiên giọng neural/tự nhiên, rồi giọng chất lượng cao của hệ điều hành
+  function voiceScore(v, accent) {
+    let s = 0;
+    const n = v.name;
+    if (v.lang === accent || v.lang.replace('_', '-') === accent) s += 100; else if (v.lang.startsWith('en')) s += 10; else return -1;
+    if (/Natural|Neural|Online/i.test(n)) s += 60;                       // Edge: Microsoft Sonia/Ryan/Libby Online (Natural)
+    if (/^Google (UK|US) English/i.test(n)) s += 50;                       // Chrome
+    if (/Premium|Enhanced|Siri/i.test(n)) s += 45;                         // macOS/iOS giọng tải thêm
+    if (/Daniel|Serena|Kate|Oliver|Arthur|Martha|Samantha|Ava|Evan|Zoe|Allison|Tom|Susan/i.test(n)) s += 20;
+    if (/Fred|Albert|Bad News|Bahh|Bells|Boing|Bubbles|Cellos|Wobble|Zarvox|Trinoids|Whisper|Junior|Ralph|Kathy|Jester|Organ|Superstar|Grandma|Grandpa|Eddy|Flo|Reed|Rocko|Sandy|Shelley/i.test(n)) s -= 200; // giọng hiệu ứng
+    if (v.localService === false) s += 5;
+    return s;
   }
+  function voicesFor(accent) {
+    if (!('speechSynthesis' in g)) return [];
+    return speechSynthesis.getVoices().map(v => ({ v, s: voiceScore(v, accent) })).filter(x => x.s > 0).sort((a, b) => b.s - a.s).map(x => x.v);
+  }
+  const prefs = () => (g.App && g.App.state && g.App.state.settings) || {};
+  function pickVoice(accent) {
+    const want = prefs().voice && prefs().voice[accent];
+    const list = voicesFor(accent);
+    return (want && list.find(v => v.name === want)) || list[0] || null;
+  }
+  // Tách đoạn dài thành câu (giữ ngữ điệu tự nhiên, tránh Chrome cắt khi > ~15 giây)
+  function splitSentences(text) {
+    const parts = String(text).replace(/\s+/g, ' ').match(/[^.!?;:]+[.!?;:]+["”’)]*|[^.!?;:]+$/g) || [text];
+    const out = [];
+    for (let p of parts) {
+      p = p.trim(); if (!p) continue;
+      while (p.length > 220) { const cut = p.lastIndexOf(',', 200) > 60 ? p.lastIndexOf(',', 200) + 1 : p.lastIndexOf(' ', 200); out.push(p.slice(0, cut).trim()); p = p.slice(cut).trim(); }
+      out.push(p);
+    }
+    return out;
+  }
+  let speakSeq = 0;
+  // opts: { rate, onSentence(i, text), onEnd() }
+  function tts(text, accent = 'en-GB', rate, opts = {}) {
+    if (!('speechSynthesis' in g) || !text) return;
+    const my = ++speakSeq;
+    speechSynthesis.cancel();
+    const voice = pickVoice(accent);
+    const base = rate || prefs().ttsRate || 0.92;
+    const parts = splitSentences(text);
+    // Chrome đôi khi "treo" sau cancel → resume định kỳ khi đọc đoạn dài
+    const keep = parts.length > 1 ? setInterval(() => { if (speechSynthesis.speaking) { speechSynthesis.pause(); speechSynthesis.resume(); } }, 10000) : null;
+    parts.forEach((p, i) => {
+      const u = new SpeechSynthesisUtterance(p);
+      u.lang = accent; u.rate = base; u.pitch = 1;
+      if (voice) u.voice = voice;
+      u.onstart = () => { if (my === speakSeq && opts.onSentence) opts.onSentence(i, p); };
+      if (i === parts.length - 1) u.onend = u.onerror = () => { if (keep) clearInterval(keep); if (my === speakSeq && opts.onEnd) opts.onEnd(); };
+      speechSynthesis.speak(u);
+    });
+  }
+  const stopSpeak = () => { speakSeq++; if ('speechSynthesis' in g) speechSynthesis.cancel(); if (audioEl) audioEl.pause(); };
+  // Từ đơn: ưu tiên bản ghi giọng người thật; câu: giọng tổng hợp tốt nhất
+  let audioEl = null;
   function speak(text, accent, url) {
+    accent = accent || prefs().accent || 'en-GB';
     if (url) {
-      try { audioEl && audioEl.pause(); audioEl = new Audio(url); audioEl.play().catch(() => tts(text, accent)); return; } catch (e) { /* dùng TTS */ }
+      try {
+        stopSpeak();
+        audioEl = new Audio(url);
+        audioEl.playbackRate = 1;
+        audioEl.play().catch(() => tts(text, accent));
+        return;
+      } catch (e) { /* dùng TTS */ }
     }
     tts(text, accent);
   }
-  if ('speechSynthesis' in g) { speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices(); }
+  if ('speechSynthesis' in g) { speechSynthesis.getVoices(); speechSynthesis.addEventListener && speechSynthesis.addEventListener('voiceschanged', () => speechSynthesis.getVoices()); }
 
   const pic = (c, cls = 'pic') => `<div class="${cls}">${c.image ? `<img src="${esc(c.image)}" alt="${esc(c.word)}" loading="lazy" referrerpolicy="no-referrer">` : esc(c.emoji || '📘')}</div>`;
   const levelChip = l => l ? `<span class="chip lv ${esc(l)}">${esc(l)}</span>` : '';
@@ -92,5 +145,5 @@
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   }
 
-  g.UI = { $, $$, esc, shuffle, wordRegex, highlight, cloze, clozeAnswer, similarity, toast, modal, closeModal, xpFloat, speak, tts, pic, levelChip, posChip, masteryDots, ring, download };
+  g.UI = { $, $$, esc, shuffle, wordRegex, highlight, cloze, clozeAnswer, similarity, toast, modal, closeModal, xpFloat, speak, tts, stopSpeak, voicesFor, pickVoice, splitSentences, pic, levelChip, posChip, masteryDots, ring, download };
 })(typeof self !== 'undefined' ? self : this);

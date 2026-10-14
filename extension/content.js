@@ -6,8 +6,8 @@
   const alive = () => { try { return !dead && !!chrome.runtime.id; } catch (e) { return false; } };
   document.addEventListener('ielts-lexi-takeover', () => { dead = true; if (host) host.remove(); });
 
-  let host = null, root = null, enabled = true, selectMode = 'icon', current = null;
-  const applySettings = st => { st = st || {}; enabled = st.dblclickOn !== false; selectMode = st.selectMode || 'icon'; };
+  let host = null, root = null, enabled = true, selectMode = 'icon', current = null, markOn = true, prefs = {};
+  const applySettings = st => { st = st || {}; prefs = st; enabled = st.dblclickOn !== false; selectMode = st.selectMode || 'icon'; markOn = st.markKnown !== false; };
   chrome.storage.local.get('settings').then(r => applySettings(r.settings));
   chrome.storage.onChanged.addListener(ch => { if (ch.settings) applySettings(ch.settings.newValue); });
 
@@ -49,7 +49,8 @@
       background: linear-gradient(135deg, #4f46e5, #0ea5a4); color: #fff; font-size: 16px; display: grid; place-items: center;
       box-shadow: 0 6px 18px rgba(79,70,229,.45); animation: pop .12s ease-out; }
     .fab:hover { transform: scale(1.08); }
-    .fab[hidden], .box[hidden] { display: none; }
+    .fab[hidden], .box[hidden], .vbtoast[hidden] { display: none; }
+    .vbtoast { position: fixed; right: 18px; bottom: 18px; z-index: 2147483647; background: #1c1d2b; color: #fff; padding: 10px 14px; border-radius: 12px; font: 600 13px/1.4 -apple-system, "Segoe UI", sans-serif; box-shadow: 0 10px 30px rgba(0,0,0,.25); animation: pop .2s ease-out; }
     .tr-head { display: flex; gap: 8px; align-items: center; padding: 12px 14px 8px; }
     .src { color: #6b6f85; font-size: 13px; margin-bottom: 10px; max-height: 120px; overflow: auto; border-left: 3px solid #e3e5ef; padding-left: 8px; }
     .tr { font-size: 15.5px; line-height: 1.55; color: inherit; font-weight: 500; }
@@ -117,8 +118,35 @@
     return new RegExp(`\\b(${stem}[a-z]*)\\b`, 'gi');
   }
 
+  // Chọn giọng tự nhiên nhất (Natural/Online → Google UK/US → Premium/Enhanced), bỏ giọng hiệu ứng
+  function bestVoice(accent) {
+    const want = prefs.voice && prefs.voice[accent];
+    const vs = speechSynthesis.getVoices();
+    if (want) { const v = vs.find(x => x.name === want); if (v) return v; }
+    const score = v => {
+      if (!v.lang.startsWith('en')) return -1;
+      let s = v.lang.replace('_', '-') === accent ? 100 : 10;
+      if (/Natural|Neural|Online/i.test(v.name)) s += 60;
+      if (/^Google (UK|US) English/i.test(v.name)) s += 50;
+      if (/Premium|Enhanced|Siri/i.test(v.name)) s += 45;
+      if (/Daniel|Serena|Kate|Oliver|Samantha|Ava|Allison|Susan|Tom/i.test(v.name)) s += 20;
+      if (/Fred|Albert|Bahh|Bells|Boing|Bubbles|Cellos|Wobble|Zarvox|Trinoids|Whisper|Junior|Ralph|Kathy|Jester|Organ|Superstar|Grandma|Grandpa|Eddy|Flo|Reed|Rocko|Sandy|Shelley/i.test(v.name)) s -= 200;
+      return s;
+    };
+    return vs.map(v => [v, score(v)]).filter(x => x[1] > 0).sort((a, b) => b[1] - a[1]).map(x => x[0])[0] || null;
+  }
+  if (window.speechSynthesis) speechSynthesis.getVoices();
   function speak(text, url, accent, rate) {
-    const tts = () => { if (!window.speechSynthesis) return; const u = new SpeechSynthesisUtterance(text); u.lang = accent || 'en-GB'; u.rate = rate || .9; speechSynthesis.cancel(); speechSynthesis.speak(u); };
+    const tts = () => {
+      if (!window.speechSynthesis) return;
+      speechSynthesis.cancel();
+      // đọc từng câu để giữ ngữ điệu tự nhiên
+      (String(text).match(/[^.!?;]+[.!?;]*/g) || [text]).forEach(part => {
+        const u = new SpeechSynthesisUtterance(part.trim()); u.lang = accent || 'en-GB'; u.rate = rate || prefs.ttsRate || .92;
+        const v = bestVoice(u.lang); if (v) u.voice = v;
+        speechSynthesis.speak(u);
+      });
+    };
     if (url) { try { const a = new Audio(url); a.play().catch(tts); } catch (e) { tts(); } } else tts();
   }
 
@@ -301,6 +329,90 @@
   window.addEventListener('scroll', () => { if (root) { hideFab(); } }, { passive: true });
 
 
+
+  // ---------- Đánh dấu từ đã học trên trang (ôn thụ động khi gặp lại trong ngữ cảnh thật) ----------
+  const level5 = s => !s || !s.last ? 0 : s.reps === 0 ? 1 : s.interval <= 3 ? 2 : s.interval <= 10 ? 3 : s.interval <= 30 ? 4 : 5;
+  let known = new Map(), knownRe = null, marked = 0, toastShown = false;
+  const SKIP = 'SCRIPT,STYLE,NOSCRIPT,TEXTAREA,INPUT,SELECT,OPTION,CODE,PRE,KBD,SAMP,SVG,MATH,VB-MARK,IELTS-LEXI-POPUP,TITLE,HEAD';
+  async function loadKnown() {
+    const r = await chrome.storage.local.get('cards');
+    known = new Map(Object.values(r.cards || {}).filter(c => c.word && c.word.length > 2 && !/\s/.test(c.word)).map(c => [c.word.toLowerCase(), { vi: c.vi || '', ipa: c.ipa || '', lv: level5(c.srs) }]));
+    knownRe = known.size ? new RegExp(`\\b(${[...known.keys()].sort((a, b) => b.length - a.length).map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})(s|es|ed|d|ing)?\\b`, 'gi') : null;
+  }
+  function injectMarkCss() {
+    if (document.getElementById('vb-mark-css')) return;
+    const st = document.createElement('style'); st.id = 'vb-mark-css';
+    st.textContent = `vb-mark{background:linear-gradient(transparent 60%,var(--vbc,rgba(124,58,237,.3)) 60%);border-radius:2px;cursor:help;color:inherit}
+      vb-mark[data-l="1"]{--vbc:rgba(239,68,68,.38)}vb-mark[data-l="2"]{--vbc:rgba(245,158,11,.4)}vb-mark[data-l="3"]{--vbc:rgba(234,179,8,.4)}
+      vb-mark[data-l="4"],vb-mark[data-l="5"]{--vbc:rgba(34,197,94,.35)}vb-mark[data-l="0"]{--vbc:rgba(124,58,237,.28)}
+      .ytp-caption-segment .vbw.known{box-shadow:inset 0 -.18em 0 rgba(34,197,94,.9)}`;
+    (document.head || document.documentElement).appendChild(st);
+  }
+  function markIn(rootEl, budget = 400) {
+    if (!markOn || !knownRe || !rootEl || marked > 800) return;
+    const tw = document.createTreeWalker(rootEl, NodeFilter.SHOW_TEXT, {
+      acceptNode: n => {
+        const p = n.parentElement;
+        if (!p || !n.nodeValue || n.nodeValue.length < 3 || !/[A-Za-z]{3}/.test(n.nodeValue)) return NodeFilter.FILTER_REJECT;
+        if (p.closest(SKIP.split(',').map(x => x.toLowerCase()).join(',') + ',[contenteditable],[contenteditable=""],.ytp-caption-window-container')) return NodeFilter.FILTER_REJECT;
+        return NodeFilter.FILTER_ACCEPT;
+      },
+    });
+    const nodes = []; let n;
+    while ((n = tw.nextNode()) && nodes.length < budget) nodes.push(n);
+    for (const node of nodes) {
+      const text = node.nodeValue; knownRe.lastIndex = 0;
+      if (!knownRe.test(text)) continue;
+      knownRe.lastIndex = 0;
+      const frag = document.createDocumentFragment(); let last = 0, m;
+      while ((m = knownRe.exec(text))) {
+        const k = known.get(m[1].toLowerCase()); if (!k) continue;
+        frag.appendChild(document.createTextNode(text.slice(last, m.index)));
+        const el = document.createElement('vb-mark');
+        el.textContent = m[0]; el.dataset.w = m[1].toLowerCase(); el.dataset.l = k.lv;
+        el.title = `${k.vi}${k.ipa ? '  ' + k.ipa : ''} · Vocaband cấp ${k.lv || 'mới'}`;
+        frag.appendChild(el); last = m.index + m[0].length; marked++;
+      }
+      frag.appendChild(document.createTextNode(text.slice(last)));
+      node.parentNode.replaceChild(frag, node);
+      if (marked > 800) break;
+    }
+    if (marked >= 3 && !toastShown) { toastShown = true; showToast(`📒 ${new Set([...document.querySelectorAll('vb-mark')].map(x => x.dataset.w)).size} từ bạn đã học xuất hiện trên trang này`); }
+  }
+  function unmarkAll() { document.querySelectorAll('vb-mark').forEach(el => el.replaceWith(document.createTextNode(el.textContent))); marked = 0; }
+  function showToast(msg) {
+    ensureHost();
+    let t = root.querySelector('.vbtoast');
+    if (!t) { t = document.createElement('div'); t.className = 'vbtoast'; root.appendChild(t); }
+    t.textContent = msg; t.hidden = false;
+    clearTimeout(showToast._t); showToast._t = setTimeout(() => { t.hidden = true; }, 4500);
+  }
+  document.addEventListener('click', e => {
+    const el = e.target.closest && e.target.closest('vb-mark');
+    if (!el || !alive() || el.closest('a,button')) return;
+    e.preventDefault(); e.stopPropagation();
+    const r = document.createRange(); r.selectNodeContents(el);
+    show(el.dataset.w, el.getBoundingClientRect(), sentenceAround(r));
+  }, true);
+  let moT = null;
+  const mo = new MutationObserver(muts => {
+    if (!alive()) return mo.disconnect();
+    if (!markOn || !knownRe) return;
+    if (muts.every(m => [...m.addedNodes].every(x => x.nodeName === 'VB-MARK' || x.nodeType === 3 && x.parentElement && x.parentElement.nodeName === 'VB-MARK'))) return;
+    clearTimeout(moT); moT = setTimeout(() => markIn(document.body, 250), 1500);
+  });
+  (async () => {
+    if (window.top !== window || /^(docs|mail)\.google\.com$|(^|\.)(vocaband|ielts-lexi-2026)\.web\.app$|^localhost$/.test(location.hostname)) return;
+    await loadKnown(); injectMarkCss();
+    const go = () => { markIn(document.body); if (document.body) mo.observe(document.body, { childList: true, subtree: true }); };
+    'requestIdleCallback' in window ? requestIdleCallback(go, { timeout: 2500 }) : setTimeout(go, 1200);
+  })();
+  chrome.storage.onChanged.addListener(async ch => {
+    if (!alive()) return;
+    if (ch.cards) { await loadKnown(); }
+    if (ch.settings) { const on = !(ch.settings.newValue && ch.settings.newValue.markKnown === false); if (!on) unmarkAll(); else if (!document.querySelector('vb-mark')) markIn(document.body); }
+  });
+
   // ---------- YouTube: chạm vào từ trong phụ đề để tra, video tự dừng ----------
   function initYouTube() {
     const st = document.createElement('style');
@@ -317,7 +429,12 @@
     const wrap = seg => {
       const t = seg.textContent;
       if (!t || seg.dataset.vb === t) return;
-      seg.innerHTML = t.split(/(\s+)/).map(tok => /[A-Za-z]/.test(tok) ? `<span class="vbw">${esc(tok)}</span>` : esc(tok)).join('');
+      seg.innerHTML = t.split(/(\s+)/).map(tok => {
+        if (!/[A-Za-z]/.test(tok)) return esc(tok);
+        const w = tok.toLowerCase().replace(/[^a-z'-]/g, '');
+        const k = known.get(w) || known.get(w.replace(/(s|es|ed|d|ing)$/, ''));
+        return `<span class="vbw${k ? ' known' : ''}"${k ? ` title="${esc(k.vi)}"` : ''}>${esc(tok)}</span>`;
+      }).join('');
       seg.dataset.vb = seg.textContent;
     };
     const scan = () => document.querySelectorAll('.ytp-caption-segment').forEach(wrap);

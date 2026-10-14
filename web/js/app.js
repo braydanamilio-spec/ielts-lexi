@@ -151,7 +151,7 @@
     const fn = routes[name] || routes.home;
     const navKey = name === 'topic' ? 'library' : name === 'practice' && arg === 'speak' ? 'speak' : name === 'read' ? 'reading' : name;
     $$('#nav a, #bnav a').forEach(a => a.classList.toggle('active', a.dataset.route === navKey));
-    if (window.speechSynthesis) speechSynthesis.cancel();
+    UI.stopSpeak();
     document.onkeydown = null;
     if (App.cleanup) { App.cleanup(); App.cleanup = null; }
     view.style.animation = 'none'; void view.offsetWidth; view.style.animation = '';
@@ -292,6 +292,11 @@
         </div>
       </div>
 
+      ${App.pathCurrent && App.pathCurrent() ? (() => { const u = App.pathCurrent(); return `<a class="card hover row nowrap" href="#/path" style="margin-top:1rem;color:var(--text);border-left:5px solid ${u.stage.color}">
+        <div style="font-size:2.2rem;width:60px;height:60px;border-radius:18px;display:grid;place-items:center;background:var(--surface-2)">${u.topic.emoji}</div>
+        <div class="grow"><div class="tiny muted" style="font-weight:700;text-transform:uppercase">🗺️ Lộ trình · ${esc(u.stage.name)}</div><h3 style="margin:.1rem 0">Bài tiếp theo: ${esc(u.topic.name)}</h3>
+        <div class="progress thin" style="max-width:320px"><i style="width:${Math.round(u.pct * 100)}%"></i></div></div><span class="btn sm primary">Tiếp tục →</span></a>`; })() : ''}
+
       <div class="section-title"><h2>Chế độ luyện tập</h2><a href="#/practice">Tất cả →</a></div>
       <div class="modes">${modeTiles().slice(0, 6).join('')}</div>
 
@@ -347,7 +352,8 @@
       ['cloze', '✍️', 'Điền từ', 'Hoàn thành câu IELTS', '#dff6f5'],
       ['listen', '🎧', 'Nghe & chép', 'Nghe phát âm, gõ lại', '#e6f0ff'],
       ['test', '📝', 'Bài kiểm tra', '20 câu tổng hợp, chấm điểm', '#f3e8ff'],
-    ].map(([id, em, name, desc, bg]) => `<a class="mode" href="#/practice/${id}"><span class="em" style="background:${bg}">${em}</span><b>${name}</b><span class="muted small">${desc}</span></a>`);
+      ['write', '✍️', 'Phòng viết', 'Viết Task 2, phân tích từ vựng', '#fff1e6'],
+    ].map(([id, em, name, desc, bg]) => `<a class="mode" href="${id === 'write' ? '#/write' : '#/practice/' + id}"><span class="em" style="background:${bg}">${em}</span><b>${name}</b><span class="muted small">${desc}</span></a>`);
   }
   App.modeTiles = modeTiles;
 
@@ -592,12 +598,16 @@
   async function loadRelated(e) {
     const w = encodeURIComponent(e.word);
     const get = async u => { try { return await fetch(u).then(r => r.json()); } catch (x) { return []; } };
-    const [jjb, jja, ant, ml] = await Promise.all([
-      get(`https://api.datamuse.com/words?rel_jjb=${w}&max=10`),
-      get(`https://api.datamuse.com/words?rel_jja=${w}&max=10`),
+    // Danh từ → tính từ hay đi kèm; tính từ → danh từ hay đi sau (tránh cụm vô nghĩa)
+    const isNoun = /^n|danh/.test(e.pos || ''), isAdj = /^adj|tính/.test(e.pos || '');
+    const STOP = new Set(['more', 'most', 'less', 'least', 'very', 'other', 'such', 'same', 'own', 'many', 'much', 'few', 'several', 'certain', 'various', 'error', 'orthogonal']);
+    const [jjb0, jja, ant, ml] = await Promise.all([
+      isNoun || !isAdj ? get(`https://api.datamuse.com/words?rel_jjb=${w}&max=14`) : [],
+      isAdj ? get(`https://api.datamuse.com/words?rel_jja=${w}&max=10`) : [],
       get(`https://api.datamuse.com/words?rel_ant=${w}&max=6`),
       get(`https://api.datamuse.com/words?ml=${w}&max=10`),
     ]);
+    const jjb = isAdj ? [] : jjb0.filter(x => !STOP.has(x.word) && x.score > 300).slice(0, 10);
     const el = $('#related'); if (!el || parseHash().arg !== e.word && parseHash().arg.toLowerCase() !== e.word) return;
     const chips = (arr, fmt) => arr.map(x => `<a class="chip" href="#/dict/${encodeURIComponent(x.word)}">${esc(fmt(x.word))}</a>`).join(' ');
     let html = '';
@@ -825,6 +835,9 @@
           <h2>🔊 Âm thanh & phát âm</h2>
           <label class="field"><span>Giọng phát âm</span>
             <select class="input" id="sAccent"><option value="en-GB" ${s.accent === 'en-GB' ? 'selected' : ''}>🇬🇧 Anh – Anh (khuyên dùng cho IELTS)</option><option value="en-US" ${s.accent === 'en-US' ? 'selected' : ''}>🇺🇸 Anh – Mỹ</option></select></label>
+          <label class="field" style="margin-top:.6rem"><span>Giọng đọc</span><select class="input" id="sVoice"></select></label>
+          <label class="field" style="margin-top:.6rem"><span>Tốc độ đọc: <b id="vRate">${(s.ttsRate || 0.92).toFixed(2)}×</b></span><input type="range" min="0.6" max="1.2" step="0.02" id="sRate" value="${s.ttsRate || 0.92}" style="width:100%"></label>
+          <div class="row" style="margin:.4rem 0 .6rem"><button class="btn sm" id="sTry">▶️ Nghe thử câu mẫu</button><span class="tiny muted">Từ đơn ưu tiên bản ghi giọng người thật</span></div>
           <label class="switch"><span>Tự phát âm khi hiện thẻ</span><input type="checkbox" id="sAuto" ${s.autoSpeak ? 'checked' : ''}></label>
           <label class="switch"><span>Hiệu ứng âm thanh</span><input type="checkbox" id="sSfx" ${s.sfx ? 'checked' : ''}></label>
         </div>
@@ -854,7 +867,17 @@
     $('#sQ1').onchange = e => { s.quietStart = e.target.value || '22:30'; save(); };
     $('#sQ2').onchange = e => { s.quietEnd = e.target.value || '07:00'; save(); };
     $('#sCap').oninput = e => { s.sessionCap = +e.target.value; $('#vCap').textContent = s.sessionCap || 'Không giới hạn'; save(); };
-    $('#sAccent').onchange = e => { s.accent = e.target.value; save(); speak('pronunciation', s.accent); };
+    const fillVoices = () => {
+      if (!$('#sVoice')) return; // đã rời trang Cài đặt
+      const list = UI.voicesFor(s.accent);
+      const cur = (UI.pickVoice(s.accent) || {}).name;
+      $('#sVoice').innerHTML = list.length ? list.map((v, i) => `<option value="${esc(v.name)}" ${v.name === cur ? 'selected' : ''}>${esc(v.name)}${i === 0 ? ' ⭐ khuyên dùng' : ''}</option>`).join('') : '<option>Trình duyệt chưa có giọng tiếng Anh</option>';
+    };
+    fillVoices(); setTimeout(fillVoices, 600);
+    $('#sVoice').onchange = e => { s.voice = { ...(s.voice || {}), [s.accent]: e.target.value }; save(); UI.tts('This is how I will read words and sentences to you.', s.accent); };
+    $('#sRate').oninput = e => { s.ttsRate = +e.target.value; $('#vRate').textContent = s.ttsRate.toFixed(2) + '×'; save(); };
+    $('#sTry').onclick = () => UI.tts('Many people believe that renewable energy is the key to a sustainable future. However, the transition will not happen overnight.', s.accent);
+    $('#sAccent').onchange = e => { s.accent = e.target.value; save(); fillVoices(); speak('pronunciation', s.accent); };
     $('#sAuto').onchange = e => { s.autoSpeak = e.target.checked; save(); };
     $('#sSfx').onchange = e => { s.sfx = e.target.checked; save(); if (s.sfx) { Core.sfxOff = false; Sfx.correct(); } };
     $$('#sTheme button').forEach(b => b.onclick = () => { s.theme = b.dataset.v; applyTheme(); save(); $$('#sTheme button').forEach(x => x.classList.toggle('on', x === b)); });

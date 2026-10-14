@@ -323,6 +323,8 @@
       const perfect = pct === 100;
       App.reward({ quizzes: 1, perfect: perfect ? 1 : 0, xp: perfect ? 15 : 5 });
       if (pct >= 80) { Sfx.win(); confetti(); }
+      const unit = new URLSearchParams(location.hash.split('?')[1] || '').get('unit');
+      const unitPassed = unit && App.completeUnit ? App.completeUnit(unit, pct) : null;
       const band = mode === 'test' ? (pct >= 95 ? '8.5+' : pct >= 85 ? '7.5–8.0' : pct >= 70 ? '6.5–7.0' : pct >= 50 ? '5.5–6.0' : '< 5.5') : '';
       view.innerHTML = `<div class="study-wrap"><div class="card empty celebrate">
         <div class="em">${pct >= 80 ? '🏆' : pct >= 50 ? '👍' : '💪'}</div>
@@ -332,8 +334,10 @@
         <p class="muted">+${run.xp + (perfect ? 15 : 5)} XP</p>
         ${run.wrong.length ? `<p>Cần ôn lại:</p><div class="row center">${run.wrong.map(w => `<a class="chip" href="#/dict/${encodeURIComponent(w.word)}">${esc(w.word)}</a>`).join('')}</div>
           ${run.wrong.some(w => !App.inDeck(w.word)) ? '<p><button class="btn sm" id="addWrong">+ Đưa các từ sai vào flashcard</button></p>' : ''}` : '<p>Không sai câu nào – xuất sắc! 🎉</p>'}
-        <div class="row center" style="margin-top:1rem"><button class="btn primary" id="again">Làm lượt mới</button><a class="btn" href="#/practice?src=${encodeURIComponent(src)}">Đổi chế độ</a></div>
+        ${unit ? `<div class="feedback ${pct >= 80 ? 'ok' : 'no'}" style="position:static;margin:1rem 0">${pct >= 80 ? '🏁 <b>Hoàn thành bài!</b> Các từ đã được thêm vào flashcard để ôn đúng thời điểm vàng.' : '🔁 Cần đạt <b>80%</b> để hoàn thành bài – ôn lại các từ sai rồi thử lại nhé.'}</div>` : ''}
+        <div class="row center" style="margin-top:1rem">${unit ? `<a class="btn primary" href="#/path">🗺️ Về lộ trình</a><button class="btn" id="again">Làm lại</button>` : `<button class="btn primary" id="again">Làm lượt mới</button><a class="btn" href="#/practice?src=${encodeURIComponent(src)}">Đổi chế độ</a>`}</div>
       </div></div>`;
+      if (unitPassed) unitPassed.then(first => { if (first) { confetti(160); Sfx.win(); } });
       $('#again').onclick = () => runQuiz(src, mode);
       const aw = $('#addWrong');
       if (aw) aw.onclick = async () => { for (const w of run.wrong) if (!App.inDeck(w.word)) await App.addWord(INDEX[w.word.toLowerCase()] || w, null, { silent: true }); toast('Đã thêm vào flashcard'); aw.disabled = true; };
