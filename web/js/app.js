@@ -980,6 +980,7 @@
         <div class="card">
           <h2>🎨 ${t('Giao diện')}</h2>
           <div class="small muted" style="margin:.2rem 0 .3rem">🌐 ${t('Ngôn ngữ giao diện')}</div>${App.langPicker()}
+          <div class="small muted" style="margin:.8rem 0 .3rem">📖 ${t('Nghĩa từ hiển thị bằng')}</div><div class="tabs" id="sMean" style="display:inline-flex">${[['vi', 'Tiếng Việt'], ['en', t('Định nghĩa tiếng Anh')]].map(([v, l]) => `<button data-v="${v}" class="${I18N.meanLang() === v ? 'on' : ''}">${l}</button>`).join('')}</div>
           <div class="small muted" style="margin:.8rem 0 .3rem">${t('Chế độ màu')}</div>
           <div class="tabs" id="sTheme" style="display:inline-flex">${[['auto', '🌓 ' + t('Tự động')], ['light', '☀️ ' + t('Sáng')], ['dark', '🌙 ' + t('Tối')]].map(([v, l]) => `<button data-v="${v}" class="${s.theme === v ? 'on' : ''}">${l}</button>`).join('')}</div>
         </div>
@@ -1023,6 +1024,7 @@
     $('#sSfx').onchange = e => { s.sfx = e.target.checked; save(); if (s.sfx) { Core.sfxOff = false; Sfx.correct(); } };
     $$('#sTheme button').forEach(b => b.onclick = () => { s.theme = b.dataset.v; applyTheme(); save(); $$('#sTheme button').forEach(x => x.classList.toggle('on', x === b)); });
     $('#sTest').onclick = () => notify(true);
+    $$('#sMean [data-v]').forEach(b => b.onclick = () => { if (b.dataset.v !== I18N.meanLang()) I18N.setMean(b.dataset.v); });
     const p = $('#sPerm'); if (p) p.onclick = async () => { await Notification.requestPermission(); routes.settings(); };
     const ics = $('#sIcs'); if (ics) ics.onclick = () => download(new Blob([makeICS(s.reminderTime)], { type: 'text/calendar' }), 'ielts-lexi-nhac-hoc.ics');
     $('#sExport').onclick = exportData;
