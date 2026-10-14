@@ -261,6 +261,24 @@
   'Giáo dục & Nghiên cứu học thuật': 'Education & Academic Research', 'Giảng dạy, chương trình học, đánh giá, đại học, viết bài nghiên cứu, phương pháp luận…': 'Teaching, curriculum, assessment, university, research writing, methodology…',
   'Logistics & Xuất nhập khẩu': 'Logistics & Import–Export', 'Chuỗi cung ứng, vận tải, kho bãi, Incoterms, chứng từ, hải quan, thanh toán quốc tế…': 'Supply chains, transport, warehousing, Incoterms, documents, customs, international payment…',
 }); })(typeof self !== 'undefined' ? self : this);
+(function (g) { Object.assign(g.I18N_DICT.en, {
+  'Từ vựng theo kỳ thi': 'Exam vocabulary',
+  '821 từ & cụm hay gặp theo từng kỳ thi: IELTS Listening · Reading · Writing · Speaking, TOEFL iBT, TOEIC Listening & Reading': '821 high-frequency words & phrases by exam: IELTS Listening · Reading · Writing · Speaking, TOEFL iBT, TOEIC Listening & Reading',
+  'IELTS Listening – Section 1–4 hay gặp': 'IELTS Listening – Sections 1–4 essentials',
+  'Điền form (đánh vần, số, mã), nhà ở, đi lại – bản đồ, tiện ích, thảo luận & bài giảng học thuật': 'Form filling (spelling, numbers, codes), housing, travel & maps, facilities, academic discussions & lectures',
+  'IELTS Reading – từ học thuật & paraphrase': 'IELTS Reading – academic words & paraphrase',
+  'Động từ nêu quan điểm – rào đón, từ nghiên cứu khoa học, từ nối học thuật hay bị paraphrase': 'Claiming and hedging verbs, research vocabulary and academic linkers that are often paraphrased',
+  'IELTS Writing – Task 1 & Task 2': 'IELTS Writing – Task 1 & Task 2',
+  'Task 1: xu hướng, so sánh, quy trình, bản đồ · Task 2: lập luận, nguyên nhân – kết quả, giải pháp': 'Task 1: trends, comparisons, processes, maps · Task 2: argument, cause & effect, solutions',
+  'IELTS Speaking – từ & cụm tự nhiên Part 1–3': 'IELTS Speaking – natural words & phrases, Parts 1–3',
+  'Quê hương, công việc, sở thích, ăn uống, mua sắm, công nghệ, kỷ niệm + cụm câu giữ nhịp, nêu ý Part 3': 'Hometown, work, hobbies, food, shopping, technology, memories + fillers and Part 3 discussion phrases',
+  'TOEFL iBT – từ học thuật đại học': 'TOEFL iBT – university academic vocabulary',
+  'Đời sống campus + từ bài giảng: sinh học, địa chất, thiên văn, lịch sử, nghệ thuật': 'Campus life + lecture vocabulary: biology, geology, astronomy, history, art',
+  'TOEIC Listening – Part 1–4 hay gặp': 'TOEIC Listening – Parts 1–4 essentials',
+  'Động từ tả ảnh Part 1, câu hỏi – đáp Part 2, hội thoại văn phòng, đi lại, thông báo Part 3–4': 'Part 1 photo verbs, Part 2 question–response, office and travel conversations, Part 3–4 announcements',
+  'TOEIC Reading – Part 5–7: collocation & thuật ngữ': 'TOEIC Reading – Parts 5–7: collocations & terms',
+  'Cụm giới từ, tính từ + giới từ, collocation công sở, cụm cố định trong email – thông báo – hợp đồng': 'Prepositional phrases, adjective + preposition, business collocations, fixed phrases in emails, notices and contracts',
+}); })(typeof self !== 'undefined' ? self : this);
 
 /* English UI strings – phrases.js, write.js, task1.js, ideas.js, assist.js */
 (function (g) { const D = g.I18N_DICT = g.I18N_DICT || {}; D.en = Object.assign(D.en || {}, {
