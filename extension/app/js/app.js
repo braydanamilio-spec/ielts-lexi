@@ -771,6 +771,11 @@
   (async function init() {
     await load();
     route();
+    // Ảnh minh họa lỗi → thay bằng emoji
+    document.addEventListener('error', e => {
+      const img = e.target;
+      if (img.tagName === 'IMG' && img.parentElement && img.parentElement.classList.contains('pic')) img.parentElement.textContent = '📘';
+    }, true);
     if (Store.isExtension && chrome.storage.onChanged) {
       // Từ được lưu từ trang web khác qua add-on → làm mới
       chrome.storage.onChanged.addListener(async ch => {
