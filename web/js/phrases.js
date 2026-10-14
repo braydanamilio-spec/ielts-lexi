@@ -40,22 +40,23 @@
     if (!m) { view.innerHTML = `<div class="card empty"><div class="em">📄</div>${t('Chưa có bài mẫu này.')}</div>`; return; }
     const p2 = m.task === 2 ? (window.WRITE_PROMPTS || []).find(p => p.id === m.ref) : null;
     const d1 = m.task === 1 && App.task1 ? App.task1.SETS.find(x => x.id === m.ref) : null;
+    const gl = m.task === 'gt' ? (window.GT_LETTERS || []).find(x => x.id === m.ref) : null; // IELTS General – viết thư
     const TYPE_VI = { line: t('Biểu đồ đường'), bar: t('Biểu đồ cột'), pie: t('Biểu đồ tròn'), table: t('Bảng số liệu'), process: t('Quy trình'), map: t('Bản đồ') };
-    const kind = m.task === 1 ? (d1 ? TYPE_VI[d1.type] : 'Task 1') : (p2 ? p2.type : 'Task 2');
+    const kind = gl ? ({ formal: t('Trang trọng'), 'semi-formal': t('Bán trang trọng'), informal: t('Thân mật') })[gl.tone] || gl.tone : m.task === 1 ? (d1 ? TYPE_VI[d1.type] : 'Task 1') : (p2 ? p2.type : 'Task 2');
     const hl = state.settings.annot2 || 'ch lk role';
     const on = k => hl.split(' ').includes(k);
     const chunks = [...m.text.matchAll(/\[\[([^|\]]+)\|([^\]]+)\]\]/g)].map(x => ({ en: x[1], vi: x[2] }));
     const links = [...new Set([...m.text.matchAll(/\{\{([^}]+)\}\}/g)].map(x => x[1]))];
-    const back = `#/${m.task === 1 ? 'task1/' + m.ref : 'write/' + m.ref}`;
+    const back = `#/${gl ? 'letters/' + m.ref : m.task === 1 ? 'task1/' + m.ref : 'write/' + m.ref}`;
     view.innerHTML = `
       <a href="${back}" class="small">← ${t('Về đề bài')}</a>
       <div class="md-head card">
         <div class="row between" style="align-items:flex-start">
-          <div><div class="row" style="gap:.35rem"><span class="md-badge">Writing Task ${m.task}</span><span class="md-badge soft">${esc(kind)}</span><span class="md-badge band">Band ${esc(m.band)}</span></div>
+          <div><div class="row" style="gap:.35rem"><span class="md-badge">${gl ? 'General · Task 1' : 'Writing Task ' + m.task}</span><span class="md-badge soft">${esc(kind)}</span><span class="md-badge band">Band ${esc(m.band)}</span></div>
             <h1 class="md-title">${t('Bài mẫu có phân tích')}</h1></div>
           <div class="row"><span class="chip">${t('{n} từ', { n: m.words })}</span><button class="btn sm" id="readM">🔊 ${t('Nghe bài')}</button><a class="btn sm ghost" href="${back}">✍️ ${t('Tự viết đề này')}</a></div>
         </div>
-        <div class="md-prompt">${m.task === 1 ? `<div class="small muted" style="margin-bottom:.4rem">${t('ĐỀ BÀI')}</div><div>${esc(d1 ? d1.title : 'Task 1 · ' + m.ref)} Summarise the information by selecting and reporting the main features, and make comparisons where relevant.</div>${d1 ? `<details class="md-chart"><summary class="small">📊 ${t('Xem biểu đồ')}</summary><div class="t1chart">${App.task1.draw(d1)}</div></details>` : ''}`
+        <div class="md-prompt">${gl ? `<div class="small muted" style="margin-bottom:.4rem">${t('ĐỀ BÀI')}</div><div>${esc(gl.situation)}</div><ul style="margin:.4rem 0 0;padding-left:1.2rem">${gl.bullets.map(b => `<li>${esc(b)}</li>`).join('')}</ul>` : m.task === 1 ? `<div class="small muted" style="margin-bottom:.4rem">${t('ĐỀ BÀI')}</div><div>${esc(d1 ? d1.title : 'Task 1 · ' + m.ref)} Summarise the information by selecting and reporting the main features, and make comparisons where relevant.</div>${d1 ? `<details class="md-chart"><summary class="small">📊 ${t('Xem biểu đồ')}</summary><div class="t1chart">${App.task1.draw(d1)}</div></details>` : ''}`
           : `<div class="small muted" style="margin-bottom:.4rem">${t('ĐỀ BÀI')}</div><div>${esc(p2 ? p2.text : 'Task 2 · ' + m.ref)}</div>`}</div>
       </div>
       <div class="tabs" id="mTabs" style="margin:1rem 0">${[['read', `📄 ${t('Đọc bài mẫu')}`], ['vocab', `🧩 ${t('Điền cụm từ')}`], ['gram', `🛠️ ${t('Sửa lỗi ngữ pháp')}`], ['link', `🔗 ${t('Từ nối')}`], ['copy', `⌨️ ${t('Chép cả bài')}`], ['write', `✍️ ${t('Viết từ từ gốc')}`]].map(([k, l], i) => `<button class="${i ? '' : 'on'}" data-mt="${k}">${l}</button>`).join('')}</div>
