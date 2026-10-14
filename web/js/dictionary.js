@@ -197,6 +197,18 @@
     return t || (await onDeviceVi(text)) || myMemory(text);
   }
 
+  // Dịch sang ngôn ngữ bất kỳ (nghĩa cho người học quốc tế: es, ja, ar…) – có bộ nhớ đệm trong phiên
+  const trCache = new Map();
+  async function translateTo(text, tl, sl = 'en') {
+    if (!text || !tl || tl === sl) return '';
+    if (tl === 'vi' && sl === 'en') return translateVi(text);
+    const k = sl + '|' + tl + '|' + text; if (trCache.has(k)) return trCache.get(k);
+    const d = await fetchJSON(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=${sl}&tl=${encodeURIComponent(tl)}&dj=1&dt=t&q=${encodeURIComponent(text)}`);
+    const r = (d && (d.sentences || []).map(x => x.trans || '').join('').trim()) || '';
+    if (r) trCache.set(k, r);
+    return r;
+  }
+
   // Ảnh minh họa từ Openverse (kho ảnh Creative Commons): ưu tiên CC0/phạm vi công cộng, sau đó giấy phép cho phép dùng thương mại.
   // Trả về { src, credit, link, license } – luôn hiển thị ghi nguồn theo giấy phép.
   async function freeImage(word) {
@@ -380,5 +392,5 @@
     }
     return null;
   }
-  g.Dict = { ipaGuess, lookup, quick, translateVi, wikiImage, freeImage, sentences, normWord, fixVi, fixDeep };
+  g.Dict = { translateTo, ipaGuess, lookup, quick, translateVi, wikiImage, freeImage, sentences, normWord, fixVi, fixDeep };
 })(typeof self !== 'undefined' ? self : this);
