@@ -90,3 +90,33 @@ console.log(`✓ SEO: ${done.length} trang bài mẫu Task 2 + mục lục`);
   fs.writeFileSync(sm, fs.readFileSync(sm, 'utf8').replace('</urlset>', urls + '\n</urlset>'));
   console.log(`✓ SEO: ${TP.length} trang bộ từ vựng + mục lục`);
 }
+
+// ===== Ngữ pháp: 1 trang / bài (công thức, cách dùng, lỗi hay gặp, ứng dụng IELTS) =====
+{
+  const c4 = { self: {} }; c4.self = c4; vm.createContext(c4);
+  for (const f of ['tenses', 'verbs', 'sentences', 'foundation', 'academic', 'chapters', 'book2']) vm.runInContext(fs.readFileSync(`web/js/grammar/${f}.js`, 'utf8'), c4);
+  const G = c4.GRAMMAR || [];
+  fs.mkdirSync('dist/ngu-phap', { recursive: true });
+  const blk = b => {
+    if (b.type === 'formula') return `<h2>Công thức</h2><table>${b.rows.map(r => `<tr><td><b>${esc(r.label || '')}</b></td><td>${r.parts.map(p => esc(p.t)).join(' + ')}${r.ex ? `<br><i>${esc(r.ex)}</i>` : ''}</td></tr>`).join('')}</table>`;
+    if (b.type === 'uses') return `<h2>Cách dùng</h2><ol>${b.items.map(u => `<li><b>${esc(u.title)}</b>${u.ex ? `<br><i>${esc(u.ex)}</i>` : ''}${u.vi ? ` – ${esc(u.vi)}` : ''}</li>`).join('')}</ol>`;
+    if (b.type === 'signals') return `<h2>Dấu hiệu nhận biết</h2><p>${b.words.map(esc).join(' · ')}</p>`;
+    if (b.type === 'table') return `<table>${b.head ? `<tr>${b.head.map(h => `<td><b>${esc(h)}</b></td>`).join('')}</tr>` : ''}${(b.rows || []).map(r => `<tr>${r.map(x => `<td>${esc(x)}</td>`).join('')}</tr>`).join('')}</table>`;
+    if (b.type === 'tip') return `<div class="q" style="font-weight:400">💡 ${esc(b.text)}</div>`;
+    if (b.type === 'mistake') return `<p>❌ <s>${esc(b.wrong)}</s><br>✅ <b>${esc(b.right)}</b>${b.why ? `<br><span style="color:#888">${esc(b.why)}</span>` : ''}</p>`;
+    if (b.type === 'ielts') return `<h2>Ứng dụng trong IELTS</h2><p>${esc(b.text)}</p>`;
+    return '';
+  };
+  for (const l of G) {
+    const bl = l.blocks || [], firstMistake = bl.findIndex(b => b.type === 'mistake');
+    const body = `<h1 style="font-size:24px;line-height:1.3">${esc(l.emoji || '📘')} ${esc(l.title)} <span style="font-size:16px;color:#888">(${esc(l.en || '')}) · ${esc(l.level || '')}</span></h1><p>${esc(l.summary || '')}</p><a class="cta" href="/#/grammar/${encodeURIComponent(l.id)}">🧠 Học bài này có minh họa & bài tập (miễn phí) →</a>
+${bl.map((b, i) => (i === firstMistake ? '<h2>Lỗi hay gặp</h2>' : '') + blk(b)).join('\n')}<a class="cta" href="/#/grammar/${encodeURIComponent(l.id)}">✏️ Làm bài tập ${esc(l.en || l.title)} →</a>`;
+    fs.writeFileSync(`dist/ngu-phap/${l.id}.html`, page(`${l.title} (${l.en}) – công thức, cách dùng, dấu hiệu, lỗi hay gặp | Vocaband`, `${l.title} (${l.en}): ${l.summary || ''} Công thức, ví dụ song ngữ, lỗi người Việt hay mắc và cách dùng trong IELTS.`.slice(0, 300), `${SITE}ngu-phap/${l.id}.html`, body).replace(/<a href="\/samples\/">Bài mẫu Task 2<\/a>/, '<a href="/ngu-phap/">Ngữ pháp</a>'));
+  }
+  const units = {}; for (const l of G) (units[l.unit || 'khac'] = units[l.unit || 'khac'] || []).push(l);
+  fs.writeFileSync('dist/ngu-phap/index.html', page(`Ngữ pháp tiếng Anh từ cơ bản đến IELTS – ${G.length} bài | Vocaband`, `${G.length} bài ngữ pháp tiếng Anh: 12 thì, câu điều kiện, bị động, mệnh đề quan hệ… có công thức, ví dụ song ngữ, lỗi hay gặp và bài tập miễn phí.`, `${SITE}ngu-phap/`,
+    `<h1>Ngữ pháp tiếng Anh (${G.length} bài)</h1><ul class="l">${G.map(l => `<li><a href="/ngu-phap/${l.id}.html">${esc(l.title)}</a> – ${esc(l.en || '')} · ${esc(l.level || '')}</li>`).join('')}</ul>`).replace(/<a href="\/samples\/">Bài mẫu Task 2<\/a>/, '<a href="/tu-vung/">Từ vựng</a>'));
+  const urls = [`${SITE}ngu-phap/`, ...G.map(l => `${SITE}ngu-phap/${l.id}.html`)].map(u => `  <url><loc>${u}</loc><changefreq>monthly</changefreq></url>`).join('\n');
+  fs.writeFileSync(sm, fs.readFileSync(sm, 'utf8').replace('</urlset>', urls + '\n</urlset>'));
+  console.log(`✓ SEO: ${G.length} trang ngữ pháp + mục lục`);
+}
