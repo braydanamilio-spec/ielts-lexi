@@ -192,7 +192,7 @@
     { id: 'speaking', name: 'Speaking', emoji: '🗣️', desc: t('Phrasal verb, thành ngữ, cách diễn đạt tự nhiên') },
     { id: 'toeic', name: 'TOEIC (TSL)', emoji: '💼', desc: t('1.250 từ TOEIC công sở – kinh doanh · TSL 1.2 © Browne & Culligan, CC BY-SA 4.0') },
     { id: 'domain', name: t('Từ vựng chuyên ngành'), emoji: '🏢', desc: t('1.500 thuật ngữ thông dụng của 10 ngành: CNTT, kinh doanh, y khoa, kỹ thuật, luật, marketing, môi trường, du lịch, giáo dục, logistics') },
-    { id: 'exam', name: t('Từ vựng theo kỳ thi'), emoji: '🎯', desc: t('821 từ & cụm hay gặp theo từng kỳ thi: IELTS Listening · Reading · Writing · Speaking, TOEFL iBT, TOEIC Listening & Reading') },
+    { id: 'exam', name: t('Từ vựng theo kỳ thi'), emoji: '🎯', desc: t('1.249 từ & cụm hay gặp theo từng kỳ thi: IELTS Listening · Reading · Writing · Speaking, TOEFL iBT, TOEIC Listening & Reading') },
     { id: 'awl', name: 'Academic Word List', emoji: '🎓', desc: t('570 họ từ học thuật (Coxhead) – nền tảng cho Reading & Writing band 7+') },
   ];
 

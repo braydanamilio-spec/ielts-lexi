@@ -263,7 +263,7 @@
 }); })(typeof self !== 'undefined' ? self : this);
 (function (g) { Object.assign(g.I18N_DICT.en, {
   'Từ vựng theo kỳ thi': 'Exam vocabulary',
-  '821 từ & cụm hay gặp theo từng kỳ thi: IELTS Listening · Reading · Writing · Speaking, TOEFL iBT, TOEIC Listening & Reading': '821 high-frequency words & phrases by exam: IELTS Listening · Reading · Writing · Speaking, TOEFL iBT, TOEIC Listening & Reading',
+  '1.249 từ & cụm hay gặp theo từng kỳ thi: IELTS Listening · Reading · Writing · Speaking, TOEFL iBT, TOEIC Listening & Reading': '1,249 high-frequency words & phrases by exam: IELTS Listening · Reading · Writing · Speaking, TOEFL iBT, TOEIC Listening & Reading',
   'IELTS Listening – Section 1–4 hay gặp': 'IELTS Listening – Sections 1–4 essentials',
   'Điền form (đánh vần, số, mã), nhà ở, đi lại – bản đồ, tiện ích, thảo luận & bài giảng học thuật': 'Form filling (spelling, numbers, codes), housing, travel & maps, facilities, academic discussions & lectures',
   'IELTS Reading – từ học thuật & paraphrase': 'IELTS Reading – academic words & paraphrase',
