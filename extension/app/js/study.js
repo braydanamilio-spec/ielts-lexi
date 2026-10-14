@@ -437,18 +437,25 @@
       // Lần đầu gặp từ chưa thuộc → giới thiệu từ (hình, âm, nghĩa, ví dụ) trước khi kiểm tra
       if (st === 0 && !introduced.has(w.word) && rank(w) <= 0) {
         introduced.add(w.word);
-        // Thẻ giới thiệu 2 mặt (kiểu flashcard): mặt trước từ + nghĩa, chạm để lật xem câu ví dụ
-        $('#qbox').innerHTML = `<div class="flip-intro" id="fi"><div class="fi-audio"><button class="fi-btn" id="sayI" aria-label="${t('Nghe')}">🔊</button><button class="fi-btn" id="slowI" aria-label="${t('Nghe chậm')}">🐢</button></div>
-          <div class="fi-card" id="fiCard">
-            <div class="fi-face fi-front">${w.image || w.emoji ? pic(w).replace('class="pic"', 'class="pic fi-pic"') : ''}<span class="chip lv">✨ ${t('Từ mới')}</span><div class="entry-word">${esc(w.word)}</div><div class="row center"><span class="ipa">${esc(w.ipa || '')}</span>${posChip(w.pos)}${levelChip(w.level)}</div><div class="vi" style="margin-top:.4rem;font-size:1.25rem">${esc(w.vi)}</div></div>
-            <div class="fi-face fi-back"><div class="entry-word" style="font-size:1.6rem">${esc(w.word)}</div>${w.ex ? `<div class="fi-ex">${highlight(w.ex, w.word)}</div><div class="row center"><button class="ctx-say" data-saysent="${esc(w.ex)}">🔊</button><button class="ctx-say" data-saysent="${esc(w.ex)}" data-slow="1">🐢</button></div><div class="fi-tr small muted" id="fiTr"></div>` : `<div class="muted">${esc(w.def || w.vi)}</div>`}</div>
-            <span class="fi-tap">👆 ${t('Chạm để lật')}</span>
-          </div></div>
-          <button class="btn primary lg block" id="gotIt" style="margin-top:1rem">${t('Tiếp tục')}</button>
+        // Thẻ giới thiệu từ mới: mọi thông tin cần để hiểu & nhớ trên 1 mặt, sắp theo thứ tự đọc tự nhiên
+        // (hình → từ & âm → nghĩa → định nghĩa → ví dụ có dịch → kết hợp từ) – không phải lật, không bỏ sót ví dụ
+        const arr = x => [].concat(x || []).filter(Boolean);
+        const col = arr(w.col).slice(0, 4), syn = arr(w.syn).slice(0, 4);
+        $('#qbox').innerHTML = `<div class="card wi" id="fi">
+            <div class="wi-top">${w.image || w.emoji ? pic(w).replace('class="pic"', 'class="pic wi-pic"') : ''}
+              <div class="wi-head"><span class="chip lv">✨ ${t('Từ mới')}</span>
+                <div class="wi-word">${esc(w.word)}</div>
+                <div class="wi-pron"><span class="ipa">${esc(w.ipa || '')}</span>${posChip(w.pos)}${levelChip(w.level)}
+                  <button class="fi-btn sm" id="sayI" aria-label="${t('Nghe')}" title="${t('Nghe')}">🔊</button><button class="fi-btn sm" id="slowI" aria-label="${t('Nghe chậm')}" title="${t('Nghe chậm')}">🐢</button></div>
+                <div class="wi-vi vi">${esc(w.vi)}</div></div></div>
+            ${w.def ? `<div class="wi-sec"><span class="wi-lb">📖 ${t('Định nghĩa')}</span><div>${esc(w.def)}</div></div>` : ''}
+            ${w.ex ? `<div class="wi-sec wi-ex"><span class="wi-lb">💬 ${t('Ví dụ')}</span><div class="fi-ex">${highlight(w.ex, w.word)} <button class="ctx-say" data-saysent="${esc(w.ex)}" title="${t('Nghe cả câu')}">🔊</button><button class="ctx-say" data-saysent="${esc(w.ex)}" data-slow="1" title="${t('Nghe chậm')}">🐢</button></div><div class="fi-tr small muted vi" id="fiTr"></div></div>` : ''}
+            ${col.length || syn.length ? `<div class="wi-sec wi-chips">${col.length ? `<span class="wi-lb">🔗 ${t('Hay đi với')}</span>${col.map(x => `<span class="chip">${esc(x)}</span>`).join('')}` : ''}${syn.length ? `<span class="wi-lb" style="margin-left:${col.length ? '.6rem' : '0'}">≈ ${t('Đồng nghĩa')}</span>${syn.map(x => `<span class="chip">${esc(x)}</span>`).join('')}` : ''}</div>` : ''}
+            ${w.note ? `<div class="wi-sec wi-tip">💡 ${esc(w.note)}</div>` : ''}
+          </div>
+          <button class="btn primary lg block" id="gotIt" style="margin-top:1rem">${t('Tiếp tục')} ↵</button>
           <div class="center" style="margin-top:.6rem"><button class="linklike" id="known">${t('Mình đã biết từ này')}</button></div>`;
-        let flipped = false;
-        const flip = () => { flipped = !flipped; $('#fiCard').classList.toggle('flipped', flipped); if (flipped && w.ex && !$('#fiTr').textContent) Dict.translateVi(w.ex).then(tr => { const e = $('#fiTr'); if (e) e.textContent = tr; }); if (flipped && w.ex) tts(w.ex, accent()); };
-        $('#fiCard').onclick = e => { if (!e.target.closest('[data-saysent]')) flip(); };
+        if (w.ex && I18N.learnLang() === 'vi') Dict.translateVi(w.ex).then(tr => { const e = $('#fiTr'); if (e && tr) e.textContent = '🇻🇳 ' + tr; }).catch(() => {});
         $('#sayI').onclick = () => speak(w.word, accent(), w.audio);
         $('#slowI').onclick = () => tts(w.word, accent(), 0.5);
         speak(w.word, accent(), w.audio);
