@@ -1,0 +1,7 @@
+body.popup { width: 360px; padding: 14px; margin: 0; }
+.popup .card { padding: 14px; }
+.popup .big-num { font-size: 2rem; }
+.popup .search .input { font-size: 1rem; padding: .6rem .8rem; }
+.popup #res .card { margin-top: 10px; }
+.popup .entry-word { font-size: 1.4rem; }
+.popup .pic { width: 64px; font-size: 2rem; flex: none; }

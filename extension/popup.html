@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <title>IELTS Lexi</title>
+  <link rel="stylesheet" href="app/css/style.css">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body class="popup">
+  <div class="row between">
+    <div class="brand"><span class="logo">L</span><span>IELTS <b>Lexi</b></span></div>
+    <span class="streak" id="streak">🔥 0</span>
+  </div>
+
+  <div class="card hero-main" style="margin-top:12px">
+    <div class="row between">
+      <div><div class="big-num" id="due">0</div><div class="muted small">thẻ cần học hôm nay</div></div>
+      <button class="btn primary" id="review">Ôn ngay →</button>
+    </div>
+    <div class="row between small" style="margin-top:10px"><span>Mục tiêu</span><span id="goalTxt">0/20</span></div>
+    <div class="progress"><i id="goalBar" style="width:0"></i></div>
+  </div>
+
+  <form class="search" id="f" style="margin-top:12px" autocomplete="off">
+    <input class="input" id="q" placeholder="Tra nhanh một từ…" autofocus>
+  </form>
+  <div id="res"></div>
+
+  <div class="row between small" style="margin-top:12px">
+    <label class="row"><input type="checkbox" id="dbl"> Bấm đúp để tra từ</label>
+    <a href="#" id="open">Mở ứng dụng ↗</a>
+  </div>
+  <script src="app/js/data.js"></script>
+  <script src="app/js/core.js"></script>
+  <script src="app/js/dictionary.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>
