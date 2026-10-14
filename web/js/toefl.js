@@ -114,12 +114,17 @@
   // ================= LUYỆN TỪNG DẠNG BÀI =================
   routes['toefl-p'] = function (task, query) {
     if (!TASKS[task]) return routes.toefl();
-    const sec = secOf(task), T = TASKS[task], units = unitsOf(task);
+    const sec = secOf(task), T = TASKS[task], all = unitsOf(task);
+    // Nhiều bộ đề: dạng làm cả trang (đọc/nghe/sắp câu) hiện từng bộ một qua tab, chấm riêng – trang không quá dài
+    const sets = [...new Set(all.map(u => u.set || 1))].sort((a, b) => a - b), perPage = !['email', 'discussion', 'repeat', 'interview'].includes(task);
+    const cur = sets.includes(+((query && query.get && query.get('s')) || 0)) ? +query.get('s') : sets[0];
+    const units = perPage && sets.length > 1 ? all.filter(u => (u.set || 1) === cur) : all;
     const players = [], timers = [];
     App.cleanup = () => { players.forEach(p => p && p.stop()); timers.forEach(clearInterval); stopRec(); UI.stopSpeak(); if (UI.stopRecognize) UI.stopRecognize(); };
     view.innerHTML = `<a href="#/toefl" class="small">← TOEFL iBT</a>
       <div class="page-head" style="margin-top:.4rem"><div><div class="tiny muted">${sec.ic} ${sec.name}</div><h1 style="margin:.2rem 0">${T.ic} ${esc(T.name)}</h1><p class="muted small" style="margin:0">${T.desc}</p></div></div>
       <div class="row" style="margin-bottom:1rem">${sec.tasks.map(k => `<a class="btn sm ${k === task ? 'primary' : ''}" href="#/toefl-p/${k}">${TASKS[k].ic} ${esc(TASKS[k].name)}</a>`).join('')}</div>
+      ${perPage && sets.length > 1 ? `<div class="tabs" style="display:inline-flex;margin-bottom:1rem">${sets.map(n => `<a class="${n === cur ? 'on' : ''}" href="#/toefl-p/${task}?s=${n}" style="padding:.45rem .9rem;border-radius:10px;font-weight:700;text-decoration:none;color:inherit;${n === cur ? 'background:var(--surface);box-shadow:var(--shadow-sm)' : ''}">${t('Bộ {n}', { n })}</a>`).join('')}</div>` : ''}
       <div id="tfBody"></div>`;
     const body = $('#tfBody');
     if (!units.length) { body.innerHTML = `<div class="card muted">${t('Đang cập nhật.')}</div>`; return; }
@@ -230,7 +235,7 @@
       const item = b.closest('[data-bs]'), ans = $('[data-ans]', item), bank = $('[data-bank]', item);
       (b.parentElement === ans ? bank : ans).appendChild(b);
     });
-    $('#tReset').onclick = () => routes['toefl-p'](task);
+    $('#tReset').onclick = () => routes['toefl-p'](task, query);
     $('#tSub').onclick = async () => {
       let right = 0;
       items.forEach(it => {
