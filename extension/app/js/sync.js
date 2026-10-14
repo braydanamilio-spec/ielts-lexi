@@ -76,7 +76,7 @@
 
   // ---------- Cầu nối với add-on Chrome (cùng máy) ----------
   let extReady = false;
-  window.addEventListener('message', e => { if (e.source === window && e.data && e.data.vbBridge === 'hello') extReady = true; });
+  window.addEventListener('message', e => { if (e.source === window && e.data && e.data.vbBridge === 'hello') { extReady = true; extCall('lang', { lang: I18N.lang() }); } }); // add-on dùng cùng ngôn ngữ giao diện với web
   const extCall = (op, data) => new Promise(res => {
     if (!extReady) return res(null);
     const id = Math.random().toString(36).slice(2);

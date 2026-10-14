@@ -9,6 +9,7 @@
       try {
         if (e.data.op === 'get') { const data = await chrome.storage.local.get(KEYS); window.postMessage({ vbBridge: 'res', id: e.data.id, data }, location.origin); }
         else if (e.data.op === 'diag') { const { errLog } = await chrome.storage.local.get('errLog'); window.postMessage({ vbBridge: 'res', id: e.data.id, data: { v: chrome.runtime.getManifest().version, errLog: errLog || [] } }, location.origin); }
+        else if (e.data.op === 'lang') { const l = (e.data.data || {}).lang; if (l === 'vi' || l === 'en') await chrome.storage.local.set({ uiLang: l }); window.postMessage({ vbBridge: 'res', id: e.data.id, ok: true }, location.origin); }
         else if (e.data.op === 'linked') { const d = e.data.data || {}; await chrome.storage.local.set({ linked: { email: String(d.email || '').slice(0, 120), name: String(d.name || '').slice(0, 80), at: Date.now() } }); window.postMessage({ vbBridge: 'res', id: e.data.id, data: { ok: true } }, location.origin); }
         else if (e.data.op === 'aiKeyGet') { const { aiKey } = await chrome.storage.local.get('aiKey'); window.postMessage({ vbBridge: 'res', id: e.data.id, data: { aiKey: aiKey || '' } }, location.origin); }
         else if (e.data.op === 'aiKeySet') { const k = String((e.data.data || {}).aiKey || ''); if (!k || /^AIza[\w-]{20,}$/.test(k)) await chrome.storage.local.set({ aiKey: k }); window.postMessage({ vbBridge: 'res', id: e.data.id, data: { ok: true } }, location.origin); }
@@ -24,7 +25,9 @@
   window.addEventListener('error', e => { if (e.filename && e.filename.startsWith('chrome-extension://')) report('cs', e.error || e.message); });
   window.addEventListener('unhandledrejection', e => report('cs-promise', e.reason));
   // Ngôn ngữ giao diện: chỉ en / vi như web app, ngôn ngữ khác → English. Nội dung học (nghĩa Việt, câu dịch) giữ nguyên
-  const UI_LANG = (chrome.i18n && chrome.i18n.getUILanguage ? chrome.i18n.getUILanguage() : navigator.language || 'en').toLowerCase().startsWith('vi') ? 'vi' : 'en';
+  // Ngôn ngữ giao diện: theo lựa chọn trên web Vocaband (đồng bộ qua cầu nối), mặc định theo ngôn ngữ Chrome
+  let UI_LANG = (chrome.i18n && chrome.i18n.getUILanguage ? chrome.i18n.getUILanguage() : navigator.language || 'en').toLowerCase().startsWith('vi') ? 'vi' : 'en';
+  try { chrome.storage.local.get('uiLang').then(r => { if (r.uiLang === 'vi' || r.uiLang === 'en') UI_LANG = r.uiLang; }).catch(() => {}); chrome.storage.onChanged.addListener(ch => { if (ch.uiLang && /^(vi|en)$/.test(ch.uiLang.newValue)) UI_LANG = ch.uiLang.newValue; }); } catch (x) { /* bản cũ */ }
   const EN = {
     'Dịch với Vocaband': 'Translate with Vocaband', 'Nghe câu ví dụ': 'Play example', 'Quay lại từ trước': 'Back to previous word', 'Quay lại': 'Back',
     'Anh–Mỹ': 'US English', 'Nghe giọng Anh–Anh (phím P)': 'British pronunciation (P key)', 'Nghe giọng Anh–Mỹ': 'American pronunciation', 'Nghe chậm': 'Play slowly',

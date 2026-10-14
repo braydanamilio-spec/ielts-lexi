@@ -1,6 +1,7 @@
 (async () => {
   // Ngôn ngữ giao diện: chỉ en / vi như web app, ngôn ngữ khác → English (nội dung học – nghĩa từ – giữ nguyên)
-  const UI_LANG = (chrome.i18n && chrome.i18n.getUILanguage ? chrome.i18n.getUILanguage() : navigator.language || 'en').toLowerCase().startsWith('vi') ? 'vi' : 'en';
+  let UI_LANG = (chrome.i18n && chrome.i18n.getUILanguage ? chrome.i18n.getUILanguage() : navigator.language || 'en').toLowerCase().startsWith('vi') ? 'vi' : 'en';
+  try { const { uiLang } = await chrome.storage.local.get('uiLang'); if (uiLang === 'vi' || uiLang === 'en') UI_LANG = uiLang; localStorage.setItem('vb.uiLang', UI_LANG); } catch (e) { /* bỏ qua */ } // trang ứng dụng trong add-on dùng cùng ngôn ngữ
   const EN = {
     'thẻ cần học hôm nay': 'cards due today', 'Ôn ngay →': 'Review now →', 'Mục tiêu': 'Goal', 'Tra nhanh một từ…': 'Quick word lookup…',
     '⚙️ Cài đặt tra từ': '⚙️ Lookup settings', 'Khi bôi đen chữ': 'When text is selected', 'Hiện nút 🌐 để dịch': 'Show 🌐 button to translate',

@@ -7,7 +7,9 @@ self.addEventListener('unhandledrejection', e => logErr('bg-promise', e.reason))
 if (typeof importScripts === 'function' && typeof Core === 'undefined') importScripts('app/js/data.js', 'app/js/core.js', 'app/js/vi-check.js', 'app/js/dictionary.js');
 const { Store, Cards, Stats, Golden, DEFAULT_SETTINGS, todayKey } = Core;
 // Ngôn ngữ giao diện (thông báo, menu chuột phải): chỉ en / vi như web app, ngôn ngữ khác → English
-const UI_LANG = (chrome.i18n && chrome.i18n.getUILanguage ? chrome.i18n.getUILanguage() : navigator.language || 'en').toLowerCase().startsWith('vi') ? 'vi' : 'en';
+let UI_LANG = (chrome.i18n && chrome.i18n.getUILanguage ? chrome.i18n.getUILanguage() : navigator.language || 'en').toLowerCase().startsWith('vi') ? 'vi' : 'en';
+chrome.storage.local.get('uiLang').then(r => { if (r.uiLang === 'vi' || r.uiLang === 'en') UI_LANG = r.uiLang; }).catch(() => {});
+chrome.storage.onChanged.addListener(ch => { if (ch.uiLang && /^(vi|en)$/.test(ch.uiLang.newValue)) UI_LANG = ch.uiLang.newValue; });
 const EN = {
   'Vocaband – đến giờ học rồi! 📚': 'Vocaband – time to study! 📚',
   'Bạn có {n} thẻ cần ôn hôm nay.': 'You have {n} cards to review today.',
