@@ -898,3 +898,8 @@ kbd { font-family: ui-monospace, Menlo, monospace; font-size: .75em; padding: .0
 .wk-cell { display: flex; flex-direction: column; align-items: center; padding: .6rem .3rem; border-radius: 12px; background: var(--surface-2); text-align: center; }
 .wk-cell b { font-size: 1.3rem; line-height: 1.2; } .wk-cell small { font-size: .72rem; color: var(--muted); }
 .wk-cell i { font-style: normal; font-size: .7rem; font-weight: 700; margin-top: .15rem; } .wk-cell i.up { color: var(--good); } .wk-cell i.down { color: var(--again); }
+/* Cảm giác app gốc trên điện thoại: không nháy ô xanh khi chạm, không kéo giãn trang, nút không bị bôi đen chữ */
+html { -webkit-tap-highlight-color: transparent; overscroll-behavior-y: none; }
+button, .btn, .option, .tabs, .bottom-nav { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+@media (display-mode: standalone) { body { overscroll-behavior: none; } .topbar { padding-top: env(safe-area-inset-top); } }
+.install-nudge { position: fixed; left: 12px; right: 12px; bottom: calc(84px + env(safe-area-inset-bottom)); z-index: 65; padding: .9rem; border-radius: 18px; box-shadow: var(--shadow-lg); animation: sheetUp .3s cubic-bezier(.2,.8,.2,1); }

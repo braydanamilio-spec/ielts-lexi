@@ -117,9 +117,11 @@
       }
     } catch (e) { /* trình duyệt chặn âm thanh */ }
   }
+  // Rung nhẹ khi trả lời (điện thoại Android) – phản hồi xúc giác như app gốc; tắt cùng hiệu ứng âm thanh
+  const buzz = p => { try { if (navigator.vibrate && matchMedia('(pointer: coarse)').matches && (!g.App || !g.App.state || g.App.state.settings.sfx !== false)) navigator.vibrate(p); } catch (e) { /* bỏ qua */ } };
   const Sfx = {
-    correct: () => tone([660, 880], 0.1, 'triangle'),
-    wrong: () => tone([220, 165], 0.14, 'sawtooth', 0.05),
+    correct: () => { tone([660, 880], 0.1, 'triangle'); buzz(12); },
+    wrong: () => { tone([220, 165], 0.14, 'sawtooth', 0.05); buzz([30, 40, 30]); },
     flip: () => tone([520], 0.05, 'sine', 0.04),
     win: () => tone([523, 659, 784, 1047], 0.12, 'triangle'),
     pop: () => tone([900], 0.04, 'square', 0.03),

@@ -1601,6 +1601,7 @@
 (function (g) { Object.assign(g.I18N_DICT.en, { 'Làm lại lỗi sai': 'Retry mistakes', 'Xem danh sách': 'View list', 'Gõ đáp án của bạn': 'Type your answer', 'Hiện đáp án': 'Show answer', 'Mình làm đúng': 'I got it right', 'Vẫn sai': 'Still wrong' }); })(typeof self !== 'undefined' ? self : this);
 (function (g) { Object.assign(g.I18N_DICT.en, { 'Làm lại {n} lỗi sai': 'Retry {n} mistakes', 'Tự nhớ lại đáp án – sửa lỗi = tăng điểm nhanh nhất': 'Recall the answer yourself – fixing mistakes is the fastest way to score higher' }); })(typeof self !== 'undefined' ? self : this);
 (function (g) { Object.assign(g.I18N_DICT.en, { 'Hoàn tác lần chấm vừa rồi (Z)': 'Undo last grade (Z)', 'Đã hoàn tác – chấm lại thẻ này': 'Undone – grade this card again' }); })(typeof self !== 'undefined' ? self : this);
+(function (g) { Object.assign(g.I18N_DICT.en, { 'hoàn tác': 'undo' }); })(typeof self !== 'undefined' ? self : this);
 
 /* English UI strings – web/js/app.js, web/index.html (app shell) */
 (function (g) { const D = g.I18N_DICT = g.I18N_DICT || {}; D.en = Object.assign(D.en || {}, {
@@ -2015,6 +2016,7 @@
 (function (g) { Object.assign(g.I18N_DICT.en, { 'Nghĩa từ hiển thị bằng': 'Show word meanings in', 'Định nghĩa tiếng Anh': 'English definitions' }); })(typeof self !== 'undefined' ? self : this);
 (function (g) { Object.assign(g.I18N_DICT.en, { 'Nghĩa theo từ loại': 'Meanings by part of speech', 'Nguồn: Oxford Languages (qua Google), Wiktionary': 'Sources: Oxford Languages (via Google), Wiktionary' }); })(typeof self !== 'undefined' ? self : this);
 (function (g) { Object.assign(g.I18N_DICT.en, { 'Tuần này của bạn': 'Your week', 'so với cả tuần trước': 'vs. all of last week', 'Lượt ôn': 'Reviews', 'Bài luyện': 'Quizzes', 'Ngày học': 'Days active' }); })(typeof self !== 'undefined' ? self : this);
+(function (g) { Object.assign(g.I18N_DICT.en, { 'Cài Vocaband như một app': 'Install Vocaband as an app', 'Mở nhanh từ màn hình chính, toàn màn hình, học được cả khi offline': 'Open from your home screen, full screen, works offline', 'Cài ngay – miễn phí': 'Install now – free', 'Đóng': 'Close' }); })(typeof self !== 'undefined' ? self : this);
 
 /* Thống nhất thuật ngữ khi nhiều nhóm dùng chung 1 khóa */
 (function (g) { Object.assign(g.I18N_DICT.en, {
