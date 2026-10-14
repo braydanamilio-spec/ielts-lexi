@@ -136,7 +136,8 @@
       <div class="body">
         ${e.def && !defs ? `<div class="def">${esc(e.def)}</div>` : defs}
         ${e.ex ? `<div class="ex">“${esc(e.ex)}”</div>` : ''}
-        ${ctxHtml ? `<div class="ctx"><b>📌 Ngữ cảnh sẽ lưu:</b><br>${ctxHtml}</div>` : ''}
+        ${(e.senses || []).length ? `<div class="def">${e.senses.slice(0, 3).map(x => `<span class="chip">${esc(x.pos)}</span> ${esc(x.terms.slice(0, 4).join(', '))}`).join('<br>')}</div>` : ''}
+        ${ctxHtml ? `<div class="ctx"><b>📌 Ngữ cảnh sẽ lưu:</b><br>${ctxHtml}<div class="ctxvi ex" style="margin-top:4px">⏳ Đang dịch câu…</div></div>` : ''}
       </div>
       <div class="foot">
         <button class="btn p" id="save" ${res.saved && !context ? 'disabled' : ''}>${res.saved ? (context ? '+ Thêm ngữ cảnh' : '✓ Đã lưu') : '+ Lưu flashcard'}</button>
@@ -151,10 +152,16 @@
     b.querySelector('#save').onclick = async ev => {
       const btn = ev.currentTarget;
       btn.disabled = true;
-      const { meanings, found, audioUS, ...entry } = e;
-      await chrome.runtime.sendMessage({ type: 'save', entry: { ...entry, audio: audioFor(accent) }, context: context ? { text: context, source: location.href, title: document.title } : null });
+      const { meanings, oxford, senses, found, audioUS, ...entry } = e;
+      await chrome.runtime.sendMessage({ type: 'save', entry: { ...entry, audio: audioFor(accent) }, context: context ? { text: context, vi: ctxVi, source: location.href, title: document.title } : null });
       btn.textContent = '✓ Đã lưu vào flashcard';
     };
+    let ctxVi = '';
+    if (context) chrome.runtime.sendMessage({ type: 'translate', text: context }).then(r => {
+      ctxVi = (r && r.vi) || '';
+      const el = b.querySelector('.ctxvi');
+      if (el && current === word) el.textContent = ctxVi ? '🇻🇳 ' + ctxVi : '';
+    }).catch(() => {});
     position(rect);
     if (settings.autoSpeak !== false) speak(e.word, audioFor(accent), accent);
   }

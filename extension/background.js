@@ -81,6 +81,7 @@ chrome.runtime.onMessage.addListener((msg, sender, reply) => {
         const card = await Cards.add(msg.entry, msg.context);
         return reply({ ok: true, card });
       }
+      case 'translate': return reply({ vi: await Dict.translateVi(msg.text) });
       case 'testNotify': await sendReminder(true); return reply({ ok: true });
       case 'openApp': await openApp(msg.hash); return reply({ ok: true });
       default: reply({});

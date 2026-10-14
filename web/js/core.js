@@ -110,7 +110,8 @@
         emoji: entry.emoji || '📘',
         image: entry.image || '',
         audio: entry.audio || '',
-        contexts: [],          // [{text, source, title, at}]
+        sentences: (entry.sentences || []).slice(0, 2), // câu song ngữ [{en, vi}]
+        contexts: [],          // [{text, vi, source, title, at}]
         note: '',
         added: Date.now(),
         srs: SRS.newState(),
@@ -129,6 +130,7 @@
         for (const k of ['ipa', 'ipaUS', 'pos', 'vi', 'def', 'ex', 'image', 'audio', 'level']) {
           if (!card[k] && entry[k]) card[k] = entry[k];
         }
+        if (!(card.sentences || []).length && entry.sentences) card.sentences = entry.sentences.slice(0, 2);
       }
       if (context && context.text && !card.contexts.some(c => c.text === context.text)) {
         card.contexts.unshift({ ...context, at: Date.now() });

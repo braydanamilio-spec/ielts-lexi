@@ -1,5 +1,5 @@
 /* Service worker: cache giao diện để dùng offline + mở app khi bấm thông báo. */
-const CACHE = 'ielts-lexi-v1';
+const CACHE = 'ielts-lexi-v2';
 const SHELL = ['./', 'index.html', 'css/style.css', 'js/data.js', 'js/core.js', 'js/dictionary.js', 'js/app.js', 'manifest.webmanifest', 'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png'];
 
 self.addEventListener('install', e => {

@@ -283,26 +283,57 @@
         ${e.ex ? `<div class="example-box" style="margin-top:1rem"><div class="small muted">Ví dụ</div>${highlight(e.ex, e.word)} <button class="icon-btn" data-speak-text="${esc(e.ex)}">🔊</button></div>` : ''}
         ${e.col.length ? `<div style="margin-top:1rem"><b>🔗 Collocations:</b> ${e.col.map(c => `<span class="chip">${esc(c)}</span>`).join(' ')}</div>` : ''}
         ${e.syn.length ? `<div style="margin-top:.6rem"><b>≈ Đồng nghĩa:</b> ${e.syn.map(s => `<a class="chip" href="#/dict/${encodeURIComponent(s)}">${esc(s)}</a>`).join(' ')}</div>` : ''}
-        ${e.meanings.length ? `<div style="margin-top:1rem">${e.meanings.map(m => `
+        ${(e.senses || []).length ? `<div style="margin-top:1rem"><h3>🇻🇳 Nghĩa tiếng Việt theo từ loại</h3>${e.senses.map(s => `
+          <div class="meaning"><span class="chip pos">${esc(s.pos)}</span> ${s.terms.map(esc).join(', ')}</div>`).join('')}</div>` : ''}
+        ${(e.oxford || []).length ? `<div style="margin-top:1rem"><h3>📕 Định nghĩa <span class="muted small">(Oxford Languages)</span></h3>${e.oxford.map(m => `
           <div class="meaning"><span class="chip pos">${esc(m.pos)}</span>
             <ol>${m.defs.map(d => `<li>${esc(d.def)}${d.ex ? `<div class="ex small">“${highlight(d.ex, e.word)}”</div>` : ''}</li>`).join('')}</ol>
           </div>`).join('')}</div>` : ''}
+        ${e.meanings.length ? `<details style="margin-top:.8rem"${(e.oxford || []).length ? '' : ' open'}><summary class="small"><b>Định nghĩa bổ sung</b> <span class="muted">(Wiktionary)</span></summary>${e.meanings.map(m => `
+          <div class="meaning"><span class="chip pos">${esc(m.pos)}</span>
+            <ol>${m.defs.map(d => `<li>${esc(d.def)}${d.ex ? `<div class="ex small">“${highlight(d.ex, e.word)}”</div>` : ''}</li>`).join('')}</ol>
+          </div>`).join('')}</details>` : ''}
       </div>
+
+      ${(e.sentences || []).length ? `<div class="card" style="margin-top:1rem">
+        <h3>💬 Câu ví dụ song ngữ <span class="muted small">(Tatoeba)</span></h3>
+        ${e.sentences.map(s => `<div class="meaning"><div>${highlight(s.en, e.word)} <button class="icon-btn" data-speak-text="${esc(s.en)}">🔊</button></div><div class="muted small">${esc(s.vi)}</div>
+          <button class="btn sm ghost" data-use-sent="${esc(s.en)}">📌 Dùng làm ngữ cảnh</button></div>`).join('')}
+      </div>` : ''}
 
       <div class="card" style="margin-top:1rem">
         <h3>${card ? '✓ Từ này đã có trong flashcard' : '➕ Lưu vào flashcard'}</h3>
         <label class="field"><span>Câu ngữ cảnh (nơi bạn gặp từ này) – giúp nhớ lâu hơn</span>
           <textarea class="input" id="ctx" placeholder="Dán câu bạn đọc/nghe được có chứa “${esc(e.word)}”…"></textarea></label>
+        <div id="ctxVi" class="muted small" style="margin-top:.4rem"></div>
         <div class="row" style="margin-top:.7rem">
+          <button class="btn" id="trCtx">🌐 Dịch câu</button>
           <button class="btn primary" id="saveWord">${card ? 'Thêm ngữ cảnh' : 'Lưu vào flashcard'}</button>
           ${card ? `<span class="muted small">Đã có ${card.contexts.length} ngữ cảnh · ${masteryDots(card.srs)}</span>` : ''}
         </div>
       </div>`;
     bindCommon();
     if (state.settings.autoSpeak) speak(e.word, state.settings.accent, state.settings.accent === 'en-US' ? e.audioUS : e.audio);
+    let ctxVi = '';
+    const trCtx = async () => {
+      const text = $('#ctx').value.trim();
+      if (!text) return '';
+      $('#ctxVi').textContent = '⏳ Đang dịch…';
+      ctxVi = await Dict.translateVi(text);
+      $('#ctxVi').textContent = ctxVi ? `🇻🇳 ${ctxVi}` : 'Không dịch được câu này.';
+      return ctxVi;
+    };
+    $('#trCtx').onclick = trCtx;
+    $('#ctx').oninput = () => { ctxVi = ''; $('#ctxVi').textContent = ''; };
+    $$('[data-use-sent]').forEach(b => b.onclick = () => {
+      const s = e.sentences.find(x => x.en === b.dataset.useSent);
+      $('#ctx').value = s.en; ctxVi = s.vi; $('#ctxVi').textContent = `🇻🇳 ${s.vi}`;
+      $('#ctx').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
     $('#saveWord').onclick = async () => {
       const text = $('#ctx').value.trim();
-      await addWord(e, text ? { text, source: '', title: 'Ghi chú của bạn' } : null);
+      if (text && !ctxVi) await trCtx();
+      await addWord(e, text ? { text, vi: ctxVi, source: '', title: 'Ghi chú của bạn' } : null);
       toast(card ? 'Đã cập nhật thẻ' : `Đã lưu “${e.word}” vào flashcard`);
       renderDict(e.word);
     };
@@ -380,7 +411,8 @@
             <div class="vi" style="margin:.3rem 0">${esc(c.vi)}</div>
             ${c.def ? `<div>${esc(c.def)}</div>` : ''}
             ${c.ex ? `<div class="example-box" style="margin-top:.8rem">${highlight(c.ex, c.word)} <button class="icon-btn" data-speak-text="${esc(c.ex)}">🔊</button></div>` : ''}
-            ${c.contexts.length ? `<div style="margin-top:.8rem"><b class="small">📌 Ngữ cảnh của bạn</b>${c.contexts.slice(0, 2).map(x => `<div class="ex small" style="margin-top:.3rem">“${highlight(x.text, c.word)}”${x.title ? ` <span class="muted">— ${esc(x.title)}</span>` : ''}</div>`).join('')}</div>` : ''}
+            ${c.contexts.length ? `<div style="margin-top:.8rem"><b class="small">📌 Ngữ cảnh của bạn</b>${c.contexts.slice(0, 2).map(x => `<div class="ex small" style="margin-top:.3rem">“${highlight(x.text, c.word)}”${x.title ? ` <span class="muted">— ${esc(x.title)}</span>` : ''}${x.vi ? `<div style="font-style:normal">🇻🇳 ${esc(x.vi)}</div>` : ''}</div>`).join('')}</div>` : ''}
+            ${(c.sentences || []).length ? `<div style="margin-top:.8rem"><b class="small">💬 Câu song ngữ</b>${c.sentences.map(x => `<div class="small" style="margin-top:.3rem">${highlight(x.en, c.word)}<div class="muted">${esc(x.vi)}</div></div>`).join('')}</div>` : ''}
             ${c.col.length ? `<div class="small" style="margin-top:.8rem">🔗 ${c.col.map(esc).join(' · ')}</div>` : ''}
             ${c.syn.length ? `<div class="small" style="margin-top:.3rem">≈ ${c.syn.map(esc).join(', ')}</div>` : ''}
             ${c.note ? `<div class="small" style="margin-top:.6rem">📝 ${esc(c.note)}</div>` : ''}
