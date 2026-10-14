@@ -212,6 +212,35 @@
     window.scrollTo(0, 0);
   }
   App.route = route;
+  // Nội dung bài học viết bằng tiếng Việt → tự dịch sang ngôn ngữ người học khi giao diện không phải tiếng Việt.
+  // Dịch theo lô (Google Translate miễn phí), lưu bộ nhớ đệm trên máy → lần sau hiện ngay. Không dịch nghĩa từ (.vi) và dữ liệu người học nhập.
+  (function contentTranslate() {
+    const to = I18N.learnLang(); if (to === 'vi' || !window.MutationObserver) return;
+    const VI = /[ăâđêôơưạảấầẩẫậắằẳẵặẹẻẽếềểễệỉịọỏốồổỗộớờởỡợụủứừửữựỳỵỷỹ]/i;
+    const SKIP = '.vi, .svi, .ctxvi, .gap-vi, [data-keep-vi], input, textarea, script, style, code, .entry-word';
+    const KEY = 'vb.cx.' + to; let mem = {}; try { mem = JSON.parse(localStorage.getItem(KEY) || '{}'); } catch (e) { mem = {}; }
+    const save = () => { try { const ks = Object.keys(mem); if (ks.length > 4000) ks.slice(0, ks.length - 4000).forEach(k => delete mem[k]); localStorage.setItem(KEY, JSON.stringify(mem)); } catch (e) { /* đầy bộ nhớ */ } };
+    let timer = 0, busy = false;
+    async function pass() {
+      if (busy) return; busy = true;
+      try {
+        const nodes = [], tw = document.createTreeWalker(view, NodeFilter.SHOW_TEXT); let n;
+        while ((n = tw.nextNode())) { const s = n.nodeValue.trim().replace(/\s+/g, ' '); if (s.length > 1 && VI.test(s) && !n.parentElement.closest(SKIP)) nodes.push(n); }
+        const need = [];
+        const put = x => { const s = x.nodeValue.trim().replace(/\s+/g, ' '); if (!mem[s]) return false; const m = x.nodeValue.match(/^\s*/)[0], e = x.nodeValue.match(/\s*$/)[0]; x.nodeValue = m + mem[s] + e; return true; };
+        nodes.forEach(x => { if (!put(x)) { const s = x.nodeValue.trim().replace(/\s+/g, ' '); if (!need.includes(s)) need.push(s); } });
+        for (let i = 0; i < need.length;) { // lô ≤ 1800 ký tự
+          const batch = []; let len = 0; while (i < need.length && len + need[i].length < 1800) { batch.push(need[i]); len += need[i].length + 1; i++; } if (!batch.length) batch.push(need[i++]);
+          const r = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=vi&tl=${to}&dt=t&q=${encodeURIComponent(batch.join('\n'))}`).then(x => x.json()).catch(() => null);
+          if (!r || !r[0]) break;
+          const out = r[0].map(x => x[0]).join('').split('\n');
+          batch.forEach((s, k) => { if (out[k] && out[k].trim()) mem[s] = out[k].trim(); });
+        }
+        if (need.length) { save(); nodes.forEach(put); }
+      } finally { busy = false; }
+    }
+    new MutationObserver(() => { clearTimeout(timer); timer = setTimeout(pass, 120); }).observe(view, { childList: true, subtree: true, characterData: false });
+  })();
   window.addEventListener('hashchange', route);
   document.addEventListener('click', e => {
     const a = e.target.closest && e.target.closest('a[href^="#/"]');

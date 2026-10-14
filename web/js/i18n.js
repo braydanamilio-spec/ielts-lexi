@@ -33,7 +33,7 @@
   }
   function set(l) { if (!LANGS[l]) return; try { localStorage.setItem(KEY, l); } catch (e) { /* bỏ qua */ } location.reload(); }
   // Ngôn ngữ dùng để hiển thị nghĩa/giải thích (người học có thể chọn khác giao diện)
-  const learnLang = () => read('vb.learnLang') || (lang === 'en' ? 'vi' : lang);
+  const learnLang = () => read('vb.learnLang') || lang;
   g.t = t;
   g.I18N = { t, apply, set, lang: () => lang, learnLang, LANGS, rtl: RTL.has(lang), detect };
   if (g.document) {
