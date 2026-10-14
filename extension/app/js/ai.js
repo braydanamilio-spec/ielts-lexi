@@ -248,8 +248,13 @@ Criteria to use: ${kind === 'task1' ? 'Task Achievement, Coherence and Cohesion,
   async function settingsHtml() {
     const k = await getKey();
     const ns = await nanoStatus();
-    const nano = ns === 'available' ? '✅ ' + t('Sẵn sàng') : ns === 'downloadable' || ns === 'downloading' ? '⬇️ ' + t('Sẽ tự tải khi dùng lần đầu') : '— ' + t('Trình duyệt chưa hỗ trợ');
-    return `<div class="card"><h2>🤖 ${t('Chấm bài bằng AI')}</h2><div class="small" style="margin-bottom:.5rem">${t('AI có sẵn trong Chrome (miễn phí, không cần khóa):')} <b>${nano}</b></div><p class="small muted">${t('Dùng khóa Google Gemini miễn phí của bạn để chấm Writing & Speaking chi tiết. Khóa chỉ lưu trên máy này.')}</p>
+    const nano = ns === 'available' ? '✅ ' + t('Sẵn sàng') : ns === 'downloadable' || ns === 'downloading' ? `<button class="btn sm" id="aiNanoDl">⬇️ ${t('Tải về (~2 GB, 1 lần)')}</button>` : '— ' + t('Trình duyệt chưa hỗ trợ');
+    // Bảng các mức AI miễn phí người học đang có (luôn có ít nhất mức chấm nhanh)
+    const tiers = `<div class="ai-tiers small">
+      <div><span>⚡ ${t('Chấm nhanh & ghi chú từ soạn sẵn')}</span><b class="good">✅ ${t('Luôn có')}</b></div>
+      <div><span>💻 ${t('AI có sẵn trong Chrome (trên máy, riêng tư)')}</span><b>${nano}</b></div>
+      <div><span>✨ ${t('Gemini – chấm chi tiết như giám khảo')}</span><b class="${k ? 'good' : ''}">${k ? '✅ ' + t('Đã bật') : t('Cần khóa miễn phí')}</b></div></div>`;
+    return `<div class="card"><h2>🤖 ${t('Chấm bài bằng AI')}</h2>${tiers}<p class="small muted">${t('Dùng khóa Google Gemini miễn phí của bạn để chấm Writing & Speaking chi tiết. Khóa chỉ lưu trên máy này.')}</p>
       <div class="row"><span class="chip ${k ? 'ok' : ''}">${k ? '✓ ' + t('Đã có khóa {key}…', { key: esc(k.slice(0, 6)) }) : t('Chưa có khóa')}</span><button class="btn sm" id="aiSet">${k ? t('Đổi khóa') : t('Thêm khóa')}</button>${k ? `<button class="btn sm ghost" id="aiDel">${t('Xóa khóa')}</button>` : ''}</div>
       <label class="field" style="margin-top:.6rem"><span class="small">${t('Mô hình')}</span><select class="input" id="aiModel">${['', ...MODELS].map(m => `<option value="${m}" ${(state.settings.aiModel || '') === m ? 'selected' : ''}>${m || t('Tự động (khuyên dùng)')}</option>`).join('')}</select></label></div>`;
   }
@@ -257,6 +262,11 @@ Criteria to use: ${kind === 'task1' ? 'Task Achievement, Coherence and Cohesion,
     const s = $('#aiSet'); if (s) s.onclick = () => keyDialog(rerender);
     const d = $('#aiDel'); if (d) d.onclick = async () => { await setKey(''); toast(t('Đã xóa khóa AI')); rerender(); };
     const m = $('#aiModel'); if (m) m.onchange = () => { state.settings.aiModel = m.value; App.saveSettings(); };
+    const dl = $('#aiNanoDl'); if (dl) dl.onclick = async () => { // người dùng chủ động tải AI của Chrome, có tiến độ
+      dl.disabled = true; nanoOptIn = true;
+      try { const sess = await LMapi().create({ ...LMopts, monitor(m) { m.addEventListener('downloadprogress', e => { dl.textContent = `⬇️ ${Math.round(e.loaded * 100)}%`; }); } }); sess.destroy(); toast('✅ ' + t('AI của Chrome đã sẵn sàng')); rerender(); }
+      catch (e) { dl.disabled = false; dl.textContent = '⚠️ ' + t('Không tải được – thử lại sau'); }
+    };
   }
 
   // Giải thích sâu một cụm/câu trong ngữ cảnh (nghĩa, cấu trúc, ngữ pháp, collocation, ví dụ)

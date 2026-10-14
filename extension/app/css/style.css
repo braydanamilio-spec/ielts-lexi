@@ -917,3 +917,4 @@ button, .btn, .option, .tabs, .bottom-nav { -webkit-user-select: none; user-sele
 .wi-native { font-size: 1.05rem; font-weight: 600; color: var(--text); margin-top: .2rem; } .wi-native:empty { display: none; }
 .wn { display: grid; gap: .45rem; padding: .7rem .8rem; border-radius: 12px; background: color-mix(in srgb, var(--primary) 6%, transparent); font-size: .92rem; line-height: 1.55; }
 .wn-lb { display: block; font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+.ai-tiers { display: grid; gap: .35rem; margin: .4rem 0 .8rem; } .ai-tiers > div { display: flex; justify-content: space-between; align-items: center; gap: .6rem; padding: .45rem .6rem; border-radius: 10px; background: var(--surface-2); } .ai-tiers b.good { color: var(--good); }
