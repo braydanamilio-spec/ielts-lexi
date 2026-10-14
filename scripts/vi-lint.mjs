@@ -13,6 +13,7 @@ for (const f of files) {
     const w = m[0].toLowerCase();
     if (Object.hasOwn(TYPO, w)) { n++; console.log(`${f}: "${m[0]}" → "${TYPO[w]}"  …${s.slice(Math.max(0, m.index - 30), m.index + 20).replace(/\n/g, ' ')}…`); }
   }
+  const cc = s.search(/[\x00-\x08\x0B\x0C\x0E-\x1F]/); if (cc >= 0) { n++; console.log(`${f}: ký tự điều khiển ẩn (mã ${s.charCodeAt(cc)}) ở vị trí ${cc}`); }
   for (const m of s.matchAll(OLD)) { n++; console.log(`${f}: kiểu bỏ dấu cũ "${m[0]}"`); }
 }
 console.log(n ? `✗ vi-lint: ${n} lỗi` : `✓ vi-lint: ${files.length} file, không lỗi chính tả`);
