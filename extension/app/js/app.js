@@ -1138,9 +1138,25 @@
     else new Notification(title, { body, icon: 'icons/icon-192.png' });
   }
 
+  // Ghi thông tin nhắc học cho service worker (nhắc cả khi app đóng – Periodic Background Sync, Chrome app đã cài)
+  let metaKey = '';
+  async function syncMeta(s) {
+    if (!('caches' in window) || !navigator.serviceWorker) return;
+    const { total } = Cards.dueCount(state.cards, state.settings, state.stats);
+    const today = new Date().toISOString().slice(0, 10), studied = (state.stats.days || {})[todayKey()] > 0;
+    const m = { on: s.reminderOn !== false, time: s.reminderTime || '20:00', last: studied ? today : '', title: t('Vocaband – đến giờ học rồi!') + ' 📚',
+      body: total ? t('Bạn có {n} thẻ cần ôn hôm nay. Giữ chuỗi 🔥{s} ngày nhé!', { n: total, s: streak() }) : t('Học vài từ mới để giữ chuỗi ngày học nhé') };
+    const k = JSON.stringify(m); if (k === metaKey) return; metaKey = k;
+    await (await caches.open('vb-meta')).put('/__meta', new Response(k, { headers: { 'Content-Type': 'application/json' } }));
+    const reg = await navigator.serviceWorker.getRegistration();
+    if (reg && reg.periodicSync && m.on && 'Notification' in window && Notification.permission === 'granted') {
+      try { const st = await navigator.permissions.query({ name: 'periodic-background-sync' }); if (st.state === 'granted') await reg.periodicSync.register('vb-daily', { minInterval: 3 * 3600e3 }); } catch (e) { /* không hỗ trợ */ }
+    }
+  }
   async function checkReminder() {
     const s = state.settings;
     if (Store.isExtension) return;
+    syncMeta(s).catch(() => {});
     // Thời điểm vàng
     if (s.goldenOn && !Golden.quiet(s) && 'Notification' in window && Notification.permission === 'granted') {
       const n = Golden.dueNow(state.cards);
