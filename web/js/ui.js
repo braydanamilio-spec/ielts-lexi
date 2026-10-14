@@ -158,6 +158,11 @@
   };
   const recErrorText = err => REC_ERR[err] || `Lỗi nhận dạng: ${err}`;
   /* recognize(target, accent, { start, result({heard, score, audio, alts}), error(code), end }) → { stop } */
+  // Bản ghi giọng nói: chỉ giữ tạm trong RAM (không lưu ổ đĩa, không gửi lên cloud).
+  // Mỗi "ô" chỉ giữ bản mới nhất – bản cũ được giải phóng ngay; rời trang thì xóa hết.
+  const recUrls = {};
+  function recUrl(blob, slot = 'rec') { if (recUrls[slot]) URL.revokeObjectURL(recUrls[slot]); return (recUrls[slot] = URL.createObjectURL(blob)); }
+  function clearRecs() { Object.keys(recUrls).forEach(k => { URL.revokeObjectURL(recUrls[k]); delete recUrls[k]; }); }
   function recognize(target, accent, cb = {}) {
     const SR = g.SpeechRecognition || g.webkitSpeechRecognition;
     if (!SR) { cb.error && cb.error('unsupported'); return null; }
@@ -176,7 +181,7 @@
       }).catch(() => {});
     }
     const finishAudio = () => audioP || (audioP = new Promise(res => {
-      const done = () => { if (stream) stream.getTracks().forEach(t => t.stop()); res(chunks.length ? URL.createObjectURL(new Blob(chunks, { type: (media && media.mimeType) || 'audio/webm' })) : ''); };
+      const done = () => { if (stream) stream.getTracks().forEach(t => t.stop()); res(chunks.length ? recUrl(new Blob(chunks, { type: (media && media.mimeType) || 'audio/webm' })) : ''); };
       if (media && media.state !== 'inactive') { media.onstop = done; try { media.stop(); } catch (e) { done(); } } else done();
     }));
     r.onresult = async e => {
@@ -208,5 +213,5 @@
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   }
 
-  g.UI = { $, $$, esc, shuffle, wordRegex, highlight, cloze, clozeAnswer, similarity, toast, modal, closeModal, xpFloat, speak, tts, stopSpeak, recognize, stopRecognize, recErrorText, voicesFor, pickVoice, splitSentences, pic, levelChip, posChip, masteryDots, ring, download };
+  g.UI = { recUrl, clearRecs, $, $$, esc, shuffle, wordRegex, highlight, cloze, clozeAnswer, similarity, toast, modal, closeModal, xpFloat, speak, tts, stopSpeak, recognize, stopRecognize, recErrorText, voicesFor, pickVoice, splitSentences, pic, levelChip, posChip, masteryDots, ring, download };
 })(typeof self !== 'undefined' ? self : this);

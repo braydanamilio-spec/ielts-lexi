@@ -49,6 +49,7 @@
     rec = null; media = null; stream = null; UI.stopSpeak();
   };
 
+  App.speakBank = BANK;
   routes.speaking = function (arg) {
     const seg = (arg || '').split('/');
     const part = PARTS[seg[0]] ? seg[0] : 'p1';
@@ -143,7 +144,7 @@
       const secs = (Date.now() - t0) / 1000;
       $('#recBtn').classList.remove('rec'); $('#recBtn').textContent = '🎙️';
       $('#recHint').textContent = 'Bấm micro để trả lời lại';
-      const done = () => analyse((finalText + ' ' + interim).trim(), secs, chunks.length ? URL.createObjectURL(new Blob(chunks, { type: (media && media.mimeType) || 'audio/webm' })) : '');
+      const done = () => analyse((finalText + ' ' + interim).trim(), secs, chunks.length ? UI.recUrl(new Blob(chunks, { type: (media && media.mimeType) || 'audio/webm' }), 'speak') : '');
       try { rec && rec.stop(); } catch (e) { /* đã dừng */ }
       rec = null;
       if (media && media.state !== 'inactive') { media.onstop = () => { setTimeout(done, 300); if (stream) stream.getTracks().forEach(x => x.stop()); }; media.stop(); }

@@ -33,6 +33,13 @@
     state.cards = await Cards.all();
     state.settings = { ...DEFAULT_SETTINGS, theme: 'auto', sfx: true, ...(await Store.get('settings', {})) };
     SRS.retentionTarget = state.settings.retention || 0.9;
+    // Một lần: sửa lỗi chính tả hỏi/ngã từ dữ liệu Google trong các thẻ đã lưu trước đây
+    if (!state.settings.viFix1 && window.Dict && Dict.fixDeep) {
+      const all = await Cards.all(); let n = 0;
+      for (const c of Object.values(all)) { const f = Dict.fixDeep(c); if (JSON.stringify(f) !== JSON.stringify(c)) { await Cards.update(f); n++; } }
+      state.settings.viFix1 = 1; await Store.set('settings', state.settings);
+      if (n) state.cards = await Cards.all();
+    }
     state.stats = await Stats.get();
     state.game = await Game.get();
     Core.sfxOff = !state.settings.sfx;
@@ -155,10 +162,11 @@
   const G = 'js/grammar/', BUNDLES = {
     grammar: [...['tenses', 'verbs', 'sentences', 'foundation', 'academic', 'chapters', 'book2', 'drills-a', 'drills-b', 'drills-c'].map(f => G + f + '.js'), 'js/grammar.js'],
     pron: ['js/pron/sounds.js', 'js/pron/skills.js', 'js/pron.js'],
-    listening: [...[1, 2, 3, 4, 5].map(n => `js/listen/test${n}.js`), 'js/listening.js'],
+    listening: ['js/qengine.js', ...[1, 2, 3, 4, 5].map(n => `js/listen/test${n}.js`), 'js/listening.js'],
     writing: ['js/write/task2-more.js', 'js/write/task1-more.js', 'js/write.js', 'js/task1.js', 'js/models.js'],
+    mock: ['js/qengine.js', 'js/readtest/test1.js', 'js/readtest/test2.js', 'js/readtest/test3.js', 'js/mock.js'],
   };
-  const ROUTE_BUNDLE = { grammar: 'grammar', placement: 'grammar', pron: 'pron', listening: 'listening', listen: 'listening', 'listen-test': 'listening', dictation: 'listening', write: 'writing', task1: 'writing', model: 'writing', phrases: 'writing' };
+  const ROUTE_BUNDLE = { grammar: 'grammar', placement: 'grammar', pron: 'pron', listening: 'listening', listen: 'listening', 'listen-test': 'listening', dictation: 'listening', write: 'writing', task1: 'writing', model: 'writing', phrases: 'writing', mock: ['listening', 'writing', 'mock'] };
   const bundleP = {};
   const loadScript = src => new Promise(res => { const s = document.createElement('script'); s.src = src; s.async = false; s.onload = s.onerror = () => res(); document.head.appendChild(s); });
   // Tải song song nhưng chạy đúng thứ tự (async=false); file thiếu được bỏ qua
@@ -171,13 +179,13 @@
   let routeSeq = 0;
   async function route() {
     const { name, arg, query } = parseHash();
-    const b = ROUTE_BUNDLE[name], my = ++routeSeq;
-    if (b && !App.loaded(b)) view.innerHTML = '<div class="card empty"><div class="em">⏳</div>Đang tải…</div>';
-    if (b) { await App.need(b); if (my !== routeSeq) return; }
+    const b = [].concat(ROUTE_BUNDLE[name] || []), my = ++routeSeq;
+    if (b.some(x => !App.loaded(x))) view.innerHTML = '<div class="card empty"><div class="em">⏳</div>Đang tải…</div>';
+    if (b.length) { await App.need(...b); if (my !== routeSeq) return; }
     const fn = routes[name] || routes.home;
     const navKey = name === 'topic' ? 'library' : name === 'practice' && arg === 'speak' ? 'speak' : name === 'read' ? 'reading' : /^(listen|listen-test|dictation)$/.test(name) ? 'listening' : name;
     $$('#nav a, #bnav a').forEach(a => a.classList.toggle('active', a.dataset.route === navKey));
-    UI.stopSpeak();
+    UI.stopSpeak(); UI.clearRecs();
     document.onkeydown = null;
     if (App.cleanup) { App.cleanup(); App.cleanup = null; }
     view.style.animation = 'none'; void view.offsetWidth; view.style.animation = '';

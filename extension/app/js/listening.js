@@ -20,8 +20,7 @@
   const qNums = p => p.groups.flatMap(g => g.type === 'multi' ? g.n : g.items.map(i => i.n));
 
   // Quy đổi điểm Listening (thang công bố phổ biến của IELTS, chỉ mang tính tham khảo)
-  const BAND = [[39, 9], [37, 8.5], [35, 8], [32, 7.5], [30, 7], [26, 6.5], [23, 6], [18, 5.5], [16, 5], [13, 4.5], [10, 4], [8, 3.5], [6, 3], [4, 2.5], [0, 0]];
-  const bandOf = raw => (BAND.find(([m]) => raw >= m) || [0, 0])[1];
+  const bandOf = raw => QE.bandOf(raw, 'listening');
 
   // ================= GIỌNG ĐỌC =================
   const FEMALE = /female|woman|samantha|karen|moira|tessa|serena|kate|susan|martha|fiona|victoria|allison|ava|zira|hazel|libby|sonia|maisie|emma|jenny|aria|natasha|catherine|nicky|joanna|salli|kimberly|ivy|amy|olivia|google uk english female|google us english/i;
@@ -78,48 +77,8 @@
     };
   }
 
-  // ================= CHẤM ĐIỂM =================
-  const norm = s => String(s || '').toLowerCase().replace(/[’‘`]/g, "'").replace(/[£$€]/g, '').replace(/(\d),(\d{3})/g, '$1$2').replace(/[.,!?;:"“”()]/g, ' ').replace(/\s+/g, ' ').trim().replace(/^(the|a|an) /, '');
-  const words = s => norm(s).split(' ').filter(Boolean).length;
-  function gradeGap(it, limit, given) {
-    if (!given || !given.trim()) return { ok: false, empty: true };
-    const over = limit && words(given) > limit;
-    const ok = !over && it.a.some(a => norm(a) === norm(given));
-    return { ok, over };
-  }
-  // Trả về {n: {ok, given, answer, cue, q}} cho mọi câu trong phần
-  function collect(p, root) {
-    const res = {};
-    p.groups.forEach((g, gi) => {
-      if (g.type === 'multi') {
-        const picked = $$(`[data-multi="${gi}"]:checked`, root).map(x => x.value);
-        const correct = picked.filter(x => g.a.includes(x));
-        g.n.forEach((n, k) => { res[n] = { ok: k < correct.length, given: picked.join(', '), answer: g.a.join(', '), cue: g.cue, q: g.q }; });
-        return;
-      }
-      g.items.forEach(it => {
-        const el = $(`[data-qn="${it.n}"]`, root);
-        if (g.type === 'mcq') { const v = $(`input[name="q${it.n}"]:checked`, root); const given = v ? +v.value : null; res[it.n] = { ok: given === it.a, given: given == null ? '' : 'ABC'[given], answer: 'ABC'[it.a] + '. ' + it.options[it.a], cue: it.cue, q: it.q }; }
-        else if (g.type === 'match') { const v = el ? el.value : ''; res[it.n] = { ok: v === it.a, given: v, answer: it.a + ' – ' + ((g.options.find(o => o.startsWith(it.a + ' ')) || '').slice(2)), cue: it.cue, q: it.text }; }
-        else { const v = el ? el.value.trim() : ''; const r = gradeGap(it, g.limit, v); res[it.n] = { ok: r.ok, over: r.over, given: v, answer: it.a[0], cue: it.cue, q: it.text }; }
-      });
-    });
-    return res;
-  }
-
-  // ================= GIAO DIỆN CÂU HỎI =================
-  function groupHtml(g, gi) {
-    const head = `<div class="lq-instr">${g.title ? `<b>${esc(g.title)}</b><br>` : ''}<i>${esc(g.instr)}</i></div>`;
-    if (g.type === 'mcq') return `<div class="lq-group">${head}${g.items.map(it => `<div class="lq-item" data-item="${it.n}"><div><span class="qn">${it.n}</span> ${esc(it.q)}</div>
-      <div class="lq-opts">${it.options.map((o, k) => `<label><input type="radio" name="q${it.n}" value="${k}"> <b>${'ABC'[k]}</b> ${esc(o)}</label>`).join('')}</div><div class="lq-fb" hidden></div></div>`).join('')}</div>`;
-    if (g.type === 'match') return `<div class="lq-group">${head}<div class="lq-box">${g.options.map(o => `<div>${esc(o)}</div>`).join('')}</div>
-      ${g.items.map(it => `<div class="lq-item lq-row" data-item="${it.n}"><span class="qn">${it.n}</span><span style="flex:1">${esc(it.text)}</span><select data-qn="${it.n}"><option value="">–</option>${g.options.map(o => `<option>${esc(o[0])}</option>`).join('')}</select><div class="lq-fb" hidden></div></div>`).join('')}</div>`;
-    if (g.type === 'multi') return `<div class="lq-group">${head}<div class="lq-item" data-item="${g.n.join(',')}"><div><span class="qn">${g.n.join('–')}</span> ${esc(g.q)}</div>
-      <div class="lq-opts">${g.options.map(o => `<label><input type="checkbox" data-multi="${gi}" value="${esc(o[0])}"> ${esc(o)}</label>`).join('')}</div><div class="lq-fb" hidden></div></div></div>`;
-    const cls = g.type === 'table' ? 'lq-table' : 'lq-notes';
-    return `<div class="lq-group">${head}<div class="${cls}">${g.items.map(it => `<div class="lq-item lq-gap" data-item="${it.n}">${esc(it.text).replace('___', `<span class="qn">${it.n}</span><input class="gap" data-qn="${it.n}" autocomplete="off" spellcheck="false" size="12">`)}<div class="lq-fb" hidden></div></div>`).join('')}</div></div>`;
-  }
-  const questionsHtml = p => `<div class="lq">${p.groups.map(groupHtml).join('')}</div>`;
+  // Chấm điểm & hiển thị câu hỏi: dùng chung js/qengine.js
+  const { collect, questionsHtml } = QE;
 
   // Transcript: chạm từ để tra, bấm số câu để nghe lại đoạn có đáp án
   function transcriptHtml(p, showEv) {
@@ -232,25 +191,18 @@
       trans.addEventListener('click', e => { if (e.target.closest('.tw') && !trans.classList.contains('blur')) return; const l = e.target.closest('.tl'); if (l && !trans.classList.contains('blur')) { plays++; player.play(+l.dataset.line); } });
     }
     bindWordPop(trans, `Listening: ${p.title}`);
-    // Enter → ô kế tiếp
-    $$('#lQs input.gap').forEach((inp, k, arr) => inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); (arr[k + 1] || $('#lSubmit')).focus(); } }));
 
+    let lastRes = {};
+    const hear = n => { const r = lastRes[n]; if (!r || !r.cue) return; const i = p.script.findIndex(l => l.t && l.t.includes(r.cue)); if (i < 0) return; const el = $(`.tl[data-line="${i}"]`, trans); if (el) el.scrollIntoView({ block: 'center', behavior: 'smooth' }); let k = i; if (k > 0 && p.script[k - 1].t) k--; player.play(k); };
+    QE.bind($('#lQs'));
     $('#lSubmit').onclick = async () => {
       if (submitted) return;
       if (player.playing && exam && !confirm('Bài nghe chưa phát xong. Vẫn nộp bài?')) return;
       submitted = true; player.stop();
-      const res = collect(p, $('#lQs'));
+      const res = collect(p, $('#lQs')); lastRes = res;
       const nums = Object.keys(res).map(Number).sort((a, b) => a - b);
       const right = nums.filter(n => res[n].ok).length;
-      // Đánh dấu từng câu
-      $$('#lQs .lq-item').forEach(item => {
-        const ns = item.dataset.item.split(',').map(Number), r = res[ns[0]]; if (!r) return;
-        const ok = ns.every(n => res[n].ok), part = ns.some(n => res[n].ok);
-        item.classList.add(ok ? 'ok' : part ? 'half' : 'no');
-        const fb = $('.lq-fb', item); fb.hidden = false;
-        fb.innerHTML = `${ok ? '✅' : '❌'} Đáp án: <b>${esc(r.answer)}</b>${r.over ? ' <span class="tiny">(vượt quá số từ cho phép)</span>' : ''} ${r.cue ? `<button class="btn sm ghost" data-hear="${ns[0]}">🔎 Nghe đoạn có đáp án</button>` : ''}`;
-        $$('input, select', item).forEach(x => x.disabled = true);
-      });
+      QE.mark($('#lQs'), res, '🔎 Nghe đoạn có đáp án', n => hear(n));
       nums.filter(n => !res[n].ok).forEach(n => App.logMistake && App.logMistake({ kind: 'listening', q: `${p.title} – Câu ${n}: ${res[n].q}`, answer: res[n].answer, given: res[n].given || '(bỏ trống)', explain: res[n].cue ? `Nghe: “…${res[n].cue}…”` : '', ref: p.id }));
       state.game = await Game.mutate(gs => { gs.listenDone = { ...(gs.listenDone || {}), [p.id]: Math.max(right, (gs.listenDone || {})[p.id] || 0) }; });
       await App.reward({ quizzes: 1, listens: 1, perfect: right === nums.length ? 1 : 0, xp: 15 + right * 3 }, $('#lRes'));
@@ -269,7 +221,7 @@
       // Hiện lời thoại kèm chỗ có đáp án
       $('#lTransWrap').hidden = false; trans.innerHTML = transcriptHtml(p, true); trans.classList.remove('blur');
       const lv = $('#lLive'); if (lv) { lv.checked = true; lv.disabled = true; }
-      $$('[data-hear]').forEach(b => b.onclick = () => { const r = res[+b.dataset.hear]; const i = p.script.findIndex(l => l.t && l.t.includes(r.cue)); if (i < 0) return; const el = $(`.tl[data-line="${i}"]`, trans); if (el) el.scrollIntoView({ block: 'center', behavior: 'smooth' }); let k = i; while (k > 0 && i - k < 1 && p.script[k - 1].t) k--; player.play(k); });
+      // (nút "Nghe đoạn có đáp án" gọi hear(n))
       if (exam) { $('#lPlay').disabled = false; $('#lPlay').textContent = '▶ Nghe lại'; exam && ($('#lNote').textContent = 'Đã nộp bài – giờ bạn có thể nghe lại và xem lời thoại.'); }
       $('#lRes').scrollIntoView({ behavior: 'smooth', block: 'center' });
       // Sau khi nộp: nghe lại tự do
@@ -386,5 +338,5 @@
     draw();
   };
 
-  App.listening = { bandOf, byId, castVoices };
+  App.listening = { bandOf, byId, castVoices, Player, partsOf, qNums };
 })();

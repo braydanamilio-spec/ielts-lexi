@@ -104,6 +104,7 @@
     return `<div class="grid g2">${d.maps.map(([l, b]) => one(l, b)).join('')}</div>`;
   }
   const DRAW = { line: lineChart, bar: barChart, pie: pieCharts, table: tableChart, process: processChart, map: mapChart };
+  App.task1 = { SETS, draw: d => DRAW[d.type](d), score: (t, d) => score(t, d) };
   const TYPE_VI = { line: 'Biểu đồ đường', bar: 'Biểu đồ cột', pie: 'Biểu đồ tròn', table: 'Bảng số liệu', process: 'Quy trình', map: 'Bản đồ' };
 
   let timer = null;
@@ -149,9 +150,9 @@
     $('#go').onclick = () => analyse(ta.value, d);
   };
 
-  function analyse(text, d) {
+  // Chấm Task 1 (thuần, dùng chung cho Phòng viết & Thi thử 4 kỹ năng)
+  function score(text, d) {
     const words = (text.match(/[A-Za-z][A-Za-z'’-]*/g) || []).length;
-    if (words < 30) return toast('Hãy viết ít nhất vài câu (≥ 30 từ) để phân tích');
     const has = re => (text.match(re) || []).length;
     const overview = has(/\b(overall|in general|generally|it is clear that|it is evident that|as can be seen|in summary)\b/gi);
     const numbers = has(/\b\d+([.,]\d+)?\s?(%|per cent|percent|thousand|million|hours?)?/gi);
@@ -175,6 +176,12 @@
     let band = Math.max(4, Math.min(8, score));
     if (words < 100) band = Math.min(band, 4.5); else if (words < 150) band = Math.min(band, 5.5);
     if (!notes.length) notes.push('Bài có đủ các yếu tố chính của Task 1. Hãy tự kiểm tra lại độ chính xác của số liệu, ngữ pháp và chính tả.');
+    return { band, words, notes };
+  }
+  function analyse(text, d) {
+    const words = (text.match(/[A-Za-z][A-Za-z'’-]*/g) || []).length;
+    if (words < 30) return toast('Hãy viết ít nhất vài câu (≥ 30 từ) để phân tích');
+    const { band, notes } = score(text, d);
     $('#t1Res').innerHTML = `<div class="card stack">
       <div class="row nowrap" style="gap:1.2rem"><div class="score-ring" style="--p:${(band - 4) / 4 * 100};--c:${band >= 7 ? 'var(--good)' : band >= 6 ? 'var(--hard)' : 'var(--again)'}"><b>${band}</b></div>
         <div><h2 style="margin:0">Task Achievement ước tính: ${band}</h2><div class="small muted">Kiểm tra tự động các yếu tố bắt buộc của Task 1 – chỉ để tham khảo.</div></div></div>

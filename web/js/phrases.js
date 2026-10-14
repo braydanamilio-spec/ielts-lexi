@@ -9,10 +9,16 @@
   // ---------- Hiển thị bài mẫu có chú thích ----------
   // [[cụm|nghĩa]]  {{từ nối}}  <<Nhãn vai trò>>
   function renderAnnotated(text) {
-    return text.split(/\n\s*\n/).map(p => '<p>' + esc(p)
-      .replace(/&lt;&lt;([^&]+?)&gt;&gt;/g, '<span class="an-role">$1</span> ')
-      .replace(/\[\[([^|\]]+)\|([^\]]+)\]\]/g, (m, en, vi) => `<span class="an-ch" data-ph="${en}" data-vi="${vi}">${en}</span> <span class="an-gl">${vi}</span>`)
-      .replace(/\{\{([^}]+)\}\}/g, '<span class="an-lk">$1</span>') + '</p>').join('');
+    return text.split(/\n\s*\n/).map(p => {
+      let h = esc(p.trim());
+      // Vai trò ở đầu đoạn → nhãn phía trên đoạn; giữa đoạn → nhãn nhỏ trong dòng
+      let head = '';
+      h = h.replace(/^&lt;&lt;([^&]+?)&gt;&gt;\s*/, (m, r) => { head = `<div class="an-ptag"><span class="an-role">${r}</span></div>`; return ''; });
+      h = h.replace(/&lt;&lt;([^&]+?)&gt;&gt;\s*/g, '<span class="an-role an-inl">$1</span> ')
+        .replace(/\[\[([^|\]]+)\|([^\]]+)\]\]/g, (m, en, vi) => `<span class="an-ch" data-ph="${en}" data-vi="${vi}" tabindex="0"><span class="an-en">${en}</span><span class="an-gl">${vi}</span></span>`)
+        .replace(/\{\{([^}]+)\}\}/g, '<span class="an-lk">$1</span>');
+      return head + '<p>' + h + '</p>';
+    }).join('');
   }
   App.renderAnnotated = renderAnnotated;
   const plain = t => t.replace(/<<[^>]*>>/g, '').replace(/\[\[([^|\]]*)\|[^\]]*\]\]/g, '$1').replace(/\{\{([^}]*)\}\}/g, '$1');
@@ -32,33 +38,58 @@
   routes.model = function (id) {
     const m = (window.MODELS || []).find(x => x.id === id);
     if (!m) { view.innerHTML = '<div class="card empty"><div class="em">📄</div>Chưa có bài mẫu này.</div>'; return; }
-    const prompt = m.task === 1 ? `Task 1 · ${m.ref}` : ((window.WRITE_PROMPTS || []).find(p => p.id === m.ref) || {}).text || `Task 2 · ${m.ref}`;
-    const hl = state.settings.annot || 'gl ch lk role';
+    const p2 = m.task === 2 ? (window.WRITE_PROMPTS || []).find(p => p.id === m.ref) : null;
+    const d1 = m.task === 1 && App.task1 ? App.task1.SETS.find(x => x.id === m.ref) : null;
+    const TYPE_VI = { line: 'Biểu đồ đường', bar: 'Biểu đồ cột', pie: 'Biểu đồ tròn', table: 'Bảng số liệu', process: 'Quy trình', map: 'Bản đồ' };
+    const kind = m.task === 1 ? (d1 ? TYPE_VI[d1.type] : 'Task 1') : (p2 ? p2.type : 'Task 2');
+    const hl = state.settings.annot2 || 'ch lk role';
     const on = k => hl.split(' ').includes(k);
+    const chunks = [...m.text.matchAll(/\[\[([^|\]]+)\|([^\]]+)\]\]/g)].map(x => ({ en: x[1], vi: x[2] }));
+    const links = [...new Set([...m.text.matchAll(/\{\{([^}]+)\}\}/g)].map(x => x[1]))];
+    const back = `#/${m.task === 1 ? 'task1/' + m.ref : 'write/' + m.ref}`;
     view.innerHTML = `
-      <a href="#/${m.task === 1 ? 'task1/' + m.ref : 'write/' + m.ref}" class="small">← Quay lại đề</a>
-      <div class="page-head" style="margin-top:.5rem"><div><h1>📄 Bài mẫu Task ${m.task} · Band ${esc(m.band)}</h1><p class="muted">${esc(prompt)}</p></div>
-        <div class="row"><span class="chip">${m.words} từ</span><button class="btn sm" id="readM">🔊 Nghe bài</button></div></div>
-      <div class="tabs" id="mTabs" style="margin-bottom:1rem">${[['read', '📄 Bài mẫu'], ['vocab', '🧩 Luyện từ vựng'], ['gram', '📐 Luyện ngữ pháp'], ['link', '🧷 Luyện liên kết'], ['copy', '⌨️ Chép câu'], ['write', '✍️ Viết câu']].map(([k, l], i) => `<button data-mt="${k}" class="${i ? '' : 'on'}">${l}</button>`).join('')}</div>
-      <div id="mPane" hidden></div>
-      <div id="mRead">
-      <div class="hl-bar" id="anBar">
-        <span class="tiny muted" style="font-weight:700">HIỂN THỊ:</span>
-        ${[['ch', '🟦 Cụm từ hay'], ['gl', '🟥 Nghĩa tiếng Việt'], ['lk', '🟨 Từ nối'], ['role', '🟩 Vai trò câu']].map(([k, l]) => `<button class="hl-chip ${on(k) ? 'on' : ''}" data-an="${k}">${l}</button>`).join('')}
+      <a href="${back}" class="small">← Về đề bài</a>
+      <div class="md-head card">
+        <div class="row between" style="align-items:flex-start">
+          <div><div class="row" style="gap:.35rem"><span class="md-badge">Writing Task ${m.task}</span><span class="md-badge soft">${esc(kind)}</span><span class="md-badge band">Band ${esc(m.band)}</span></div>
+            <h1 class="md-title">Bài mẫu có phân tích</h1></div>
+          <div class="row"><span class="chip">${m.words} từ</span><button class="btn sm" id="readM">🔊 Nghe bài</button><a class="btn sm ghost" href="${back}">✍️ Tự viết đề này</a></div>
+        </div>
+        <div class="md-prompt">${m.task === 1 ? `<div class="small muted" style="margin-bottom:.4rem">ĐỀ BÀI</div><div>${esc(d1 ? d1.title : 'Task 1 · ' + m.ref)} Summarise the information by selecting and reporting the main features, and make comparisons where relevant.</div>${d1 ? `<details class="md-chart"><summary class="small">📊 Xem biểu đồ</summary><div class="t1chart">${App.task1.draw(d1)}</div></details>` : ''}`
+          : `<div class="small muted" style="margin-bottom:.4rem">ĐỀ BÀI</div><div>${esc(p2 ? p2.text : 'Task 2 · ' + m.ref)}</div>`}</div>
       </div>
-      <div class="card annot ${['ch', 'gl', 'lk', 'role'].filter(on).map(k => 'an-' + k).join(' ')}" id="annot">${renderAnnotated(m.text)}</div>
-      <div class="card" style="margin-top:1rem"><div class="row between"><h3 style="margin:0">🧩 ${(m.text.match(/\[\[/g) || []).length} cụm từ trong bài</h3><button class="btn sm primary" id="saveAll">+ Lưu tất cả vào Sổ cụm từ</button></div>
-        <div class="row" style="margin-top:.6rem">${[...m.text.matchAll(/\[\[([^|\]]+)\|([^\]]+)\]\]/g)].map(x => `<span class="chip" title="${esc(x[2])}">${esc(x[1])}</span>`).join('')}</div>
-        <p class="tiny muted" style="margin-top:.6rem">💡 Bấm vào cụm tô xanh trong bài để lưu riêng cụm đó, hoặc bôi đen bất kỳ đoạn nào để lưu cấu trúc của riêng bạn.</p></div>
+      <div class="tabs" id="mTabs" style="margin:1rem 0">${[['read', '📄 Đọc bài mẫu'], ['vocab', '🧩 Điền cụm từ'], ['gram', '📐 Ngữ pháp'], ['link', '🔗 Từ nối'], ['copy', '⌨️ Chép câu'], ['write', '✍️ Viết lại câu']].map(([k, l], i) => `<button class="${i ? '' : 'on'}" data-mt="${k}">${l}</button>`).join('')}</div>
+      <div id="mPane" hidden></div>
+      <div id="mRead" class="md-grid">
+        <div>
+          <div class="md-tools" id="anBar">
+            ${[['ch', 'Cụm từ hay'], ['gl', 'Nghĩa dưới cụm'], ['lk', 'Từ nối'], ['role', 'Vai trò câu']].map(([k, l]) => `<label class="md-sw"><input type="checkbox" data-an="${k}" ${on(k) ? 'checked' : ''}><span></span>${l}</label>`).join('')}
+          </div>
+          <article class="card annot md-paper ${['ch', 'gl', 'lk', 'role'].filter(on).map(k => 'an-' + k).join(' ')}" id="annot">${renderAnnotated(m.text)}</article>
+          <p class="tiny muted" style="margin-top:.5rem">💡 Di chuột / chạm vào cụm tô màu để xem nghĩa, bấm để lưu. Bôi đen bất kỳ chữ nào để tra nghĩa hoặc lưu cấu trúc của riêng bạn.</p>
+        </div>
+        <aside class="md-side">
+          <div class="card">
+            <div class="row between"><h3 style="margin:0">🧩 Cụm từ hay <span class="muted small">(${chunks.length})</span></h3><button class="btn sm primary" id="saveAll">Lưu tất cả</button></div>
+            <div class="md-list">${chunks.map((c, i) => `<div class="md-item"><div><b>${esc(c.en)}</b><div class="small muted">${esc(c.vi)}</div></div><button class="icon-btn sm" data-sv="${i}" title="Lưu vào Sổ cụm từ">${App.inDeck(c.en) ? '✓' : '+'}</button></div>`).join('')}</div>
+          </div>
+          ${links.length ? `<div class="card" style="margin-top:1rem"><h3 style="margin:0 0 .5rem">🔗 Từ nối & liên kết</h3><div class="row">${links.map(l => `<span class="md-lchip">${esc(l)}</span>`).join('')}</div></div>` : ''}
+        </aside>
       </div>`;
+    $$('[data-sv]').forEach(b => b.onclick = async () => {
+      const c = chunks[+b.dataset.sv]; if (App.inDeck(c.en)) return;
+      const sent = (plain(m.text).match(/[^.!?]+[.!?]+/g) || []).find(s => s.includes(c.en)) || '';
+      await App.addWord({ word: c.en, vi: c.vi, pos: 'phrase', ex: sent.trim(), emoji: '🧩', topic: 'phrases' }, sent ? { text: sent.trim(), title: `Bài mẫu Task ${m.task}` } : null, { silent: true });
+      b.textContent = '✓'; Sfx.correct();
+    });
     $$('#mTabs button').forEach(b => b.onclick = () => {
       $$('#mTabs button').forEach(x => x.classList.toggle('on', x === b));
       const k = b.dataset.mt; $('#mRead').hidden = k !== 'read'; $('#mPane').hidden = k === 'read';
       if (k !== 'read') EX[k](m, $('#mPane'));
     });
-    $$('[data-an]').forEach(b => b.onclick = () => {
-      b.classList.toggle('on'); $('#annot').classList.toggle('an-' + b.dataset.an, b.classList.contains('on'));
-      state.settings.annot = $$('[data-an].on').map(x => x.dataset.an).join(' '); App.saveSettings();
+    $$('[data-an]').forEach(b => b.onchange = () => {
+      $('#annot').classList.toggle('an-' + b.dataset.an, b.checked);
+      state.settings.annot2 = $$('[data-an]:checked').map(x => x.dataset.an).join(' '); App.saveSettings();
     });
     $('#annot').addEventListener('click', e => {
       const ch = e.target.closest('.an-ch'); if (!ch) return;
@@ -184,30 +215,87 @@
   }
   App.savePhraseDialog = savePhraseDialog;
 
-  // ---------- Bôi đen bất kỳ đoạn nào trong app để lưu thành cụm ----------
-  const fab = document.createElement('button');
-  fab.className = 'btn sm primary sel-fab'; fab.hidden = true; fab.textContent = '🧩 Lưu cụm này';
-  document.body.appendChild(fab);
+  // ---------- Bôi đen bất kỳ đoạn nào trong app: 🔎 tra nghĩa · 🌐 dịch · 🧩 lưu cụm ----------
+  // (Trên trang Vocaband, tiện ích Chrome nhường phần này cho app để không hiện 2 bảng tra)
+  const bar = document.createElement('div');
+  bar.className = 'sel-bar'; bar.hidden = true;
+  document.body.appendChild(bar);
+  const pop = document.createElement('div');
+  pop.className = 'sel-pop card'; pop.hidden = true;
+  document.body.appendChild(pop);
   let selInfo = null;
-  document.addEventListener('mouseup', e => setTimeout(() => {
-    if (e.target === fab) return;
+  const NO_LOOKUP = 'input, textarea, select, .cbt, .mk-read, .mk-write, .mk-qs, .sel-pop, .sel-bar, .pop';
+  const place = (el, r, below = 8) => {
+    el.style.left = Math.max(8, Math.min(innerWidth - el.offsetWidth - 8, r.left + r.width / 2 - el.offsetWidth / 2)) + 'px';
+    const top = r.bottom + below; el.style.top = (top + el.offsetHeight > innerHeight - 8 ? Math.max(8, r.top - el.offsetHeight - 8) : top) + 'px';
+  };
+  const readSel = () => {
     const sel = getSelection();
-    const t = sel && !sel.isCollapsed && sel.rangeCount ? cleanText(sel.getRangeAt(0).cloneContents()) : '';
-    const inView = sel && sel.anchorNode && view.contains(sel.anchorNode) && !(sel.anchorNode.parentElement || {}).closest?.('input, textarea, .cbt');
-    const n = t.split(' ').length;
-    if (!t || !inView || n < 2 || n > 14 || !/[A-Za-z]/.test(t) || /[À-ỹ]/.test(t)) { fab.hidden = true; return; }
-    const r = sel.getRangeAt(0).getBoundingClientRect();
-    const block = (sel.anchorNode.parentElement.closest('p, li, .example-box, .ex, .meaning, .sent, div') || {});
-    const full = block.nodeType ? cleanText(block) : '';
+    if (!sel || sel.isCollapsed || !sel.rangeCount) return null;
+    const node = sel.anchorNode, el = node && (node.nodeType === 1 ? node : node.parentElement);
+    if (!el || !view.contains(el) || el.closest(NO_LOOKUP) || document.body.classList.contains('bare')) return null;
+    const t = cleanText(sel.getRangeAt(0).cloneContents());
+    if (!t || t.length > 600 || !/[A-Za-z]{2}/.test(t) || /[À-ỹ]/.test(t)) return null;
+    const block = el.closest('p, li, .example-box, .ex, .meaning, .sent, .tl, .lq-item, div');
+    const full = block ? cleanText(block) : t;
     const sents = full.match(/[^.!?]+[.!?]+["”’)]*|[^.!?]+$/g) || [full];
-    const sentence = (sents.find(x => x.toLowerCase().includes(t.toLowerCase())) || full).trim();
-    selInfo = { phrase: t.replace(/^[^A-Za-z]+|[^A-Za-z)]+$/g, ''), sentence: sentence.length > 300 ? sentence.slice(0, 297) + '…' : sentence };
-    fab.style.left = Math.min(innerWidth - 150, r.left + r.width / 2 - 60) + 'px';
-    fab.style.top = (r.bottom + 8) + 'px';
-    fab.hidden = false;
-  }, 10));
-  document.addEventListener('mousedown', e => { if (e.target !== fab) fab.hidden = true; });
-  fab.onclick = () => { fab.hidden = true; if (selInfo) savePhraseDialog({ ...selInfo, title: 'Lưu từ Vocaband' }); getSelection().removeAllRanges(); };
+    let sentence = (sents.find(x => x.toLowerCase().includes(t.toLowerCase().slice(0, 40))) || full).trim();
+    if (sentence.length > 300) sentence = sentence.slice(0, 297) + '…';
+    return { text: t.replace(/^[^A-Za-z(]+|[^A-Za-z)]+$/g, ''), sentence, rect: sel.getRangeAt(0).getBoundingClientRect() };
+  };
+  const onSelect = () => setTimeout(() => {
+    const info = readSel();
+    if (!info) { bar.hidden = true; return; }
+    selInfo = info;
+    const n = info.text.split(/\s+/).length;
+    bar.innerHTML = `${n <= 4 ? '<button data-act="look">🔎 Tra nghĩa</button>' : '<button data-act="tr">🌐 Dịch</button>'}${n >= 2 && n <= 14 ? '<button data-act="save">🧩 Lưu cụm</button>' : ''}${n <= 4 ? '<button data-act="say" title="Nghe">🔊</button>' : ''}`;
+    bar.hidden = false; place(bar, info.rect);
+  }, 10);
+  document.addEventListener('mouseup', e => { if (!bar.contains(e.target) && !pop.contains(e.target)) onSelect(); });
+  document.addEventListener('touchend', e => { if (!bar.contains(e.target) && !pop.contains(e.target)) setTimeout(onSelect, 250); });
+  document.addEventListener('mousedown', e => { if (!bar.contains(e.target)) bar.hidden = true; if (!pop.contains(e.target) && !bar.contains(e.target)) pop.hidden = true; });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') { bar.hidden = true; pop.hidden = true; } });
+  window.addEventListener('hashchange', () => { bar.hidden = true; pop.hidden = true; });
+  bar.addEventListener('mousedown', e => e.preventDefault()); // giữ nguyên vùng chọn khi bấm nút
+  bar.onclick = async e => {
+    const act = e.target.closest('[data-act]'); if (!act || !selInfo) return;
+    const info = selInfo, k = act.dataset.act;
+    if (k === 'say') return UI.speak(info.text, state.settings.accent);
+    bar.hidden = true;
+    if (k === 'save') { getSelection().removeAllRanges(); return savePhraseDialog({ phrase: info.text, sentence: info.sentence, title: 'Lưu từ Vocaband' }); }
+    pop.hidden = false; pop.innerHTML = `<div class="muted small">⏳ ${k === 'look' ? 'Đang tra' : 'Đang dịch'} “${esc(info.text.slice(0, 60))}”…</div>`; place(pop, info.rect);
+    if (k === 'tr') {
+      const vi = await Dict.translateVi(info.text);
+      pop.innerHTML = `<div class="row between nowrap"><b class="small">🌐 Bản dịch</b><button class="icon-btn sm" data-x>✕</button></div><div style="margin:.4rem 0;line-height:1.6">${esc(vi || 'Không dịch được – thử lại sau.')}</div>
+        <div class="row"><button class="btn sm" data-sp>🔊 Nghe câu gốc</button></div>`;
+      $('[data-sp]', pop).onclick = () => UI.tts(info.text, state.settings.accent);
+    } else {
+      const w = info.text.toLowerCase();
+      const d = (await Dict.quick(w)) || (await Dict.lookup(w, { examples: false, image: false }));
+      if (!d || !d.found) {
+        const vi = (d && d.vi) || await Dict.translateVi(info.text);
+        pop.innerHTML = `<div class="row between nowrap"><b>${esc(info.text)}</b><button class="icon-btn sm" data-x>✕</button></div><div class="vi" style="margin:.3rem 0">${esc(vi || 'Không tìm thấy')}</div>${info.text.includes(' ') ? '<button class="btn sm primary" data-ph>🧩 Lưu cụm</button>' : ''}`;
+      } else {
+        pop.innerHTML = `<div class="row between nowrap"><div><b style="font-size:1.2rem">${esc(d.word)}</b> ${UI.posChip ? UI.posChip(d.pos) : ''}</div><button class="icon-btn sm" data-x>✕</button></div>
+          <div class="row" style="gap:.3rem"><span class="ipa">${esc(d.ipa || '')}</span><button class="icon-btn sm" data-sp>🔊</button></div>
+          <div class="vi" style="font-size:1.05rem;margin:.2rem 0">${esc(d.vi)}</div>
+          ${d.def ? `<div class="small muted">${esc(d.def)}</div>` : ''}
+          ${info.sentence && info.sentence !== info.text ? `<div class="example-box small" style="margin-top:.5rem">📌 ${UI.highlight(info.sentence, d.word)}</div>` : ''}
+          <div class="row" style="margin-top:.6rem"><button class="btn sm primary" data-save>${App.inDeck(d.word) ? '+ Thêm ngữ cảnh' : '+ Lưu flashcard'}</button>${info.text.includes(' ') ? '<button class="btn sm" data-ph>🧩 Lưu cụm</button>' : ''}<a class="btn sm ghost" href="#/dict/${encodeURIComponent(d.word)}">Chi tiết</a></div>`;
+        $('[data-sp]', pop).onclick = () => UI.speak(d.word, state.settings.accent, d.audio);
+        $('[data-save]', pop).onclick = async ev => {
+          const b = ev.currentTarget; b.disabled = true;
+          const vi = info.sentence ? await Dict.translateVi(info.sentence) : '';
+          await App.addWord(d, info.sentence ? { text: info.sentence, vi, title: document.title.replace(/ – Vocaband$/, '') || 'Vocaband' } : null);
+          b.textContent = '✓ Đã lưu';
+        };
+        if (state.settings.autoSpeak) UI.speak(d.word, state.settings.accent, d.audio);
+      }
+      const ph = $('[data-ph]', pop); if (ph) ph.onclick = () => { pop.hidden = true; savePhraseDialog({ phrase: info.text, sentence: info.sentence, title: 'Lưu từ Vocaband' }); };
+    }
+    place(pop, info.rect);
+    $('[data-x]', pop).onclick = () => { pop.hidden = true; };
+  };
 
   // ---------- Sổ cụm từ & cấu trúc ----------
   const isPhrase = c => /\s/.test(c.word.trim()) || c.pos === 'phrase' || c.topic === 'phrases';

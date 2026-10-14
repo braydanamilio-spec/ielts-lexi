@@ -64,6 +64,8 @@
     return { ...a, xp: Math.max(a.xp || 0, b.xp || 0), days, total, best, unitDone, badges: { ...b.badges, ...a.badges }, readDone: { ...(b.readDone || {}), ...(a.readDone || {}) }, questsDone: { ...(b.questsDone || {}), ...(a.questsDone || {}) } };
   }
 
+  // Dấu “đã xóa” chỉ cần giữ đủ lâu để mọi thiết bị kịp đồng bộ → bỏ mục quá 90 ngày, tránh phình dữ liệu
+  const pruneDel = d => { const cut = Date.now() - 90 * 864e5; for (const k of Object.keys(d)) if (d[k] < cut) delete d[k]; return d; };
   const ref = () => db.collection('users').doc(Sync.user.uid).collection('data');
 
   // ---------- Cầu nối với add-on Chrome (cùng máy) ----------
@@ -142,6 +144,7 @@
         const remote = JSON.parse(docs.meta.json || '{}');
         const deleted = { ...(remote.deleted || {}) };
         for (const [k, t] of Object.entries(local.deleted)) deleted[k] = Math.max(deleted[k] || 0, t);
+        pruneDel(deleted);
         await Store.set('deleted', deleted);
         await Cards.save(mergeCards(local.cards, remoteCards, deleted));
         await Store.set('stats', mergeStats(local.stats, remote.stats || { days: {} }));
@@ -177,7 +180,7 @@
         batch.set(ref().doc('cards_' + i), { json }); pending['cards_' + i] = h; writes++;
       }
       const game = await Game.get();
-      const meta = JSON.stringify({ stats: await Core.Stats.get(), game: { ...game, questsDone: {} }, settings: await Store.get('settings', {}), settingsAt: await Store.get('settingsAt', 0), deleted: await Store.get('deleted', {}) });
+      const meta = JSON.stringify({ stats: await Core.Stats.get(), game: { ...game, questsDone: {} }, settings: await Store.get('settings', {}), settingsAt: await Store.get('settingsAt', 0), deleted: pruneDel(await Store.get('deleted', {})) });
       const mh = hash(meta + chunks);
       if (sentHashes.meta !== mh) { batch.set(ref().doc('meta'), { chunks, updated: Date.now(), json: meta }); pending.meta = mh; writes++; }
       if (writes) await batch.commit();
@@ -194,7 +197,7 @@
     if (!Sync.user) return;
     dirty = true;
     if (timer) return;
-    timer = setTimeout(() => { timer = null; if (dirty) push(); }, 60000);
+    timer = setTimeout(() => { timer = null; if (dirty) push(); }, 180000); // tối đa 1 lần/3 phút + đẩy ngay khi rời trang
   };
   const flush = () => { if (Sync.user && dirty) { clearTimeout(timer); timer = null; push(); } };
   document.addEventListener('visibilitychange', () => { if (document.hidden) flush(); });

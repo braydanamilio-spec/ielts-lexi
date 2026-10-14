@@ -20,12 +20,19 @@
   };
 
   const GTX = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=vi&hl=vi&dj=1';
+  // Sửa lỗi chính tả hỏi/ngã có sẵn trong dữ liệu từ điển Google (vd. "sản phẫm" → "sản phẩm").
+  // Bảng sinh tự động từ kho tiếng Việt của Vocaband: chỉ gồm âm tiết sai chắc chắn (dạng đúng rất phổ biến, dạng sai không tồn tại),
+  // đã loại các từ hợp lệ hiếm gặp như mỡ, vở, quỷ, rể, mẩu, sặc sỡ…
+  const VI_TYPO = {"chũ":"chủ","điễn":"điển","cũa":"của","thưỡng":"thưởng","đễ":"để","chĩ":"chỉ","tãi":"tải","chuyễn":"chuyển","buỗi":"buổi","chuổi":"chuỗi","điễm":"điểm","ỡ":"ở","hảy":"hãy","mổi":"mỗi","nghỉa":"nghĩa","kiễm":"kiểm","tỗng":"tổng","ngử":"ngữ","cãnh":"cảnh","quã":"quả","hiễn":"hiển","tưỡng":"tưởng","hũy":"hủy","khõi":"khỏi","dỏi":"dõi","khoãn":"khoản","gữi":"gửi","kễ":"kể","biễu":"biểu","thữ":"thử","khã":"khả","bãn":"bản","ãnh":"ảnh","thễ":"thể","giử":"giữ","lổi":"lỗi","khẫu":"khẩu","dể":"dễ","miển":"miễn","vửng":"vững","chuẫn":"chuẩn","sẳn":"sẵn","hiễu":"hiểu","trỡ":"trở","khỡi":"khởi","phõng":"phỏng","chử":"chữ","chĩnh":"chỉnh","cở":"cỡ","hõi":"hỏi","đũ":"đủ","ẫn":"ẩn","giãm":"giảm","trã":"trả","thiễu":"thiểu","ỗn":"ổn","khoãng":"khoảng","đãm":"đảm","ngẩu":"ngẫu","kiễu":"kiểu","thẵng":"thẳng","giãng":"giảng","phỗ":"phổ","nhiểm":"nhiễm","thãi":"thải","bải":"bãi","chũng":"chủng","khõe":"khỏe","dưởng":"dưỡng","tuỗi":"tuổi","tuyễn":"tuyển","đẵng":"đẳng","xữ":"xử","tữ":"tử","hưỡng":"hưởng","sãn":"sản","tĩ":"tỉ","xĩ":"xỉ","ũng":"ủng","triễn":"triển","diển":"diễn","tãng":"tảng","phãn":"phản","phãi":"phải","nhõ":"nhỏ","xãy":"xảy","cữa":"cửa","bãng":"bảng","dẩn":"dẫn","đão":"đảo","nhửng":"những","giửa":"giữa","tiễu":"tiểu","khão":"khảo","đở":"đỡ","bỡi":"bởi","thão":"thảo","quãn":"quản","khẵng":"khẳng","hửu":"hữu","phẫy":"phẩy","thũ":"thủ","trưỡng":"trưởng","biễn":"biển","thũy":"thủy","hõng":"hỏng","tỗ":"tổ","lể":"lễ","hiễm":"hiểm","sữ":"sử","gổ":"gỗ","trể":"trễ","cãm":"cảm","rổng":"rỗng","phẫm":"phẩm","hẵn":"hẳn","khỗng":"khổng","bửa":"bữa","khũng":"khủng","hoãng":"hoảng","nử":"nữ","lổ":"lỗ","chãy":"chảy","thoãi":"thoải","tỗn":"tổn","thõa":"thỏa","nhản":"nhãn","trử":"trữ","thã":"thả","vủ":"vũ","thỗi":"thổi","mủi":"mũi","lưởi":"lưỡi","cãn":"cản","võn":"vỏn"};
+  // Sửa toàn bộ chuỗi trong một mục từ / thẻ đã lưu (chỉ tác động âm tiết có dấu tiếng Việt)
+  const fixDeep = o => o == null ? o : JSON.parse(JSON.stringify(o), (k, v) => typeof v === 'string' ? fixVi(v) : v);
+  const fixVi = s => typeof s !== 'string' ? s : s.normalize('NFC').replace(/[a-zA-ZÀ-ỹđĐ]+/g, w => { const r = VI_TYPO[w.toLowerCase()]; return !r ? w : w[0] === w[0].toUpperCase() && w[0] !== w[0].toLowerCase() ? r[0].toUpperCase() + r.slice(1) : r; });
 
   async function fromGoogle(word) {
     const d = await fetchJSON(`${GTX}&dt=t&dt=bd&dt=md&dt=ex&dt=ss&q=${encodeURIComponent(word)}`, 4000);
     if (!d) return null;
-    const vi = (d.sentences || []).map(s => s.trans || '').join('').trim();
-    const senses = (d.dict || []).map(x => ({ pos: x.pos, terms: (x.terms || []).slice(0, 6) }));
+    const vi = fixVi((d.sentences || []).map(s => s.trans || '').join('').trim());
+    const senses = (d.dict || []).map(x => ({ pos: x.pos, terms: [...new Set((x.terms || []).map(fixVi))].slice(0, 6) }));
     const exById = {};
     ((d.examples && d.examples.example) || []).forEach(e => { exById[e.definition_id] = e.text.replace(/<\/?b>/g, ''); });
     const defs = (d.definitions || []).map(x => ({
@@ -95,13 +102,13 @@
   async function myMemory(text) {
     const d = await fetchJSON(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|vi`);
     const t = d && d.responseData && d.responseData.translatedText;
-    return !t || /MYMEMORY WARNING|INVALID/i.test(t) ? '' : t;
+    return !t || /MYMEMORY WARNING|INVALID/i.test(t) ? '' : fixVi(t);
   }
 
   // Dịch cả câu (dùng cho câu ngữ cảnh)
   async function translateVi(text) {
     const d = await fetchJSON(`${GTX}&dt=t&q=${encodeURIComponent(text)}`);
-    const t = d && (d.sentences || []).map(s => s.trans || '').join('').trim();
+    const t = d && fixVi((d.sentences || []).map(s => s.trans || '').join('').trim());
     return t || myMemory(text);
   }
 
@@ -145,7 +152,7 @@
 
   // ---------- Bộ nhớ đệm bền (giữ kết quả tra qua các lần mở trang / khởi động lại add-on) ----------
   const persist = {
-    async get(w) { try { return g.Core ? await g.Core.Store.get('dc2:' + w, null) : null; } catch (e) { return null; } },
+    async get(w) { try { return g.Core ? fixDeep(await g.Core.Store.get('dc2:' + w, null)) : null; } catch (e) { return null; } },
     async set(w, e) {
       try {
         if (!g.Core) return;
@@ -250,5 +257,5 @@
     return entry;
   }
 
-  g.Dict = { lookup, quick, translateVi, wikiImage, freeImage, sentences, normWord };
+  g.Dict = { lookup, quick, translateVi, wikiImage, freeImage, sentences, normWord, fixVi, fixDeep };
 })(typeof self !== 'undefined' ? self : this);

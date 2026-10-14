@@ -446,7 +446,7 @@
   const fromHost = e => host && e.composedPath && e.composedPath().includes(host);
   // Trên chính web app Vocaband: từ đã có bảng tra riêng (.tw) và nút lưu cụm riêng → tiện ích nhường, tránh hiện 2 bảng
   const OWN_APP = /^(vocaband|ielts-lexi-2026)\.web\.app$|^localhost$/.test(location.hostname);
-  const appHandles = (el, sel) => OWN_APP && el && el.closest && !!(el.closest('.tw, .pop, .sel-fab, [data-own-lookup]') || (sel && el.closest('#view')));
+  const appHandles = (el, sel) => OWN_APP && el && el.closest && !!(el.closest('.tw, .pop, .sel-fab, .sel-bar, .sel-pop, [data-own-lookup]') || (sel && el.closest('#view')));
 
   document.addEventListener('dblclick', e => {
     if (!alive() || !enabled || inEditable(e.target) || fromHost(e) || appHandles(e.target)) return;

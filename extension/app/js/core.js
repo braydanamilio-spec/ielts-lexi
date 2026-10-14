@@ -264,7 +264,7 @@
         delete map[keyOf(word)];
         await Store.set('cards', map);
         // dấu xóa để đồng bộ không khôi phục lại thẻ đã xóa
-        const del = await Store.get('deleted', {}); del[keyOf(word)] = Date.now(); await Store.set('deleted', del);
+        const del = await Store.get('deleted', {}); del[keyOf(word)] = Date.now(); const cut = Date.now() - 90 * DAY; for (const k in del) if (del[k] < cut) delete del[k]; await Store.set('deleted', del);
       });
     },
 
