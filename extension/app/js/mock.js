@@ -163,7 +163,7 @@
             <div class="card mk-pass" id="mkPass"></div>
             <div class="card mk-qs" id="mkQs">${tst.passages.map((p, k) => `<div class="mk-qp" data-p="${k}" ${k ? 'hidden' : ''}><div class="tiny muted">Reading Passage ${p.n} · ${t('Câu {a}–{b}', { a: QE.numsOf(p)[0], b: QE.numsOf(p).slice(-1)[0] })}</div>${QE.questionsHtml(p)}</div>`).join('')}</div>
           </div>
-          <div class="mk-nav"><div class="row">${tst.passages.map((p, k) => `<button class="btn sm ${k ? '' : 'primary'}" data-go="${k}">Passage ${p.n}</button>`).join('')}<button class="btn sm" id="mkHl">🖍 ${t('Tô sáng')}</button></div><button class="btn primary" id="mkSubmit">${t('Nộp bài Reading')}</button></div>`;
+          <div class="mk-nav"><div class="row">${tst.passages.map((p, k) => `<button class="btn sm ${k ? '' : 'primary'}" data-go="${k}">Passage ${p.n}</button>`).join('')}<button class="btn sm" id="mkHl">🖍 ${t('Tô sáng')}</button></div><div class="mk-qmap" id="mkMap">${tst.passages.flatMap((p, k) => QE.numsOf(p).map(q => `<button data-q="${q}" data-pk="${k}">${q}</button>`)).join('')}</div><button class="btn primary" id="mkSubmit">${t('Nộp bài Reading')}</button></div>`;
         bindQuit(); QE.bind($('#mkQs'));
         const show = k => {
           cur = k; const p = tst.passages[k];
@@ -177,6 +177,10 @@
         $$('[data-go]').forEach(b => b.onclick = () => { hlStore[cur] = $('#mkPass').innerHTML; show(+b.dataset.go); if (hlStore[cur]) $('#mkPass').innerHTML = hlStore[cur]; });
         $('#mkHl').onclick = () => { const s = getSelection(); if (!s.rangeCount || s.isCollapsed || !$('#mkPass').contains(s.anchorNode)) return toast(t('Bôi đen chữ trong bài đọc trước')); try { const m = document.createElement('mark'); s.getRangeAt(0).surroundContents(m); s.removeAllRanges(); } catch (e) { toast(t('Chỉ tô sáng trong một đoạn văn')); } };
         show(0);
+        // Dãy số câu như máy thi thật: tô màu câu đã làm, bấm để chuyển bài & nhảy tới câu
+        const paintMap = () => $$('#mkMap [data-q]').forEach(b => b.classList.toggle('on', QE.answered($('#mkQs'), b.dataset.q)));
+        $('#mkQs').addEventListener('change', paintMap); $('#mkQs').addEventListener('input', paintMap); paintMap();
+        $$('#mkMap [data-q]').forEach(b => b.onclick = () => { const k = +b.dataset.pk; if (k !== cur) $(`[data-go="${k}"]`).click(); const el = QE.itemOf($('#mkQs'), b.dataset.q); if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); el.classList.add('tx-flash'); setTimeout(() => el.classList.remove('tx-flash'), 1200); } });
         const submit = () => {
           const res = {};
           tst.passages.forEach((p, k) => Object.assign(res, Object.fromEntries(Object.entries(QE.collect(p, $(`.mk-qp[data-p="${k}"]`))).map(([n, r]) => [n, { ...r, ref: tst.id + ':' + p.n }]))));

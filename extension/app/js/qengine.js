@@ -86,5 +86,8 @@
   // Điểm tổng IELTS: trung bình 4 kỹ năng, .25 làm tròn lên .5, .75 làm tròn lên số nguyên
   const overall = bands => { const avg = bands.reduce((a, b) => a + b, 0) / bands.length; const f = avg - Math.floor(avg); return Math.floor(avg) + (f >= 0.75 ? 1 : f >= 0.25 ? 0.5 : 0); };
 
-  g.QE = { norm, words, gradeGap, collect, groupHtml, questionsHtml, bind, mark, numsOf, bandOf, overall, code, label };
+  // Câu q đã được trả lời chưa (radio/checkbox đã chọn, ô điền/select có giá trị) – dùng cho bảng số câu
+  const itemOf = (root, q) => [...root.querySelectorAll('[data-item]')].find(x => x.dataset.item.split(',').includes(String(q)));
+  const answered = (root, q) => { const el = itemOf(root, q); return !!el && [...el.querySelectorAll('input, select')].some(i => i.type === 'radio' || i.type === 'checkbox' ? i.checked : i.value.trim()); };
+  g.QE = { itemOf, answered, norm, words, gradeGap, collect, groupHtml, questionsHtml, bind, mark, numsOf, bandOf, overall, code, label };
 })(typeof self !== 'undefined' ? self : this);

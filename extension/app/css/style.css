@@ -870,3 +870,7 @@ kbd { font-family: ui-monospace, Menlo, monospace; font-size: .75em; padding: .0
 .tx-pbar { display: grid; grid-template-columns: 130px 1fr 52px; gap: .6rem; align-items: center; margin-top: .5rem; font-size: .88rem; } .tx-pbar b { text-align: right; }
 .tx-rev { padding: .6rem 0; border-bottom: 1px dashed var(--line); line-height: 1.55; }
 @media (max-width: 900px) { .tx-wrap { grid-template-columns: 1fr; } .tx-nav { position: static; order: -1; } .tx-grid { grid-template-columns: repeat(10, 1fr); } }
+.mk-qmap { display: flex; flex-wrap: wrap; gap: .2rem; flex: 1; justify-content: center; margin: 0 .6rem; }
+.mk-qmap button { width: 28px; height: 26px; border-radius: 6px; border: 1px solid var(--line); background: var(--surface); color: var(--text); font-size: .72rem; cursor: pointer; padding: 0; }
+.mk-qmap button.on { background: var(--primary); border-color: var(--primary); color: #fff; }
+@media (max-width: 700px) { .mk-qmap { order: 3; flex-basis: 100%; margin: .4rem 0 0; } }
