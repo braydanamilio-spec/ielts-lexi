@@ -177,6 +177,7 @@
   const G = 'js/grammar/', BUNDLES = {
     grammar: [...['tenses', 'verbs', 'sentences', 'foundation', 'academic', 'chapters', 'book2', 'drills-a', 'drills-b', 'drills-c'].map(f => G + f + '.js'), 'js/grammar.js'],
     pron: ['js/pron/sounds.js', 'js/pron/skills.js', 'js/pron.js'],
+    readings: ['js/readings.js', 'js/readings-more.js'], // 30 bài đọc – chỉ tải khi cần (trang chủ tự điền mục "Bài đọc hôm nay")
     listening: ['js/qengine.js', ...[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => `js/listen/test${n}.js`), 'js/listening.js'],
     writing: ['js/write/task2-more.js', 'js/write/task1-more.js', 'js/write/task1-more2.js', 'js/write/ideas.js', 'js/write.js', 'js/task1.js', 'js/models.js', 'js/write/models2.js', 'js/write/models3.js', 'js/write/models4.js', 'js/write/models5.js', 'js/ideas.js'],
     mock: ['js/qengine.js', 'js/readtest/test1.js', 'js/readtest/test2.js', 'js/readtest/test3.js', 'js/readtest/test4.js', 'js/readtest/test5.js', 'js/readtest/test6.js', 'js/readtest/test7.js', 'js/readtest/test8.js', 'js/readtest/test9.js', 'js/readtest/test10.js', 'js/readtest/explain-a.js', 'js/readtest/explain-b.js', 'js/readtest/explain-c.js', 'js/readtest/explain-d.js', 'js/readtest/explain-e.js', 'js/readtest/explain-f.js', 'js/readtest/explain-g.js', 'js/mock.js', 'js/rtype.js'],
@@ -185,7 +186,7 @@
     toefl: ['js/qengine.js', 'js/toefl/data1.js', 'js/toefl/data2.js', 'js/toefl/data3.js', 'js/toefl.js'],
     toeic: ['js/qengine.js', 'js/toeic/reading1.js', 'js/toeic/reading2.js', 'js/toeic/listening1.js', 'js/toeic/listening2.js', 'js/toeic/reading3.js', 'js/toeic/listening3.js', 'js/toeic/reading4.js', 'js/toeic/listening4.js', 'js/toeic/reading5.js', 'js/toeic/listening5.js', 'js/toeic/reading6.js', 'js/toeic/listening6.js', 'js/toeic/reading7.js', 'js/toeic/listening7.js', 'js/toeic.js'],
   };
-  const ROUTE_BUNDLE = { grammar: 'grammar', placement: 'grammar', pron: 'pron', listening: 'listening', listen: ['listening', 'toeic'], 'listen-test': 'listening', dictation: ['listening', 'toeic'],
+  const ROUTE_BUNDLE = { reading: 'readings', read: 'readings', cbt: 'readings', method: 'readings', grammar: 'grammar', placement: 'grammar', pron: 'pron', listening: 'listening', listen: ['listening', 'toeic'], 'listen-test': 'listening', dictation: ['listening', 'toeic'],
     toefl: ['listening', 'toefl'], 'toefl-p': ['listening', 'toefl'],
     toeic: ['tsl', 'listening', 'toeic'], 'toeic-r': ['toeic'], 'toeic-test': ['listening', 'toeic'], library: 'tsl', topic: 'tsl', practice: 'tsl', dict: 'tsl', write: 'writing', task1: 'writing', model: 'writing', phrases: 'writing', ideas: 'writing', rtype: 'mock', speaking: 'speak', mock: ['listening', 'writing', 'speak', 'mock'] };
   const bundleP = {};
@@ -342,6 +343,11 @@
   })();
 
   // ================= TRANG CHỦ =================
+  const readHtml = r => r ? `<div class="section-title"><h2>${t('Bài đọc hôm nay')}</h2><a href="#/reading">${t('Tất cả bài đọc →')}</a></div>
+      <a class="card hover row nowrap" href="#/read/${r.id}" style="color:var(--text)">
+        <div style="font-size:2.4rem">${r.emoji}</div>
+        <div class="grow"><div class="row"><h3 style="margin:0">${esc(r.title)}</h3>${levelChip(r.level)}</div><div class="muted small">${esc(r.summaryVi)}</div></div>
+        <span class="btn sm">${t('Đọc →')}</span></a>` : '';
   routes.home = function () {
     const cards = Object.values(state.cards);
     const { due, newCount, total } = Cards.dueCount(state.cards, state.settings, state.stats);
@@ -445,12 +451,9 @@
       <div class="section-title"><h2>${progressTopics.length ? t('Học tiếp') : t('Gợi ý cho bạn')}</h2><a href="#/library">${t('Thư viện →')}</a></div>
       <div class="grid g3">${suggestTopics.map(topicCard).join('')}</div>
 
-      ${reading ? `<div class="section-title"><h2>${t('Bài đọc hôm nay')}</h2><a href="#/reading">${t('Tất cả bài đọc →')}</a></div>
-      <a class="card hover row nowrap" href="#/read/${reading.id}" style="color:var(--text)">
-        <div style="font-size:2.4rem">${reading.emoji}</div>
-        <div class="grow"><div class="row"><h3 style="margin:0">${esc(reading.title)}</h3>${levelChip(reading.level)}</div><div class="muted small">${esc(reading.summaryVi)}</div></div>
-        <span class="btn sm">${t('Đọc →')}</span></a>` : ''}
+      <div id="homeRead">${readHtml(reading)}</div>
     `;
+    if (!reading) App.need('readings').then(() => { const el = document.getElementById('homeRead'), rs = window.READINGS || []; if (el && rs.length) el.innerHTML = readHtml(rs[Math.floor(Date.now() / DAY) % rs.length]); }).catch(() => {});
     bindCommon();
     const drawGolden = () => {
       const el = $('#goldenCard'); if (!el) return;
