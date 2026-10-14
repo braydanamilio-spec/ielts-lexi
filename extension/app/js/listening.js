@@ -127,14 +127,22 @@
   const rateSel = () => `<select id="lRate" title="${t('Tốc độ')}">${[0.8, 0.9, 0.95, 1, 1.1].map(r => `<option value="${r}" ${(state.settings.listenRate || 0.95) == r ? 'selected' : ''}>${r === 0.95 ? t('Chuẩn') : r + '×'}</option>`).join('')}</select>`;
 
   // ================= DANH SÁCH =================
-  routes.listening = function () {
+  routes.listening = function (arg, query) {
+    // Chọn đề → mỗi lần hiện 1 đề (4 phần), nhớ đề đang luyện
+    const all = tests();
+    let cur = +(query && query.get && query.get('t')) || 0;
+    if (!all.includes(cur)) { try { cur = +localStorage.getItem('vb.listenT') || 0; } catch (e) { cur = 0; } }
+    if (!all.includes(cur)) cur = all[0] || 1;
+    try { localStorage.setItem('vb.listenT', cur); } catch (e) { /* bỏ qua */ }
+    const tabs = all.length > 1 ? `<div class="tabs" style="display:inline-flex;flex-wrap:wrap;margin-bottom:1rem">${all.map(n => `<a class="${n === cur ? 'on' : ''}" href="#/listening?t=${n}" style="padding:.45rem .8rem;border-radius:10px;font-weight:700;text-decoration:none;color:inherit;${n === cur ? 'background:var(--surface);box-shadow:var(--shadow-sm)' : ''}">Test ${n}${(state.game.listenBest || {})[n] != null ? ' ✓' : ''}</a>`).join('')}</div>` : '';
     const done = state.game.listenDone || {};
     const best = state.game.listenBest || {};
     view.innerHTML = `
       <div class="page-head"><div><h1>🎧 ${t('Luyện nghe IELTS')}</h1><p class="muted">${t('Đề tự biên soạn theo đúng cấu trúc IELTS Listening (4 phần · 40 câu). Mỗi người nói một giọng riêng – Anh, Mỹ, Úc. Luyện từng phần với nghe lại & chỉ chỗ có đáp án, hoặc thi thật nghe một lần.')}</p></div></div>
       ${App.voiceTipHtml && App.voiceTipHtml() ? `<div class="tip small" style="margin-bottom:1rem">${App.voiceTipHtml()}</div>` : ''}
       ${!ALL().length ? `<div class="card empty"><div class="em">🎧</div>${t('Đang cập nhật đề.')}</div>` : ''}
-      ${tests().map(n => `<div class="card" style="margin-bottom:1rem">
+      ${tabs}
+      ${all.filter(n => n === cur).map(n => `<div class="card" style="margin-bottom:1rem">
         <div class="row between"><h2 style="margin:0">Test ${n}</h2><div class="row">${best[n] != null ? `<span class="chip ok">Band ${best[n]}</span>` : ''}<a class="btn primary" href="#/listen-test/${n}">⏱ ${t('Thi thử 40 câu')}</a></div></div>
         <div class="grid auto" style="margin-top:.8rem">${partsOf(n).map(p => `<div class="card hover" style="box-shadow:none;border:1px solid var(--line)">
           <div class="row between"><span class="chip">Part ${p.part} · ${PART[p.part]}</span>${done[p.id] != null ? `<span class="chip ok">✓ ${done[p.id]}/10</span>` : ''}</div>
