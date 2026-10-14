@@ -231,7 +231,7 @@
   const notesCache = {};
   const notesFile = w => { const c = /^[a-z]/.test(w) ? w[0] : '_'; return notesCache[c] || (notesCache[c] = fetch(`js/notes/${c}.json`).then(r => r.ok ? r.json() : {}).catch(() => { delete notesCache[c]; return {}; })); };
   App.notesHtml = word => `<div class="wn-slot" data-notes="${esc(String(word || '').toLowerCase())}"></div>`;
-  const renderNotes = n => { const row = (ic, lb, v) => v ? `<div class="wn-row"><span class="wn-lb">${ic} ${lb}</span><div>${esc(v)}</div></div>` : ''; return `<div class="wn" data-keep-vi>${row('💡', t('Mẹo nhớ'), n.m)}${row('⚠️', t('Lỗi hay gặp'), n.e)}${row('🎯', t('Cách dùng khi thi'), n.u)}${row('🌳', t('Họ từ'), n.f)}</div>`; };
+  const renderNotes = n => { const row = (ic, lb, v) => v ? `<div class="wn-row"><span class="wn-lb">${ic} ${lb}</span><div>${esc(v)}</div></div>` : ''; return `<div class="wn">${row('💡', t('Mẹo nhớ'), n.m)}${row('⚠️', t('Lỗi hay gặp'), n.e)}${row('🎯', t('Cách dùng khi thi'), n.u)}${row('🌳', t('Họ từ'), n.f)}</div>`; };
   const fillNotes = () => document.querySelectorAll('.wn-slot[data-notes]:not([data-done])').forEach(el => { el.dataset.done = 1; const w = el.dataset.notes; notesFile(w).then(m => { const n = m[w]; if (n && el.isConnected) el.innerHTML = renderNotes(n); }); });
   new MutationObserver(() => fillNotes()).observe(view, { childList: true, subtree: true });
   // Gợi ý giọng đọc hay hơn (miễn phí) khi máy chỉ có giọng "robot" – theo đúng hệ điều hành/trình duyệt
@@ -258,7 +258,7 @@
       if (busy) return; busy = true;
       try {
         const nodes = [], tw = document.createTreeWalker(view, NodeFilter.SHOW_TEXT); let n;
-        while ((n = tw.nextNode())) { const s = n.nodeValue.trim().replace(/\s+/g, ' '); if (s.length > 1 && VI.test(s) && !n.parentElement.closest(SKIP)) nodes.push(n); }
+        while ((n = tw.nextNode())) { const s = n.nodeValue.trim().replace(/\s+/g, ' '); if (s.length > 1 && VI.test(s) && (!n.parentElement.closest(SKIP) || n.parentElement.closest('.wn'))) nodes.push(n); /* ghi chú từ (.wn) luôn được dịch cho người học quốc tế */ }
         const need = [];
         const put = x => { const s = x.nodeValue.trim().replace(/\s+/g, ' '); if (!mem[s]) return false; const m = x.nodeValue.match(/^\s*/)[0], e = x.nodeValue.match(/\s*$/)[0]; x.nodeValue = m + mem[s] + e; return true; };
         nodes.forEach(x => { if (!put(x)) { const s = x.nodeValue.trim().replace(/\s+/g, ' '); if (!need.includes(s)) need.push(s); } });
