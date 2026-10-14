@@ -181,3 +181,17 @@ chrome.runtime.onMessage.addListener((msg, sender, reply) => {
   } catch (e) { reply({ error: String(e && e.message || e) }); } })();
   return true; // trả lời bất đồng bộ
 });
+
+// Bản cài "Load unpacked" (máy phát triển): tự nạp lại khi file trên đĩa đổi phiên bản – không cần vào chrome://extensions bấm Reload.
+// Bản cài từ cửa hàng (installType "normal") bỏ qua hoàn toàn.
+async function devAutoReload() {
+  try {
+    const self = await chrome.management.getSelf();
+    if (self.installType !== 'development') return;
+    const disk = await (await fetch(chrome.runtime.getURL('manifest.json'), { cache: 'no-store' })).json();
+    if (disk.version && disk.version !== chrome.runtime.getManifest().version) chrome.runtime.reload();
+  } catch (e) { /* bỏ qua */ }
+}
+chrome.alarms.create('dev-reload', { periodInMinutes: 0.5 });
+chrome.alarms.onAlarm.addListener(a => { if (a.name === 'dev-reload') devAutoReload(); });
+chrome.runtime.onStartup.addListener(devAutoReload);
