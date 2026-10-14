@@ -148,15 +148,15 @@
   // ---------- Nhận dạng & chấm phát âm (dùng chung) ----------
   let activeRec = null;
   const REC_ERR = {
-    'not-allowed': '⚠️ Cần cho phép dùng micro – bấm biểu tượng 🎙️/🔒 trên thanh địa chỉ và chọn “Cho phép”.',
-    'service-not-allowed': '⚠️ Trình duyệt đang chặn nhận dạng giọng nói trên trang này.',
-    'no-speech': '🤫 Không nghe thấy gì – bấm micro rồi đọc to, rõ ràng nhé.',
-    'audio-capture': '🎙️ Không tìm thấy micro – kiểm tra tai nghe/micro của máy.',
-    network: '📶 Không kết nối được dịch vụ nhận dạng giọng nói (cần Internet).',
-    unsupported: 'Trình duyệt không hỗ trợ nhận dạng giọng nói – hãy dùng Chrome hoặc Edge.',
-    busy: 'Micro đang bận – thử lại sau 1 giây.',
+    'not-allowed': () => '⚠️ ' + t('Cần cho phép dùng micro – bấm biểu tượng 🎙️/🔒 trên thanh địa chỉ và chọn “Cho phép”.'),
+    'service-not-allowed': () => '⚠️ ' + t('Trình duyệt đang chặn nhận dạng giọng nói trên trang này.'),
+    'no-speech': () => '🤫 ' + t('Không nghe thấy gì – bấm micro rồi đọc to, rõ ràng nhé.'),
+    'audio-capture': () => '🎙️ ' + t('Không tìm thấy micro – kiểm tra tai nghe/micro của máy.'),
+    network: () => '📶 ' + t('Không kết nối được dịch vụ nhận dạng giọng nói (cần Internet).'),
+    unsupported: () => t('Trình duyệt không hỗ trợ nhận dạng giọng nói – hãy dùng Chrome hoặc Edge.'),
+    busy: () => t('Micro đang bận – thử lại sau 1 giây.'),
   };
-  const recErrorText = err => REC_ERR[err] || `Lỗi nhận dạng: ${err}`;
+  const recErrorText = err => Object.prototype.hasOwnProperty.call(REC_ERR, err) ? REC_ERR[err]() : t('Lỗi nhận dạng: {err}', { err });
   /* recognize(target, accent, { start, result({heard, score, audio, alts}), error(code), end }) → { stop } */
   // Bản ghi giọng nói: chỉ giữ tạm trong RAM (không lưu ổ đĩa, không gửi lên cloud).
   // Mỗi "ô" chỉ giữ bản mới nhất – bản cũ được giải phóng ngay; rời trang thì xóa hết.
@@ -203,7 +203,7 @@
   const pic = (c, cls = 'pic') => `<div class="${cls}">${c.image ? `<img src="${esc(c.image)}" alt="${esc(c.word)}" loading="lazy" referrerpolicy="no-referrer">${c.imageCredit ? `<a class="pcredit" href="${esc(c.imageCredit.link)}" target="_blank" rel="noopener" title="${esc(c.imageCredit.text)}" onclick="event.stopPropagation()">ⓘ</a>` : ''}` : esc(c.emoji || '📘')}</div>`;
   const levelChip = l => l ? `<span class="chip lv ${esc(l)}">${esc(l)}</span>` : '';
   const posChip = p => p ? `<span class="chip pos">${esc(p)}</span>` : '';
-  const masteryDots = (s, SRS) => { const m = SRS.mastery(s); return `<span class="mastery" title="Mức thuộc">${[1, 2, 3].map(i => `<i class="${i <= m ? 'on' : ''}"></i>`).join('')}</span>`; };
+  const masteryDots = (s, SRS) => { const m = SRS.mastery(s); return `<span class="mastery" title="${t('Mức thuộc')}">${[1, 2, 3].map(i => `<i class="${i <= m ? 'on' : ''}"></i>`).join('')}</span>`; };
   const ring = (pct, label, color) => `<div class="ring" style="--p:${Math.round(pct)};${color ? `--c:${color}` : ''}"><b>${label}</b></div>`;
 
   function download(blob, name) {
@@ -216,7 +216,7 @@
   // Ô ngữ cảnh có nút nghe cả câu (🔊 tốc độ chuẩn · 🐢 chậm) – dùng chung cho mọi bảng tra
   function ctxBox(sentence, word, extra = '') {
     if (!sentence) return '';
-    return `<div class="ctx-box ${extra}"><div class="ctx-tx">📌 ${highlight(sentence, word)}</div><div class="ctx-act"><button class="ctx-say" data-saysent="${esc(sentence)}" title="Nghe cả câu" aria-label="Nghe cả câu">🔊</button><button class="ctx-say" data-saysent="${esc(sentence)}" data-slow="1" title="Nghe chậm" aria-label="Nghe chậm">🐢</button></div></div>`;
+    return `<div class="ctx-box ${extra}"><div class="ctx-tx">📌 ${highlight(sentence, word)}</div><div class="ctx-act"><button class="ctx-say" data-saysent="${esc(sentence)}" title="${t('Nghe cả câu')}" aria-label="${t('Nghe cả câu')}">🔊</button><button class="ctx-say" data-saysent="${esc(sentence)}" data-slow="1" title="${t('Nghe chậm')}" aria-label="${t('Nghe chậm')}">🐢</button></div></div>`;
   }
   if (typeof document !== 'undefined') document.addEventListener('click', e => {
     const b = e.target.closest && e.target.closest('[data-saysent]'); if (!b) return;

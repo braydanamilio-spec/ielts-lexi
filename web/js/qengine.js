@@ -71,7 +71,7 @@
       const ok = ns.every(n => res[n].ok), part = ns.some(n => res[n].ok);
       item.classList.add(ok ? 'ok' : part ? 'half' : 'no');
       const fb = $('.lq-fb', item); fb.hidden = false;
-      fb.innerHTML = `${ok ? '✅' : '❌'} Đáp án: <b>${esc(r.answer)}</b>${r.over ? ' <span class="tiny">(vượt quá số từ cho phép)</span>' : ''} ${r.cue && onEvidence ? `<button class="btn sm ghost" data-ev="${ns[0]}">${evLabel}</button>` : ''}`;
+      fb.innerHTML = `${ok ? '✅' : '❌'} ${t('Đáp án: <b>{a}</b>', { a: esc(r.answer) })}${r.over ? ` <span class="tiny">(${t('vượt quá số từ cho phép')})</span>` : ''} ${r.cue && onEvidence ? `<button class="btn sm ghost" data-ev="${ns[0]}">${evLabel}</button>` : ''}`;
       $$('input, select', item).forEach(x => x.disabled = true);
     });
     if (onEvidence) $$('[data-ev]', root).forEach(b => b.onclick = () => onEvidence(+b.dataset.ev));

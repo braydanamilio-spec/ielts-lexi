@@ -61,7 +61,7 @@ Criteria to use: ${kind === 'task1' ? 'Task Achievement, Coherence and Cohesion,
     try {
       const out = await s.prompt(prompt.replace(/\(Vietnamese[^)]*\)/g, '(English)').replace(/Vietnamese/g, 'English') + '\nReturn only JSON.');
       const j = JSON.parse(String(out).replace(/^[^{]*/, '').replace(/[^}]*$/, ''));
-      j._model = 'Gemini Nano (AI trên máy)';
+      j._model = 'Gemini Nano (' + t('AI trên máy') + ')';
       return await toVietnamese(j);
     } finally { try { s.destroy(); } catch (e) { /* bỏ qua */ } }
   }
@@ -131,52 +131,52 @@ Criteria to use: ${kind === 'task1' ? 'Task Achievement, Coherence and Cohesion,
 
   // ---------- Hướng dẫn lấy khóa ----------
   function keyDialog(onSaved) {
-    modal(`<h2 style="margin-top:0">🤖 Bật chấm bài bằng AI</h2>
-      <p class="small" style="background:var(--primary-soft);padding:.5rem .7rem;border-radius:10px">💡 Trên <b>Chrome máy tính bản mới</b> (máy đủ mạnh), Vocaband dùng được <b>AI có sẵn trong Chrome</b> – miễn phí, không cần khóa. Trình duyệt này chưa hỗ trợ, nên bạn có thể dùng khóa Gemini miễn phí dưới đây (chất lượng chấm tốt hơn).</p>
-      <p class="small">Vocaband dùng <b>Google Gemini</b> để chấm Writing & Speaking chi tiết theo 4 tiêu chí IELTS. Mỗi người dùng tạo <b>khóa miễn phí</b> của riêng mình (gói miễn phí của Google đủ cho hàng chục bài mỗi ngày).</p>
-      <ol class="small" style="padding-left:1.1rem;line-height:1.8"><li>Mở <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a> và đăng nhập Google.</li><li>Bấm <b>Create API key</b> → sao chép khóa (bắt đầu bằng “AIza…”).</li><li>Dán vào ô dưới đây.</li></ol>
+    modal(`<h2 style="margin-top:0">🤖 ${t('Bật chấm bài bằng AI')}</h2>
+      <p class="small" style="background:var(--primary-soft);padding:.5rem .7rem;border-radius:10px">💡 ${t('Trên <b>Chrome máy tính bản mới</b> (máy đủ mạnh), Vocaband dùng được <b>AI có sẵn trong Chrome</b> – miễn phí, không cần khóa. Trình duyệt này chưa hỗ trợ, nên bạn có thể dùng khóa Gemini miễn phí dưới đây (chất lượng chấm tốt hơn).')}</p>
+      <p class="small">${t('Vocaband dùng <b>Google Gemini</b> để chấm Writing & Speaking chi tiết theo 4 tiêu chí IELTS. Mỗi người dùng tạo <b>khóa miễn phí</b> của riêng mình (gói miễn phí của Google đủ cho hàng chục bài mỗi ngày).')}</p>
+      <ol class="small" style="padding-left:1.1rem;line-height:1.8"><li>${t('Mở {link} và đăng nhập Google.', { link: '<a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a>' })}</li><li>${t('Bấm <b>Create API key</b> → sao chép khóa (bắt đầu bằng “AIza…”).')}</li><li>${t('Dán vào ô dưới đây.')}</li></ol>
       <input class="input" id="aiK" placeholder="AIza…" autocomplete="off" spellcheck="false">
-      <p class="tiny muted">🔒 Khóa chỉ lưu trên trình duyệt này, không đồng bộ lên tài khoản và chỉ gửi tới Google khi bạn bấm chấm bài. Bài làm của bạn được gửi tới Google Gemini để chấm.</p>
-      <div class="row" style="margin-top:.6rem"><button class="btn primary" id="aiSave">Lưu & kiểm tra</button><button class="btn ghost" data-close>Để sau</button></div><div id="aiMsg" class="small" style="margin-top:.5rem"></div>`);
+      <p class="tiny muted">🔒 ${t('Khóa chỉ lưu trên trình duyệt này, không đồng bộ lên tài khoản và chỉ gửi tới Google khi bạn bấm chấm bài. Bài làm của bạn được gửi tới Google Gemini để chấm.')}</p>
+      <div class="row" style="margin-top:.6rem"><button class="btn primary" id="aiSave">${t('Lưu & kiểm tra')}</button><button class="btn ghost" data-close>${t('Để sau')}</button></div><div id="aiMsg" class="small" style="margin-top:.5rem"></div>`);
     $('#aiSave').onclick = async () => {
       const k = $('#aiK').value.trim();
-      if (!/^AIza[\w-]{20,}$/.test(k)) { $('#aiMsg').textContent = '⚠️ Khóa không đúng định dạng (bắt đầu bằng AIza…).'; return; }
-      $('#aiMsg').textContent = '⏳ Đang kiểm tra khóa…';
+      if (!/^AIza[\w-]{20,}$/.test(k)) { $('#aiMsg').textContent = '⚠️ ' + t('Khóa không đúng định dạng (bắt đầu bằng AIza…).'); return; }
+      $('#aiMsg').textContent = '⏳ ' + t('Đang kiểm tra khóa…');
       await setKey(k);
-      try { await call('Return {"ok": true} as JSON.'); $('#aiMsg').textContent = '✅ Khóa hoạt động!'; setTimeout(() => { closeModal(); onSaved && onSaved(); }, 600); }
+      try { await call('Return {"ok": true} as JSON.'); $('#aiMsg').textContent = '✅ ' + t('Khóa hoạt động!'); setTimeout(() => { closeModal(); onSaved && onSaved(); }, 600); }
       catch (e) { $('#aiMsg').textContent = '❌ ' + errText(e); if (e.message === 'BAD_KEY') await setKey(''); }
     };
   }
-  const errText = e => ({ NO_KEY: 'Chưa có khóa AI.', BAD_KEY: 'Khóa không hợp lệ – kiểm tra lại.', QUOTA: 'Đã hết lượt miễn phí trong ngày/phút của khóa này – thử lại sau ít phút.', MODEL: 'Không tìm thấy mô hình AI phù hợp.' }[e.message] || ('Lỗi: ' + e.message));
+  const errText = e => ({ NO_KEY: t('Chưa có khóa AI.'), BAD_KEY: t('Khóa không hợp lệ – kiểm tra lại.'), QUOTA: t('Đã hết lượt miễn phí trong ngày/phút của khóa này – thử lại sau ít phút.'), MODEL: t('Không tìm thấy mô hình AI phù hợp.') }[e.message] || t('Lỗi: {msg}', { msg: e.message }));
 
   // ---------- Hiển thị kết quả ----------
   function render(r, kind) {
     const crit = (r.criteria || []).map(c => `<div class="ai-crit"><div class="row between nowrap"><b class="small">${esc(c.name)}</b><span class="ai-band">${esc(c.band)}</span></div><div class="small muted">${esc(c.comment || '')}</div></div>`).join('');
-    const list = (t, a) => a && a.length ? `<div><b class="small">${t}</b><ul class="small" style="margin:.3rem 0;padding-left:1.1rem">${a.map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>` : '';
+    const list = (title, a) => a && a.length ? `<div><b class="small">${title}</b><ul class="small" style="margin:.3rem 0;padding-left:1.1rem">${a.map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>` : '';
     return `<div class="ai-res">
-      <div class="row nowrap" style="gap:1rem"><div class="ai-score">${esc(r.overall)}</div><div><b>Band ước tính bởi AI</b><div class="small">${esc(r.summary || '')}</div></div></div>
+      <div class="row nowrap" style="gap:1rem"><div class="ai-score">${esc(r.overall)}</div><div><b>${t('Band ước tính bởi AI')}</b><div class="small">${esc(r.summary || '')}</div></div></div>
       <div class="ai-grid">${crit}</div>
-      <div class="grid g2">${list('✅ Điểm mạnh', r.strengths)}${list('🎯 Cần cải thiện', r.improvements)}</div>
-      ${r.errors && r.errors.length ? `<div><b class="small">✏️ Lỗi cần sửa</b>${r.errors.map(e => `<div class="ai-err"><span class="bad">${esc(e.quote)}</span> → <span class="good">${esc(e.fix)}</span><div class="tiny muted">${esc(e.why || '')}</div></div>`).join('')}</div>` : ''}
-      ${r.vocab && r.vocab.length ? `<div style="margin-top:.6rem"><b class="small">💎 Nâng cấp từ vựng</b><div class="ai-vocab">${r.vocab.map(v => `<div><span class="muted">${esc(v.from)}</span> → <b>${esc(v.to)}</b><div class="tiny muted">${esc(v.note || '')}</div></div>`).join('')}</div></div>` : ''}
-      ${r.rewrite || r.sample ? `<details style="margin-top:.6rem"><summary class="small"><b>${kind === 'speaking' ? '🗣️ Câu trả lời mẫu band 8' : '📝 Viết lại đoạn yếu nhất ở band 8'}</b></summary><div class="example-box small" style="margin-top:.4rem;white-space:pre-wrap">${esc(r.rewrite || r.sample)}</div>${r.sample || r.rewrite ? `<button class="ctx-say sm" data-saysent="${esc(r.rewrite || r.sample)}" title="Nghe">🔊</button>` : ''}</details>` : ''}
-      <div class="tiny muted" style="margin-top:.5rem">Chấm bởi ${esc(r._model || 'Gemini')} – AI có thể sai sót, hãy dùng như một ý kiến tham khảo của giám khảo.</div></div>`;
+      <div class="grid g2">${list('✅ ' + t('Điểm mạnh'), r.strengths)}${list('🎯 ' + t('Cần cải thiện'), r.improvements)}</div>
+      ${r.errors && r.errors.length ? `<div><b class="small">✏️ ${t('Lỗi cần sửa')}</b>${r.errors.map(e => `<div class="ai-err"><span class="bad">${esc(e.quote)}</span> → <span class="good">${esc(e.fix)}</span><div class="tiny muted">${esc(e.why || '')}</div></div>`).join('')}</div>` : ''}
+      ${r.vocab && r.vocab.length ? `<div style="margin-top:.6rem"><b class="small">💎 ${t('Nâng cấp từ vựng')}</b><div class="ai-vocab">${r.vocab.map(v => `<div><span class="muted">${esc(v.from)}</span> → <b>${esc(v.to)}</b><div class="tiny muted">${esc(v.note || '')}</div></div>`).join('')}</div></div>` : ''}
+      ${r.rewrite || r.sample ? `<details style="margin-top:.6rem"><summary class="small"><b>${kind === 'speaking' ? '🗣️ ' + t('Câu trả lời mẫu band 8') : '📝 ' + t('Viết lại đoạn yếu nhất ở band 8')}</b></summary><div class="example-box small" style="margin-top:.4rem;white-space:pre-wrap">${esc(r.rewrite || r.sample)}</div>${r.sample || r.rewrite ? `<button class="ctx-say sm" data-saysent="${esc(r.rewrite || r.sample)}" title="${t('Nghe')}">🔊</button>` : ''}</details>` : ''}
+      <div class="tiny muted" style="margin-top:.5rem">${t('Chấm bởi {model} – AI có thể sai sót, hãy dùng như một ý kiến tham khảo của giám khảo.', { model: esc(r._model || 'Gemini') })}</div></div>`;
   }
 
   // Gắn nút "Chấm chi tiết bằng AI" vào một vùng; getInput() trả về { kind, task, text, extra }
   function attach(box, getInput) {
     if (!box) return;
     const wrap = document.createElement('div'); wrap.className = 'card ai-box';
-    wrap.innerHTML = `<div class="row between"><div><b>🤖 Chấm chi tiết bằng AI</b><div class="tiny muted">4 tiêu chí IELTS · chỉ ra lỗi & cách sửa · gợi ý từ vựng · bài mẫu</div></div><button class="btn primary sm" data-ai>Chấm bằng AI</button></div><div data-ai-out></div>`;
+    wrap.innerHTML = `<div class="row between"><div><b>🤖 ${t('Chấm chi tiết bằng AI')}</b><div class="tiny muted">${t('4 tiêu chí IELTS · chỉ ra lỗi & cách sửa · gợi ý từ vựng · bài mẫu')}</div></div><button class="btn primary sm" data-ai>${t('Chấm bằng AI')}</button></div><div data-ai-out></div>`;
     box.appendChild(wrap);
     const go = async () => {
-      const inp = getInput(); if (!inp || !inp.text || inp.text.split(/\s+/).length < 20) return toast('Bài quá ngắn để chấm (cần ≥ 20 từ)');
+      const inp = getInput(); if (!inp || !inp.text || inp.text.split(/\s+/).length < 20) return toast(t('Bài quá ngắn để chấm (cần ≥ 20 từ)'));
       if (!(await getKey())) { const st = await nanoStatus(); if (st === 'none' || st === 'unavailable') return keyDialog(go); }
       const out = $('[data-ai-out]', wrap), b = $('[data-ai]', wrap);
-      b.disabled = true; out.innerHTML = '<div class="small muted" style="margin-top:.6rem">⏳ AI đang chấm bài (10–30 giây)…</div>';
-      nanoProgress = p => { out.innerHTML = `<div class="small muted" style="margin-top:.6rem">⬇️ Chrome đang tải AI trên máy lần đầu (${Math.round(p * 100)}%) – chỉ tải một lần…</div>`; };
-      try { const r = await grade(inp); out.innerHTML = render(r, inp.kind); b.textContent = '↻ Chấm lại'; }
-      catch (e) { out.innerHTML = `<div class="small" style="margin-top:.6rem">❌ ${esc(errText(e))} ${e.message === 'BAD_KEY' || e.message === 'NO_KEY' ? '<button class="btn sm" data-k>Nhập khóa</button>' : ''}</div>`; const k = $('[data-k]', out); if (k) k.onclick = () => keyDialog(go); }
+      b.disabled = true; out.innerHTML = '<div class="small muted" style="margin-top:.6rem">⏳ ' + t('AI đang chấm bài (10–30 giây)…') + '</div>';
+      nanoProgress = p => { out.innerHTML = `<div class="small muted" style="margin-top:.6rem">⬇️ ${t('Chrome đang tải AI trên máy lần đầu ({pct}%) – chỉ tải một lần…', { pct: Math.round(p * 100) })}</div>`; };
+      try { const r = await grade(inp); out.innerHTML = render(r, inp.kind); b.textContent = '↻ ' + t('Chấm lại'); }
+      catch (e) { out.innerHTML = `<div class="small" style="margin-top:.6rem">❌ ${esc(errText(e))} ${e.message === 'BAD_KEY' || e.message === 'NO_KEY' ? `<button class="btn sm" data-k>${t('Nhập khóa')}</button>` : ''}</div>`; const k = $('[data-k]', out); if (k) k.onclick = () => keyDialog(go); }
       b.disabled = false;
     };
     $('[data-ai]', wrap).onclick = go;
@@ -186,14 +186,14 @@ Criteria to use: ${kind === 'task1' ? 'Task Achievement, Coherence and Cohesion,
   async function settingsHtml() {
     const k = await getKey();
     const ns = await nanoStatus();
-    const nano = ns === 'available' ? '✅ Sẵn sàng' : ns === 'downloadable' || ns === 'downloading' ? '⬇️ Sẽ tự tải khi dùng lần đầu' : '— Trình duyệt chưa hỗ trợ';
-    return `<div class="card"><h2>🤖 Chấm bài bằng AI</h2><div class="small" style="margin-bottom:.5rem">AI có sẵn trong Chrome (miễn phí, không cần khóa): <b>${nano}</b></div><p class="small muted">Dùng khóa Google Gemini miễn phí của bạn để chấm Writing & Speaking chi tiết. Khóa chỉ lưu trên máy này.</p>
-      <div class="row"><span class="chip ${k ? 'ok' : ''}">${k ? '✓ Đã có khóa ' + esc(k.slice(0, 6)) + '…' : 'Chưa có khóa'}</span><button class="btn sm" id="aiSet">${k ? 'Đổi khóa' : 'Thêm khóa'}</button>${k ? '<button class="btn sm ghost" id="aiDel">Xóa khóa</button>' : ''}</div>
-      <label class="field" style="margin-top:.6rem"><span class="small">Mô hình</span><select class="input" id="aiModel">${['', ...MODELS].map(m => `<option value="${m}" ${(state.settings.aiModel || '') === m ? 'selected' : ''}>${m || 'Tự động (khuyên dùng)'}</option>`).join('')}</select></label></div>`;
+    const nano = ns === 'available' ? '✅ ' + t('Sẵn sàng') : ns === 'downloadable' || ns === 'downloading' ? '⬇️ ' + t('Sẽ tự tải khi dùng lần đầu') : '— ' + t('Trình duyệt chưa hỗ trợ');
+    return `<div class="card"><h2>🤖 ${t('Chấm bài bằng AI')}</h2><div class="small" style="margin-bottom:.5rem">${t('AI có sẵn trong Chrome (miễn phí, không cần khóa):')} <b>${nano}</b></div><p class="small muted">${t('Dùng khóa Google Gemini miễn phí của bạn để chấm Writing & Speaking chi tiết. Khóa chỉ lưu trên máy này.')}</p>
+      <div class="row"><span class="chip ${k ? 'ok' : ''}">${k ? '✓ ' + t('Đã có khóa {key}…', { key: esc(k.slice(0, 6)) }) : t('Chưa có khóa')}</span><button class="btn sm" id="aiSet">${k ? t('Đổi khóa') : t('Thêm khóa')}</button>${k ? `<button class="btn sm ghost" id="aiDel">${t('Xóa khóa')}</button>` : ''}</div>
+      <label class="field" style="margin-top:.6rem"><span class="small">${t('Mô hình')}</span><select class="input" id="aiModel">${['', ...MODELS].map(m => `<option value="${m}" ${(state.settings.aiModel || '') === m ? 'selected' : ''}>${m || t('Tự động (khuyên dùng)')}</option>`).join('')}</select></label></div>`;
   }
   function bindSettings(rerender) {
     const s = $('#aiSet'); if (s) s.onclick = () => keyDialog(rerender);
-    const d = $('#aiDel'); if (d) d.onclick = async () => { await setKey(''); toast('Đã xóa khóa AI'); rerender(); };
+    const d = $('#aiDel'); if (d) d.onclick = async () => { await setKey(''); toast(t('Đã xóa khóa AI')); rerender(); };
     const m = $('#aiModel'); if (m) m.onchange = () => { state.settings.aiModel = m.value; App.saveSettings(); };
   }
 
@@ -209,10 +209,10 @@ Return ONLY JSON: {"meaning": string (Vietnamese meaning in THIS context), "stru
     return r;
   }
   function renderExplain(x) {
-    return `<div class="ai-ex"><b>🤖 Giải thích sâu</b>
-      ${x.meaning ? `<div class="small"><b>Nghĩa trong ngữ cảnh:</b> ${esc(x.meaning)}</div>` : ''}
+    return `<div class="ai-ex"><b>🤖 ${t('Giải thích sâu')}</b>
+      ${x.meaning ? `<div class="small"><b>${t('Nghĩa trong ngữ cảnh:')}</b> ${esc(x.meaning)}</div>` : ''}
       ${(x.structure || []).map(y => `<div class="small" style="margin-top:.3rem"><b style="color:var(--primary)">${esc(y.pattern)}</b> – ${esc(y.explain)}</div>`).join('')}
-      ${x.grammar ? `<div class="small" style="margin-top:.3rem"><b>Ngữ pháp:</b> ${esc(x.grammar)}</div>` : ''}
+      ${x.grammar ? `<div class="small" style="margin-top:.3rem"><b>${t('Ngữ pháp:')}</b> ${esc(x.grammar)}</div>` : ''}
       ${(x.collocations || []).length ? `<div class="row" style="margin-top:.3rem;gap:.25rem">${x.collocations.map(c => `<span class="chip">${esc(c)}</span>`).join('')}</div>` : ''}
       ${(x.examples || []).map(e => `<div class="small" style="margin-top:.35rem">“${esc(e.en)}” <button class="ctx-say sm" data-saysent="${esc(e.en)}">🔊</button><div class="muted">${esc(e.vi)}</div></div>`).join('')}
       ${x.tip ? `<div class="small" style="margin-top:.35rem">💡 ${esc(x.tip)}</div>` : ''}</div>`;

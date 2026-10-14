@@ -56,83 +56,83 @@
     const seg = (arg || '').split('/');
     const part = PARTS[seg[0]] ? seg[0] : 'p1';
     const ti = /^\d+$/.test(seg[1] || '') && BANK[+seg[1]] ? seg[1] : '0';
-    const t = BANK[+ti] || BANK[0];
+    const tp = BANK[+ti] || BANK[0];
     const P = PARTS[part] || PARTS.p1;
     App.cleanup = stopAll;
-    const qs = part === 'p2' ? [t.p2.q] : t[part];
+    const qs = part === 'p2' ? [tp.p2.q] : tp[part];
     view.innerHTML = `
-      <div class="page-head"><div><h1>🗣️ Phòng luyện Speaking</h1><p class="muted">Giám khảo đọc câu hỏi → bạn ghi âm câu trả lời → nghe lại, xem bản chữ và phân tích từ vựng. Ghi âm chỉ nằm trên máy bạn.</p></div></div>
-      <div class="tabs" style="display:inline-flex;margin-bottom:.8rem">${Object.entries(PARTS).map(([k, v]) => `<button class="${k === part ? 'on' : ''}" data-part="${k}">${v.name}</button>`).join('')}</div>
-      <div class="row" style="margin-bottom:1rem">${BANK.map((b, i) => `<a class="chip ${i === +ti ? 'lv' : ''}" href="#/speaking/${part}/${i}">${App.topicOf(b.topic) ? App.topicOf(b.topic).emoji : '💬'} ${esc(b.title)}</a>`).join('')}</div>
+      <div class="page-head"><div><h1>🗣️ ${t('Phòng luyện Speaking')}</h1><p class="muted">${t('Giám khảo đọc câu hỏi → bạn ghi âm câu trả lời → nghe lại, xem bản chữ và phân tích từ vựng. Ghi âm chỉ nằm trên máy bạn.')}</p></div></div>
+      <div class="tabs" style="display:inline-flex;margin-bottom:.8rem">${Object.entries(PARTS).map(([k, v]) => `<button class="${k === part ? 'on' : ''}" data-part="${k}">${t(v.name)}</button>`).join('')}</div>
+      <div class="row" style="margin-bottom:1rem">${BANK.map((b, i) => `<a class="chip ${i === +ti ? 'lv' : ''}" href="#/speaking/${part}/${i}">${App.topicOf(b.topic) ? App.topicOf(b.topic).emoji : '💬'} ${esc(t(b.title))}</a>`).join('')}</div>
       <div class="grid" style="grid-template-columns:minmax(0,1fr) 300px;align-items:start" id="spGrid">
         <div class="stack">
           <div class="card">
-            <div class="row between"><span class="chip">${esc(P.desc)}</span><span class="tiny muted" id="qIdx"></span></div>
+            <div class="row between"><span class="chip">${esc(t(P.desc))}</span><span class="tiny muted" id="qIdx"></span></div>
             <div id="qBox" style="margin-top:.8rem"></div>
-            <div class="row" style="margin-top:1rem"><button class="btn" id="hear">🔊 Nghe giám khảo hỏi</button>${qs.length > 1 ? '<button class="btn ghost" id="nextQ">Câu khác →</button>' : ''}</div>
+            <div class="row" style="margin-top:1rem"><button class="btn" id="hear">🔊 ${t('Nghe giám khảo hỏi')}</button>${qs.length > 1 ? `<button class="btn ghost" id="nextQ">${t('Câu khác')} →</button>` : ''}</div>
           </div>
           <div class="card" style="text-align:center">
             <div class="timer" id="clock" style="font-size:2.2rem">00:00</div>
-            <div class="tiny muted" id="clockHint">Mục tiêu: ${P.target[0]}–${P.target[1]} giây</div>
-            <div style="margin:1.2rem 0 .6rem"><button class="mic" id="recBtn" title="Bắt đầu / dừng ghi âm">🎙️</button></div>
-            <div class="small muted" id="recHint">Bấm micro để trả lời${part === 'p2' ? ' (sẽ có 1 phút chuẩn bị)' : ''}</div>
+            <div class="tiny muted" id="clockHint">${t('Mục tiêu: {a}–{b} giây', { a: P.target[0], b: P.target[1] })}</div>
+            <div style="margin:1.2rem 0 .6rem"><button class="mic" id="recBtn" title="${t('Bắt đầu / dừng ghi âm')}">🎙️</button></div>
+            <div class="small muted" id="recHint">${part === 'p2' ? t('Bấm micro để trả lời (sẽ có 1 phút chuẩn bị)') : t('Bấm micro để trả lời')}</div>
             <div id="live" class="small" style="margin-top:.8rem;min-height:1.5em;color:var(--muted);font-style:italic"></div>
           </div>
           <div id="result"></div>
         </div>
         <div class="stack" style="position:sticky;top:80px">
-          <div class="card"><h3>💡 Từ vựng nên dùng</h3><div id="sugg"></div></div>
-          <div class="card"><h3>🧭 Mẹo ${esc(P.name.split(' · ')[0])}</h3><ul class="small" style="padding-left:1.1rem;margin:.3rem 0">${tipsFor(part).map(x => `<li style="margin:.3rem 0">${x}</li>`).join('')}</ul></div>
+          <div class="card"><h3>💡 ${t('Từ vựng nên dùng')}</h3><div id="sugg"></div></div>
+          <div class="card"><h3>🧭 ${t('Mẹo {part}', { part: esc(P.name.split(' · ')[0]) })}</h3><ul class="small" style="padding-left:1.1rem;margin:.3rem 0">${tipsFor(part).map(x => `<li style="margin:.3rem 0">${x}</li>`).join('')}</ul></div>
         </div>
       </div>`;
     if (innerWidth < 900) $('#spGrid').style.gridTemplateColumns = '1fr';
     $$('[data-part]').forEach(b => b.onclick = () => { location.hash = `#/speaking/${b.dataset.part}/${ti}`; });
 
     // Từ vựng gợi ý theo chủ đề
-    const topic = App.topicOf(t.topic);
+    const topic = App.topicOf(tp.topic);
     const words = topic ? topic.words.slice(0, 8) : [];
     const extra = [...(App.topicOf('linking') || { words: [] }).words.slice(0, 2), ...(App.topicOf('idioms') || { words: [] }).words.slice(0, 2)];
     $('#sugg').innerHTML = [...words, ...extra].map(w => `<div class="row between nowrap" style="padding:.3rem 0;border-bottom:1px dashed var(--line)">
       <div style="min-width:0"><b>${esc(w.word)}</b> <span class="tiny muted">${esc(w.vi)}</span></div>
-      <div class="row nowrap" style="gap:.2rem"><button class="icon-btn sm" data-speak="${esc(w.word)}">🔊</button>${App.inDeck(w.word) ? '' : `<button class="icon-btn sm" data-add-seed="${esc(w.word)}" title="Thêm vào flashcard">＋</button>`}</div></div>`).join('');
+      <div class="row nowrap" style="gap:.2rem"><button class="icon-btn sm" data-speak="${esc(w.word)}">🔊</button>${App.inDeck(w.word) ? '' : `<button class="icon-btn sm" data-add-seed="${esc(w.word)}" title="${t('Thêm vào flashcard')}">＋</button>`}</div></div>`).join('');
     App.bindCommon();
 
     let qi = 0;
     const showQ = () => {
-      $('#qIdx').textContent = qs.length > 1 ? `Câu ${qi + 1}/${qs.length}` : '';
+      $('#qIdx').textContent = qs.length > 1 ? t('Câu {i}/{n}', { i: qi + 1, n: qs.length }) : '';
       $('#qBox').innerHTML = part === 'p2'
-        ? `<div class="example-box" style="border-left-color:var(--primary)"><b style="font-size:1.1rem">${esc(t.p2.q)}</b><div class="small" style="margin-top:.4rem">You should say:</div><ul style="margin:.2rem 0 0;padding-left:1.2rem">${t.p2.points.map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>`
+        ? `<div class="example-box" style="border-left-color:var(--primary)"><b style="font-size:1.1rem">${esc(tp.p2.q)}</b><div class="small" style="margin-top:.4rem">You should say:</div><ul style="margin:.2rem 0 0;padding-left:1.2rem">${tp.p2.points.map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>`
         : `<div style="font-size:1.25rem;font-weight:700">${esc(qs[qi])}</div>`;
       drawSample();
     };
     // Câu trả lời mẫu band 7.5–8 + luyện shadowing (nghe từng câu → nói lặp lại → chấm độ giống)
     const drawSample = () => {
-      const key = part === 'p2' ? t.p2.q : qs[qi], smp = (window.SPEAK_SAMPLES || {})[key];
+      const key = part === 'p2' ? tp.p2.q : qs[qi], smp = (window.SPEAK_SAMPLES || {})[key];
       let el = $('#sampleBox'); if (!el) { el = document.createElement('div'); el.id = 'sampleBox'; $('#qBox').after(el); }
       if (!smp) { el.innerHTML = ''; return; }
       const sents = UI.splitSentences(smp.a);
-      el.innerHTML = `<details class="sample-box"><summary><b>📝 Câu trả lời mẫu (band 7.5–8)</b> <span class="tiny muted">– xem sau khi đã tự trả lời</span></summary>
+      el.innerHTML = `<details class="sample-box"><summary><b>📝 ${t('Câu trả lời mẫu (band 7.5–8)')}</b> <span class="tiny muted">– ${t('xem sau khi đã tự trả lời')}</span></summary>
         <div class="sample-txt">${sents.map((x, i) => `<span class="sm-s" data-i="${i}">${esc(x)}</span>`).join(' ')}</div>
-        ${(smp.vocab || []).length ? `<div class="row" style="gap:.3rem;margin:.5rem 0">${smp.vocab.map(([en, vi]) => `<button class="chip sm-v" data-en="${esc(en)}" data-vi="${esc(vi)}" title="${esc(vi)} – bấm để lưu">+ ${esc(en)}</button>`).join('')}</div>` : ''}
-        <div class="row"><button class="btn sm" id="smPlay">🔊 Nghe cả bài</button><button class="btn sm primary" id="smShadow">🔁 Luyện shadowing</button></div><div id="smShadowBox"></div></details>`;
-      $$('.sm-v', el).forEach(b => b.onclick = () => App.savePhraseDialog && App.savePhraseDialog({ phrase: b.dataset.en, vi: b.dataset.vi, sentence: sents.find(x => x.toLowerCase().includes(b.dataset.en.toLowerCase().split(' ')[0])) || '', title: 'Speaking mẫu' }));
+        ${(smp.vocab || []).length ? `<div class="row" style="gap:.3rem;margin:.5rem 0">${smp.vocab.map(([en, vi]) => `<button class="chip sm-v" data-en="${esc(en)}" data-vi="${esc(vi)}" title="${esc(vi)} – ${t('bấm để lưu')}">+ ${esc(en)}</button>`).join('')}</div>` : ''}
+        <div class="row"><button class="btn sm" id="smPlay">🔊 ${t('Nghe cả bài')}</button><button class="btn sm primary" id="smShadow">🔁 ${t('Luyện shadowing')}</button></div><div id="smShadowBox"></div></details>`;
+      $$('.sm-v', el).forEach(b => b.onclick = () => App.savePhraseDialog && App.savePhraseDialog({ phrase: b.dataset.en, vi: b.dataset.vi, sentence: sents.find(x => x.toLowerCase().includes(b.dataset.en.toLowerCase().split(' ')[0])) || '', title: t('Speaking mẫu') }));
       $('#smPlay', el).onclick = () => UI.tts(smp.a, state.settings.accent, 0.95, { onSentence: i => { $$('.sm-s', el).forEach((x, j) => x.classList.toggle('on', j === i)); } });
       $('#smShadow', el).onclick = () => shadow(sents, $('#smShadowBox', el));
     };
     function shadow(sents, box) {
       let k = 0, total = 0;
       const step = () => {
-        if (k >= sents.length) { box.innerHTML = `<div class="feedback ok" style="position:static;margin-top:.6rem"><b>Hoàn thành shadowing · trung bình ${Math.round(total / sents.length)}% giống mẫu</b></div>`; App.reward({ spoken: 3, xp: 10 }); return; }
+        if (k >= sents.length) { box.innerHTML = `<div class="feedback ok" style="position:static;margin-top:.6rem"><b>${t('Hoàn thành shadowing · trung bình {pct}% giống mẫu', { pct: Math.round(total / sents.length) })}</b></div>`; App.reward({ spoken: 3, xp: 10 }); return; }
         const s2 = sents[k];
-        box.innerHTML = `<div class="card" style="margin-top:.6rem;box-shadow:none;border:1px solid var(--line)"><div class="tiny muted">Câu ${k + 1}/${sents.length} – nghe rồi nói lặp lại, bắt chước nhịp và ngữ điệu</div>
-          <div style="font-size:1.1rem;margin:.4rem 0">${esc(s2)}</div><div class="row"><button class="btn sm" id="shL">🔊 Nghe</button><button class="btn sm" id="shS">🐢</button><button class="btn sm primary" id="shR">🎙️ Nói lại</button><button class="btn sm ghost" id="shN">Bỏ qua →</button></div><div id="shRes" class="small" style="margin-top:.4rem"></div></div>`;
+        box.innerHTML = `<div class="card" style="margin-top:.6rem;box-shadow:none;border:1px solid var(--line)"><div class="tiny muted">${t('Câu {i}/{n} – nghe rồi nói lặp lại, bắt chước nhịp và ngữ điệu', { i: k + 1, n: sents.length })}</div>
+          <div style="font-size:1.1rem;margin:.4rem 0">${esc(s2)}</div><div class="row"><button class="btn sm" id="shL">🔊 ${t('Nghe')}</button><button class="btn sm" id="shS">🐢</button><button class="btn sm primary" id="shR">🎙️ ${t('Nói lại')}</button><button class="btn sm ghost" id="shN">${t('Bỏ qua')} →</button></div><div id="shRes" class="small" style="margin-top:.4rem"></div></div>`;
         const say = r => UI.tts(s2, state.settings.accent, r);
         $('#shL').onclick = () => say(); $('#shS').onclick = () => say(0.7); $('#shN').onclick = () => { k++; step(); };
         $('#shR').onclick = () => {
-          $('#shRes').textContent = '🔴 Đang nghe…';
+          $('#shRes').textContent = '🔴 ' + t('Đang nghe…');
           UI.recognize(s2, state.settings.accent, {
-            result: ({ heard, score, audio }) => { total += score; $('#shRes').innerHTML = `<b style="color:${score >= 80 ? 'var(--good)' : score >= 60 ? 'var(--hard)' : 'var(--again)'}">${score}% giống mẫu</b> · máy nghe: “${esc(heard)}” ${audio ? `<audio controls src="${audio}" style="height:30px;vertical-align:middle"></audio>` : ''} <button class="btn sm" id="shNext">Câu tiếp →</button>`; $('#shNext').onclick = () => { k++; step(); }; },
-            error: e => { $('#shRes').textContent = UI.recErrorText ? UI.recErrorText(e) : 'Không nhận được giọng nói'; },
+            result: ({ heard, score, audio }) => { total += score; $('#shRes').innerHTML = `<b style="color:${score >= 80 ? 'var(--good)' : score >= 60 ? 'var(--hard)' : 'var(--again)'}">${t('{score}% giống mẫu', { score })}</b> · ${t('máy nghe: “{heard}”', { heard: esc(heard) })} ${audio ? `<audio controls src="${audio}" style="height:30px;vertical-align:middle"></audio>` : ''} <button class="btn sm" id="shNext">${t('Câu tiếp')} →</button>`; $('#shNext').onclick = () => { k++; step(); }; },
+            error: e => { $('#shRes').textContent = UI.recErrorText ? UI.recErrorText(e) : t('Không nhận được giọng nói'); },
           });
         };
         say();
@@ -140,7 +140,7 @@
       step();
     }
     showQ();
-    const askText = () => part === 'p2' ? `${t.p2.q} You should say: ${t.p2.points.join(', ')}.` : qs[qi];
+    const askText = () => part === 'p2' ? `${tp.p2.q} You should say: ${tp.p2.points.join(', ')}.` : qs[qi];
     $('#hear').onclick = () => tts(askText(), state.settings.accent, 0.95);
     if ($('#nextQ')) $('#nextQ').onclick = () => { qi = (qi + 1) % qs.length; showQ(); $('#result').innerHTML = ''; tts(askText(), state.settings.accent, 0.95); };
     setTimeout(() => tts(askText(), state.settings.accent, 0.95), 400);
@@ -151,7 +151,7 @@
     const startRec = async () => {
       UI.stopSpeak();
       try { stream = await navigator.mediaDevices.getUserMedia({ audio: true }); }
-      catch (e) { return toast('⚠️ Cần cho phép dùng micro (biểu tượng 🎙️ trên thanh địa chỉ)'); }
+      catch (e) { return toast('⚠️ ' + t('Cần cho phép dùng micro (biểu tượng 🎙️ trên thanh địa chỉ)')); }
       chunks = []; finalText = ''; interim = '';
       try { media = new MediaRecorder(stream); media.ondataavailable = e => e.data.size && chunks.push(e.data); media.start(); } catch (e) { media = null; }
       const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -167,7 +167,7 @@
       }
       recording = true; t0 = Date.now();
       $('#recBtn').classList.add('rec'); $('#recBtn').textContent = '⏹';
-      $('#recHint').textContent = SR ? '🔴 Đang ghi âm và chuyển thành chữ… bấm để dừng' : '🔴 Đang ghi âm… (trình duyệt không hỗ trợ chuyển giọng nói thành chữ)';
+      $('#recHint').textContent = '🔴 ' + (SR ? t('Đang ghi âm và chuyển thành chữ… bấm để dừng') : t('Đang ghi âm… (trình duyệt không hỗ trợ chuyển giọng nói thành chữ)'));
       tick = setInterval(() => {
         const s = (Date.now() - t0) / 1000, el = $('#clock'); if (!el) return;
         el.textContent = clock(s);
@@ -180,7 +180,7 @@
       recording = false; clearInterval(tick);
       const secs = (Date.now() - t0) / 1000;
       $('#recBtn').classList.remove('rec'); $('#recBtn').textContent = '🎙️';
-      $('#recHint').textContent = 'Bấm micro để trả lời lại';
+      $('#recHint').textContent = t('Bấm micro để trả lời lại');
       const done = () => analyse((finalText + ' ' + interim).trim(), secs, chunks.length ? UI.recUrl(new Blob(chunks, { type: (media && media.mimeType) || 'audio/webm' }), 'speak') : '');
       try { rec && rec.stop(); } catch (e) { /* đã dừng */ }
       rec = null;
@@ -192,8 +192,8 @@
       if (part === 'p2' && !prepT) {
         // 1 phút chuẩn bị như thi thật (có thể bỏ qua)
         let left = P.prep;
-        $('#clockHint').innerHTML = '📝 Thời gian chuẩn bị – ghi chú ý chính · <a href="#" id="skipPrep">bắt đầu nói ngay</a>';
-        const go = () => { clearInterval(prepT); prepT = 1; $('#clockHint').textContent = `Mục tiêu: ${P.target[0]}–${P.target[1]} giây (tối đa 2 phút)`; startRec(); };
+        $('#clockHint').innerHTML = '📝 ' + t('Thời gian chuẩn bị – ghi chú ý chính · <a href="#" id="skipPrep">bắt đầu nói ngay</a>');
+        const go = () => { clearInterval(prepT); prepT = 1; $('#clockHint').textContent = t('Mục tiêu: {a}–{b} giây (tối đa 2 phút)', { a: P.target[0], b: P.target[1] }); startRec(); };
         $('#skipPrep').onclick = e => { e.preventDefault(); go(); };
         prepT = setInterval(() => { left--; const el = $('#clock'); if (!el) return clearInterval(prepT); el.textContent = clock(left); if (left <= 0) { Sfx.pop(); go(); } }, 1000);
         $('#clock').textContent = clock(left);
@@ -209,27 +209,27 @@
       const a = text ? Lexis.analyze(text) : null;
       const topicWords = topic ? topic.words.filter(w => UI.wordRegex(w.word).test(text)) : [];
       const notes = [];
-      if (!text) notes.push('Không nhận được chữ nào – thử nói to, rõ hơn hoặc dùng Chrome/Edge để bật chuyển giọng nói thành chữ.');
-      if (secs < P.target[0]) notes.push(`Câu trả lời hơi ngắn (${Math.round(secs)} giây). Hãy mở rộng: <b>nêu ý → giải thích lý do → ví dụ cụ thể</b>.`);
-      if (secs > P.target[1] + 15 && part !== 'p2') notes.push('Câu trả lời khá dài – ở phần này nên trả lời gọn, đi thẳng vào ý.');
-      if (wpm && wpm < 90) notes.push(`Tốc độ ${wpm} từ/phút hơi chậm – luyện nói liền mạch hơn, bớt ngắt quãng (mức tự nhiên ~110–160 từ/phút).`);
-      if (wpm > 180) notes.push(`Tốc độ ${wpm} từ/phút khá nhanh – nói chậm lại để phát âm rõ và nhấn trọng âm đúng.`);
-      if (fillers >= 3) notes.push(`Dùng ${fillers} từ đệm (um, uh, like, you know…) – thay bằng cụm câu giờ tự nhiên: <i>“That's an interesting question…”, “Let me think…”</i>`);
-      if (a && a.link.size < 2 && words.length > 30) notes.push('Thêm từ nối để mạch lạc: <i>Firstly, On top of that, For example, As a result…</i>');
-      if (a && a.phrases.size === 0 && words.length > 30) notes.push('Thử dùng 1–2 collocation hoặc idiom tự nhiên để tăng điểm Lexical Resource.');
-      if (!notes.length) notes.push('Rất tốt! Độ dài, tốc độ và từ vựng đều ổn – hãy thử câu khác hoặc chủ đề khác.');
+      if (!text) notes.push(t('Không nhận được chữ nào – thử nói to, rõ hơn hoặc dùng Chrome/Edge để bật chuyển giọng nói thành chữ.'));
+      if (secs < P.target[0]) notes.push(t('Câu trả lời hơi ngắn ({s} giây). Hãy mở rộng: <b>nêu ý → giải thích lý do → ví dụ cụ thể</b>.', { s: Math.round(secs) }));
+      if (secs > P.target[1] + 15 && part !== 'p2') notes.push(t('Câu trả lời khá dài – ở phần này nên trả lời gọn, đi thẳng vào ý.'));
+      if (wpm && wpm < 90) notes.push(t('Tốc độ {wpm} từ/phút hơi chậm – luyện nói liền mạch hơn, bớt ngắt quãng (mức tự nhiên ~110–160 từ/phút).', { wpm }));
+      if (wpm > 180) notes.push(t('Tốc độ {wpm} từ/phút khá nhanh – nói chậm lại để phát âm rõ và nhấn trọng âm đúng.', { wpm }));
+      if (fillers >= 3) notes.push(t('Dùng {n} từ đệm (um, uh, like, you know…) – thay bằng cụm câu giờ tự nhiên: <i>“That\'s an interesting question…”, “Let me think…”</i>', { n: fillers }));
+      if (a && a.link.size < 2 && words.length > 30) notes.push(t('Thêm từ nối để mạch lạc: <i>Firstly, On top of that, For example, As a result…</i>'));
+      if (a && a.phrases.size === 0 && words.length > 30) notes.push(t('Thử dùng 1–2 collocation hoặc idiom tự nhiên để tăng điểm Lexical Resource.'));
+      if (!notes.length) notes.push(t('Rất tốt! Độ dài, tốc độ và từ vựng đều ổn – hãy thử câu khác hoặc chủ đề khác.'));
       $('#result').innerHTML = `<div class="card stack">
-        <div class="row between"><h3 style="margin:0">📊 Kết quả</h3>${audioUrl ? `<audio controls src="${audioUrl}" style="height:36px;max-width:100%"></audio>` : ''}</div>
+        <div class="row between"><h3 style="margin:0">📊 ${t('Kết quả')}</h3>${audioUrl ? `<audio controls src="${audioUrl}" style="height:36px;max-width:100%"></audio>` : ''}</div>
         <div class="grid g4 stats">
-          <div class="card stat" style="padding:.7rem"><div><b>${Math.round(secs)}s</b><span class="tiny muted">Thời lượng</span></div></div>
-          <div class="card stat" style="padding:.7rem"><div><b>${wpm || '—'}</b><span class="tiny muted">Từ/phút</span></div></div>
-          <div class="card stat" style="padding:.7rem"><div><b>${words.length}</b><span class="tiny muted">Số từ</span></div></div>
-          <div class="card stat" style="padding:.7rem"><div><b>${fillers}</b><span class="tiny muted">Từ đệm</span></div></div>
+          <div class="card stat" style="padding:.7rem"><div><b>${Math.round(secs)}s</b><span class="tiny muted">${t('Thời lượng')}</span></div></div>
+          <div class="card stat" style="padding:.7rem"><div><b>${wpm || '—'}</b><span class="tiny muted">${t('Từ/phút')}</span></div></div>
+          <div class="card stat" style="padding:.7rem"><div><b>${words.length}</b><span class="tiny muted">${t('Số từ')}</span></div></div>
+          <div class="card stat" style="padding:.7rem"><div><b>${fillers}</b><span class="tiny muted">${t('Từ đệm')}</span></div></div>
         </div>
-        ${text ? `<div><b class="small">📝 Bản chữ (máy nhận dạng)</b><div class="passage hl-awl hl-link hl-mine" style="font-size:1rem;margin-top:.3rem">${Lexis.markText(text, { mine: w => App.inDeck(w) })}</div></div>` : ''}
+        ${text ? `<div><b class="small">📝 ${t('Bản chữ (máy nhận dạng)')}</b><div class="passage hl-awl hl-link hl-mine" style="font-size:1rem;margin-top:.3rem">${Lexis.markText(text, { mine: w => App.inDeck(w) })}</div></div>` : ''}
         ${topicWords.length || (a && (a.awl.size || a.link.size)) ? `<div class="row">${topicWords.map(w => `<span class="chip ok">✓ ${esc(w.word)}</span>`).join('')}${a ? [...a.awl.keys()].map(w => `<span class="chip lv">🎓 ${esc(w)}</span>`).join('') + [...a.link.keys()].map(w => `<span class="chip">🧷 ${esc(w)}</span>`).join('') : ''}</div>` : ''}
-        <div><b class="small">💬 Nhận xét</b><ul style="margin:.3rem 0;padding-left:1.2rem">${notes.map(n => `<li style="margin:.3rem 0">${n}</li>`).join('')}</ul></div>
-        <div class="tiny muted">Phân tích tự động để luyện tập, không thay thế giám khảo.</div>
+        <div><b class="small">💬 ${t('Nhận xét')}</b><ul style="margin:.3rem 0;padding-left:1.2rem">${notes.map(n => `<li style="margin:.3rem 0">${n}</li>`).join('')}</ul></div>
+        <div class="tiny muted">${t('Phân tích tự động để luyện tập, không thay thế giám khảo.')}</div>
       </div>`;
       if (words.length >= 10) { App.reward({ spoken: Math.min(10, Math.round(words.length / 10)), quizzes: 1, xp: 15 }, $('#recBtn')); Sfx.win(); }
       if (window.AI && text) AI.attach($('#result'), () => ({ kind: 'speaking', task: askText(), text: `Q (${part.toUpperCase()}): ${askText()}\nA (${Math.round(secs)}s): ${text}` }));
@@ -238,8 +238,8 @@
   };
 
   function tipsFor(part) {
-    if (part === 'p2') return ['Dùng 1 phút chuẩn bị để ghi 4–5 từ khóa, không viết câu dài.', 'Đi lần lượt theo các gợi ý trên thẻ đề, ý cuối (“explain…”) là phần quan trọng nhất.', 'Kể bằng thì quá khứ khi miêu tả trải nghiệm, thêm chi tiết cảm xúc.', 'Cố nói đủ 2 phút – giám khảo sẽ ngắt khi hết giờ.'];
-    if (part === 'p3') return ['Cấu trúc: quan điểm → lý do → ví dụ → (so sánh/hệ quả).', 'Dùng cụm nêu quan điểm: <i>It could be argued that…, From my perspective…</i>', 'Nói về xã hội nói chung, không chỉ bản thân.', 'Có thể nêu cả hai mặt rồi kết luận.'];
-    return ['Trả lời 2–3 câu: câu trả lời trực tiếp + lý do + chi tiết.', 'Tránh chỉ “Yes/No”.', 'Dùng từ vựng chủ đề tự nhiên, không học thuộc cả câu.', 'Giữ giọng thoải mái như trò chuyện.'];
+    if (part === 'p2') return [t('Dùng 1 phút chuẩn bị để ghi 4–5 từ khóa, không viết câu dài.'), t('Đi lần lượt theo các gợi ý trên thẻ đề, ý cuối (“explain…”) là phần quan trọng nhất.'), t('Kể bằng thì quá khứ khi miêu tả trải nghiệm, thêm chi tiết cảm xúc.'), t('Cố nói đủ 2 phút – giám khảo sẽ ngắt khi hết giờ.')];
+    if (part === 'p3') return [t('Cấu trúc: quan điểm → lý do → ví dụ → (so sánh/hệ quả).'), t('Dùng cụm nêu quan điểm: <i>It could be argued that…, From my perspective…</i>'), t('Nói về xã hội nói chung, không chỉ bản thân.'), t('Có thể nêu cả hai mặt rồi kết luận.')];
+    return [t('Trả lời 2–3 câu: câu trả lời trực tiếp + lý do + chi tiết.'), t('Tránh chỉ “Yes/No”.'), t('Dùng từ vựng chủ đề tự nhiên, không học thuộc cả câu.'), t('Giữ giọng thoải mái như trò chuyện.')];
   }
 })();

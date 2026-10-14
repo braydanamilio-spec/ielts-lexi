@@ -105,14 +105,14 @@
   }
   const DRAW = { line: lineChart, bar: barChart, pie: pieCharts, table: tableChart, process: processChart, map: mapChart };
   App.task1 = { SETS, draw: d => DRAW[d.type](d), score: (t, d) => score(t, d) };
-  const TYPE_VI = { line: 'Biểu đồ đường', bar: 'Biểu đồ cột', pie: 'Biểu đồ tròn', table: 'Bảng số liệu', process: 'Quy trình', map: 'Bản đồ' };
+  const TYPE_VI = { line: t('Biểu đồ đường'), bar: t('Biểu đồ cột'), pie: t('Biểu đồ tròn'), table: t('Bảng số liệu'), process: t('Quy trình'), map: t('Bản đồ') };
 
   let timer = null;
   routes.task1 = async function (id) {
     const d = SETS.find(x => x.id === id) || SETS[0];
     const drafts = await Store.get('task1Drafts', {});
     view.innerHTML = `
-      <div class="page-head"><div><h1>📈 Writing Task 1</h1><p class="muted">Mô tả biểu đồ ≥150 từ trong 20 phút. Đề tự soạn – số liệu giả định để luyện tập. <a href="#/write">Task 2 →</a></p></div></div>
+      <div class="page-head"><div><h1>📈 Writing Task 1</h1><p class="muted">${t('Mô tả biểu đồ ≥150 từ trong 20 phút. Đề tự soạn – số liệu giả định để luyện tập.')} <a href="#/write">Task 2 →</a></p></div></div>
       <div class="tabs" style="margin-bottom:1rem">${SETS.map(x => `<button class="${x.id === d.id ? 'on' : ''}" data-set="${x.id}">${TYPE_VI[x.type]} · ${esc(x.id)}</button>`).join('')}</div>
       <div class="grid" style="grid-template-columns:minmax(0,1fr) 300px;align-items:start" id="t1Grid">
         <div class="stack">
@@ -120,32 +120,32 @@
             <div class="chart-wrap">${DRAW[d.type](d)}</div></div>
           <div class="card">
             <textarea class="input" id="t1" style="min-height:260px;font-size:1.02rem;line-height:1.7" placeholder="The ${d.type === 'map' ? 'maps illustrate' : d.type === 'process' ? 'diagram illustrates' : 'chart shows'}…">${esc(drafts[d.id] || '')}</textarea>
-            <div class="row between" style="margin-top:.7rem"><div class="row"><b id="wc">0 từ</b><span class="timer" id="clock" style="font-size:1rem">20:00</span><button class="btn sm" id="tBtn">⏱ Bấm giờ</button></div>
-              <button class="btn primary" id="go">🔍 Phân tích bài Task 1</button></div>
+            <div class="row between" style="margin-top:.7rem"><div class="row"><b id="wc">${t('{n} từ', { n: 0 })}</b><span class="timer" id="clock" style="font-size:1rem">20:00</span><button class="btn sm" id="tBtn">⏱ ${t('Bấm giờ')}</button></div>
+              <button class="btn primary" id="go">🔍 ${t('Phân tích bài Task 1')}</button></div>
           </div>
           <div id="t1Res"></div>
         </div>
         <div class="stack" style="position:sticky;top:80px">
-          <div class="card"><h3>🧭 Cấu trúc 4 đoạn</h3><ol class="small" style="padding-left:1.1rem;line-height:1.7;margin:.3rem 0"><li><b>Mở bài:</b> viết lại đề (paraphrase).</li><li><b>Tổng quan:</b> 2 đặc điểm nổi bật nhất, không số liệu.</li><li><b>Thân bài 1:</b> nhóm số liệu thứ nhất + so sánh.</li><li><b>Thân bài 2:</b> nhóm còn lại + so sánh.</li></ol>
-            ${(window.MODELS || []).some(m => m.id === 't1-' + d.id) ? `<a class="btn sm primary block" href="#/model/t1-${d.id}" style="margin:.4rem 0">📄 Bài mẫu band 8 có chú thích</a>` : ''}
-            <details><summary class="small"><b>👀 Xem câu tổng quan mẫu</b></summary><div class="example-box small" style="margin-top:.4rem">${esc(d.overview)}</div></details></div>
-          <div class="card"><h3>💡 Từ vựng cho ${TYPE_VI[d.type].toLowerCase()}</h3><div class="row" style="margin-top:.4rem">${VOCAB[d.type].map(v => `<button class="chip" data-ins="${esc(v.split(' / ')[0].replace(/ \\(.*\\)/, ''))}" style="border:0;cursor:pointer">${esc(v)}</button>`).join('')}</div><div class="tiny muted" style="margin-top:.4rem">Bấm để chèn vào bài</div></div>
-          <div class="card"><h3>⚠️ Lưu ý</h3><ul class="small" style="padding-left:1.1rem;margin:.3rem 0;line-height:1.6"><li>Không nêu ý kiến cá nhân (I think…).</li><li>Thì động từ theo mốc thời gian của biểu đồ (quá khứ / hiện tại / dự đoán).</li><li>Không cần mô tả mọi con số – chọn số liệu nổi bật.</li></ul></div>
+          <div class="card"><h3>🧭 ${t('Cấu trúc 4 đoạn')}</h3><ol class="small" style="padding-left:1.1rem;line-height:1.7;margin:.3rem 0"><li>${t('<b>Mở bài:</b> viết lại đề (paraphrase).')}</li><li>${t('<b>Tổng quan:</b> 2 đặc điểm nổi bật nhất, không số liệu.')}</li><li>${t('<b>Thân bài 1:</b> nhóm số liệu thứ nhất + so sánh.')}</li><li>${t('<b>Thân bài 2:</b> nhóm còn lại + so sánh.')}</li></ol>
+            ${(window.MODELS || []).some(m => m.id === 't1-' + d.id) ? `<a class="btn sm primary block" href="#/model/t1-${d.id}" style="margin:.4rem 0">📄 ${t('Bài mẫu band 8 có chú thích')}</a>` : ''}
+            <details><summary class="small"><b>👀 ${t('Xem câu tổng quan mẫu')}</b></summary><div class="example-box small" style="margin-top:.4rem">${esc(d.overview)}</div></details></div>
+          <div class="card"><h3>💡 ${t('Từ vựng cho {type}', { type: TYPE_VI[d.type].toLowerCase() })}</h3><div class="row" style="margin-top:.4rem">${VOCAB[d.type].map(v => `<button class="chip" data-ins="${esc(v.split(' / ')[0].replace(/ \\(.*\\)/, ''))}" style="border:0;cursor:pointer">${esc(v.replace('(bị động)', t('(bị động)')))}</button>`).join('')}</div><div class="tiny muted" style="margin-top:.4rem">${t('Bấm để chèn vào bài')}</div></div>
+          <div class="card"><h3>⚠️ ${t('Lưu ý')}</h3><ul class="small" style="padding-left:1.1rem;margin:.3rem 0;line-height:1.6"><li>${t('Không nêu ý kiến cá nhân (I think…).')}</li><li>${t('Thì động từ theo mốc thời gian của biểu đồ (quá khứ / hiện tại / dự đoán).')}</li><li>${t('Không cần mô tả mọi con số – chọn số liệu nổi bật.')}</li></ul></div>
         </div>
       </div>`;
     if (innerWidth < 900) $('#t1Grid').style.gridTemplateColumns = '1fr';
     $$('[data-set]').forEach(b => b.onclick = () => { location.hash = `#/task1/${b.dataset.set}`; });
     const ta = $('#t1');
-    const count = () => { const n = (ta.value.match(/[A-Za-z][A-Za-z'’-]*/g) || []).length; $('#wc').textContent = `${n} từ`; $('#wc').style.color = n >= 150 ? 'var(--good)' : ''; };
+    const count = () => { const n = (ta.value.match(/[A-Za-z][A-Za-z'’-]*/g) || []).length; $('#wc').textContent = t('{n} từ', { n }); $('#wc').style.color = n >= 150 ? 'var(--good)' : ''; };
     let saveT; ta.oninput = () => { count(); clearTimeout(saveT); saveT = setTimeout(async () => { const dr = await Store.get('task1Drafts', {}); dr[d.id] = ta.value; Store.set('task1Drafts', dr); }, 600); };
     count();
     $$('[data-ins]').forEach(b => b.onclick = () => { const s = ta.selectionStart, ins = b.dataset.ins + ' '; ta.value = ta.value.slice(0, s) + ins + ta.value.slice(ta.selectionEnd); ta.focus(); ta.selectionStart = ta.selectionEnd = s + ins.length; ta.oninput(); });
     let left = 20 * 60;
     clearInterval(timer); timer = null; App.cleanup = () => { clearInterval(timer); timer = null; };
     $('#tBtn').onclick = () => {
-      if (timer) { clearInterval(timer); timer = null; $('#tBtn').textContent = '⏱ Tiếp tục'; return; }
-      $('#tBtn').textContent = '⏸ Tạm dừng';
-      timer = setInterval(() => { left--; const el = $('#clock'); if (!el) return clearInterval(timer); el.textContent = `${String(Math.floor(Math.max(0, left) / 60)).padStart(2, '0')}:${String(Math.max(0, left) % 60).padStart(2, '0')}`; el.style.color = left < 180 ? 'var(--again)' : ''; if (left <= 0) { clearInterval(timer); timer = null; toast('⏰ Hết 20 phút!'); } }, 1000);
+      if (timer) { clearInterval(timer); timer = null; $('#tBtn').textContent = `⏱ ${t('Tiếp tục')}`; return; }
+      $('#tBtn').textContent = `⏸ ${t('Tạm dừng')}`;
+      timer = setInterval(() => { left--; const el = $('#clock'); if (!el) return clearInterval(timer); el.textContent = `${String(Math.floor(Math.max(0, left) / 60)).padStart(2, '0')}:${String(Math.max(0, left) % 60).padStart(2, '0')}`; el.style.color = left < 180 ? 'var(--again)' : ''; if (left <= 0) { clearInterval(timer); timer = null; toast(`⏰ ${t('Hết 20 phút!')}`); } }, 1000);
     };
     $('#go').onclick = () => analyse(ta.value, d);
     if (window.Assist && $('#t1')) Assist.attach($('#t1'), $('#t1').parentElement);
@@ -163,38 +163,38 @@
     const passive = has(/\b(is|are|was|were|has been|have been)\s+\w+ed\b/gi);
     const paras = text.split(/\n\s*\n/).filter(p => p.trim()).length;
     const notes = [];
-    if (words < 150) notes.push(`Bài có <b>${words} từ</b> – Task 1 cần tối thiểu 150 từ.`);
-    if (!overview) notes.push('Thiếu <b>đoạn tổng quan</b> (Overall, …) – đây là yếu tố quan trọng nhất để đạt band 6+ Task Achievement.');
-    if (d.type !== 'process' && d.type !== 'map' && numbers < 4) notes.push('Dẫn chứng <b>số liệu cụ thể</b> nhiều hơn (ít nhất 4–6 con số tiêu biểu).');
-    if (['line', 'table', 'pie'].includes(d.type) && trend < 3) notes.push('Dùng thêm từ chỉ <b>xu hướng</b>: rose, declined, fluctuated, peaked at, remained stable…');
-    if (compare < 2 && d.type !== 'process') notes.push('Tăng <b>so sánh</b>: whereas, compared with, twice as…, the highest…');
-    if ((d.type === 'process' || d.type === 'map') && passive < 3) notes.push(`Với ${d.type === 'process' ? 'quy trình' : 'bản đồ'}, nên dùng nhiều <b>câu bị động</b>: is collected, was replaced by, has been built…`);
-    if (opinion) notes.push('Task 1 <b>không nêu ý kiến cá nhân</b> – bỏ “I think / In my opinion”.');
-    if (paras < 3) notes.push('Chia bài thành <b>3–4 đoạn</b> rõ ràng (mở bài, tổng quan, 2 thân bài).');
+    if (words < 150) notes.push(t('Bài có <b>{n} từ</b> – Task 1 cần tối thiểu 150 từ.', { n: words }));
+    if (!overview) notes.push(t('Thiếu <b>đoạn tổng quan</b> (Overall, …) – đây là yếu tố quan trọng nhất để đạt band 6+ Task Achievement.'));
+    if (d.type !== 'process' && d.type !== 'map' && numbers < 4) notes.push(t('Dẫn chứng <b>số liệu cụ thể</b> nhiều hơn (ít nhất 4–6 con số tiêu biểu).'));
+    if (['line', 'table', 'pie'].includes(d.type) && trend < 3) notes.push(t('Dùng thêm từ chỉ <b>xu hướng</b>: rose, declined, fluctuated, peaked at, remained stable…'));
+    if (compare < 2 && d.type !== 'process') notes.push(t('Tăng <b>so sánh</b>: whereas, compared with, twice as…, the highest…'));
+    if ((d.type === 'process' || d.type === 'map') && passive < 3) notes.push(d.type === 'process' ? t('Với quy trình, nên dùng nhiều <b>câu bị động</b>: is collected, was replaced by, has been built…') : t('Với bản đồ, nên dùng nhiều <b>câu bị động</b>: is collected, was replaced by, has been built…'));
+    if (opinion) notes.push(t('Task 1 <b>không nêu ý kiến cá nhân</b> – bỏ “I think / In my opinion”.'));
+    if (paras < 3) notes.push(t('Chia bài thành <b>3–4 đoạn</b> rõ ràng (mở bài, tổng quan, 2 thân bài).'));
     let score = 5;
     if (words >= 150) score += .5; if (overview) score += 1; if (numbers >= 4 || ['process', 'map'].includes(d.type)) score += .5;
     if (trend >= 3 || ['bar', 'map', 'process'].includes(d.type)) score += .5; if (compare >= 2) score += .5; if (paras >= 3) score += .5; if (opinion) score -= .5;
     let band = Math.max(4, Math.min(8, score));
     if (words < 100) band = Math.min(band, 4.5); else if (words < 150) band = Math.min(band, 5.5);
-    if (!notes.length) notes.push('Bài có đủ các yếu tố chính của Task 1. Hãy tự kiểm tra lại độ chính xác của số liệu, ngữ pháp và chính tả.');
-    return { band, words, notes };
+    if (!notes.length) notes.push(t('Bài có đủ các yếu tố chính của Task 1. Hãy tự kiểm tra lại độ chính xác của số liệu, ngữ pháp và chính tả.'));
+    return { band, words, notes, overview, numbers, trend, compare };
   }
   function analyse(text, d) {
     const words = (text.match(/[A-Za-z][A-Za-z'’-]*/g) || []).length;
-    if (words < 30) return toast('Hãy viết ít nhất vài câu (≥ 30 từ) để phân tích');
-    const { band, notes } = score(text, d);
+    if (words < 30) return toast(t('Hãy viết ít nhất vài câu (≥ 30 từ) để phân tích'));
+    const { band, notes, overview, numbers, trend, compare } = score(text, d);
     $('#t1Res').innerHTML = `<div class="card stack">
       <div class="row nowrap" style="gap:1.2rem"><div class="score-ring" style="--p:${(band - 4) / 4 * 100};--c:${band >= 7 ? 'var(--good)' : band >= 6 ? 'var(--hard)' : 'var(--again)'}"><b>${band}</b></div>
-        <div><h2 style="margin:0">Task Achievement ước tính: ${band}</h2><div class="small muted">Kiểm tra tự động các yếu tố bắt buộc của Task 1 – chỉ để tham khảo.</div></div></div>
+        <div><h2 style="margin:0">${t('Task Achievement ước tính: {band}', { band })}</h2><div class="small muted">${t('Kiểm tra tự động các yếu tố bắt buộc của Task 1 – chỉ để tham khảo.')}</div></div></div>
       <div class="grid g4 stats">
-        <div class="card stat" style="padding:.7rem"><div><b>${words}</b><span class="tiny muted">Số từ</span></div></div>
-        <div class="card stat" style="padding:.7rem"><div><b>${overview ? '✓' : '✗'}</b><span class="tiny muted">Tổng quan</span></div></div>
-        <div class="card stat" style="padding:.7rem"><div><b>${numbers}</b><span class="tiny muted">Số liệu</span></div></div>
-        <div class="card stat" style="padding:.7rem"><div><b>${trend + compare}</b><span class="tiny muted">Xu hướng & so sánh</span></div></div>
+        <div class="card stat" style="padding:.7rem"><div><b>${words}</b><span class="tiny muted">${t('Số từ')}</span></div></div>
+        <div class="card stat" style="padding:.7rem"><div><b>${overview ? '✓' : '✗'}</b><span class="tiny muted">${t('Tổng quan')}</span></div></div>
+        <div class="card stat" style="padding:.7rem"><div><b>${numbers}</b><span class="tiny muted">${t('Số liệu')}</span></div></div>
+        <div class="card stat" style="padding:.7rem"><div><b>${trend + compare}</b><span class="tiny muted">${t('Xu hướng & so sánh')}</span></div></div>
       </div>
-      <div><h3>📌 Nhận xét</h3><ul style="padding-left:1.2rem;margin:.3rem 0">${notes.map(n => `<li style="margin:.3rem 0">${n}</li>`).join('')}</ul></div>
-      <div><h3>📝 Bài viết được tô sáng</h3><div class="passage hl-awl hl-link hl-mine" style="font-size:1rem">${Lexis.markText(text, { mine: w => App.inDeck(w) })}</div></div></div>`;
-    if (window.AI) { const { overview, ...data } = d; AI.attach($('#t1Res'), () => ({ kind: 'task1', task: d.title, text, extra: JSON.stringify(data) })); }
+      <div><h3>📌 ${t('Nhận xét')}</h3><ul style="padding-left:1.2rem;margin:.3rem 0">${notes.map(n => `<li style="margin:.3rem 0">${n}</li>`).join('')}</ul></div>
+      <div><h3>📝 ${t('Bài viết được tô sáng')}</h3><div class="passage hl-awl hl-link hl-mine" style="font-size:1rem">${Lexis.markText(text, { mine: w => App.inDeck(w) })}</div></div></div>`;
+    if (window.AI) { const { overview: _ov, ...data } = d; AI.attach($('#t1Res'), () => ({ kind: 'task1', task: d.title, text, extra: JSON.stringify(data) })); }
     $('#t1Res').scrollIntoView({ behavior: 'smooth', block: 'start' });
     App.reward({ quizzes: 1, writes: 1, xp: 20 }, $('#go')); Sfx.win();
   }

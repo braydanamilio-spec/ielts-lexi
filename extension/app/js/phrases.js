@@ -37,10 +37,10 @@
 
   routes.model = function (id) {
     const m = (window.MODELS || []).find(x => x.id === id);
-    if (!m) { view.innerHTML = '<div class="card empty"><div class="em">📄</div>Chưa có bài mẫu này.</div>'; return; }
+    if (!m) { view.innerHTML = `<div class="card empty"><div class="em">📄</div>${t('Chưa có bài mẫu này.')}</div>`; return; }
     const p2 = m.task === 2 ? (window.WRITE_PROMPTS || []).find(p => p.id === m.ref) : null;
     const d1 = m.task === 1 && App.task1 ? App.task1.SETS.find(x => x.id === m.ref) : null;
-    const TYPE_VI = { line: 'Biểu đồ đường', bar: 'Biểu đồ cột', pie: 'Biểu đồ tròn', table: 'Bảng số liệu', process: 'Quy trình', map: 'Bản đồ' };
+    const TYPE_VI = { line: t('Biểu đồ đường'), bar: t('Biểu đồ cột'), pie: t('Biểu đồ tròn'), table: t('Bảng số liệu'), process: t('Quy trình'), map: t('Bản đồ') };
     const kind = m.task === 1 ? (d1 ? TYPE_VI[d1.type] : 'Task 1') : (p2 ? p2.type : 'Task 2');
     const hl = state.settings.annot2 || 'ch lk role';
     const on = k => hl.split(' ').includes(k);
@@ -48,39 +48,39 @@
     const links = [...new Set([...m.text.matchAll(/\{\{([^}]+)\}\}/g)].map(x => x[1]))];
     const back = `#/${m.task === 1 ? 'task1/' + m.ref : 'write/' + m.ref}`;
     view.innerHTML = `
-      <a href="${back}" class="small">← Về đề bài</a>
+      <a href="${back}" class="small">← ${t('Về đề bài')}</a>
       <div class="md-head card">
         <div class="row between" style="align-items:flex-start">
           <div><div class="row" style="gap:.35rem"><span class="md-badge">Writing Task ${m.task}</span><span class="md-badge soft">${esc(kind)}</span><span class="md-badge band">Band ${esc(m.band)}</span></div>
-            <h1 class="md-title">Bài mẫu có phân tích</h1></div>
-          <div class="row"><span class="chip">${m.words} từ</span><button class="btn sm" id="readM">🔊 Nghe bài</button><a class="btn sm ghost" href="${back}">✍️ Tự viết đề này</a></div>
+            <h1 class="md-title">${t('Bài mẫu có phân tích')}</h1></div>
+          <div class="row"><span class="chip">${t('{n} từ', { n: m.words })}</span><button class="btn sm" id="readM">🔊 ${t('Nghe bài')}</button><a class="btn sm ghost" href="${back}">✍️ ${t('Tự viết đề này')}</a></div>
         </div>
-        <div class="md-prompt">${m.task === 1 ? `<div class="small muted" style="margin-bottom:.4rem">ĐỀ BÀI</div><div>${esc(d1 ? d1.title : 'Task 1 · ' + m.ref)} Summarise the information by selecting and reporting the main features, and make comparisons where relevant.</div>${d1 ? `<details class="md-chart"><summary class="small">📊 Xem biểu đồ</summary><div class="t1chart">${App.task1.draw(d1)}</div></details>` : ''}`
-          : `<div class="small muted" style="margin-bottom:.4rem">ĐỀ BÀI</div><div>${esc(p2 ? p2.text : 'Task 2 · ' + m.ref)}</div>`}</div>
+        <div class="md-prompt">${m.task === 1 ? `<div class="small muted" style="margin-bottom:.4rem">${t('ĐỀ BÀI')}</div><div>${esc(d1 ? d1.title : 'Task 1 · ' + m.ref)} Summarise the information by selecting and reporting the main features, and make comparisons where relevant.</div>${d1 ? `<details class="md-chart"><summary class="small">📊 ${t('Xem biểu đồ')}</summary><div class="t1chart">${App.task1.draw(d1)}</div></details>` : ''}`
+          : `<div class="small muted" style="margin-bottom:.4rem">${t('ĐỀ BÀI')}</div><div>${esc(p2 ? p2.text : 'Task 2 · ' + m.ref)}</div>`}</div>
       </div>
-      <div class="tabs" id="mTabs" style="margin:1rem 0">${[['read', '📄 Đọc bài mẫu'], ['vocab', '🧩 Điền cụm từ'], ['gram', '🛠️ Sửa lỗi ngữ pháp'], ['link', '🔗 Từ nối'], ['copy', '⌨️ Chép cả bài'], ['write', '✍️ Viết từ từ gốc']].map(([k, l], i) => `<button class="${i ? '' : 'on'}" data-mt="${k}">${l}</button>`).join('')}</div>
+      <div class="tabs" id="mTabs" style="margin:1rem 0">${[['read', `📄 ${t('Đọc bài mẫu')}`], ['vocab', `🧩 ${t('Điền cụm từ')}`], ['gram', `🛠️ ${t('Sửa lỗi ngữ pháp')}`], ['link', `🔗 ${t('Từ nối')}`], ['copy', `⌨️ ${t('Chép cả bài')}`], ['write', `✍️ ${t('Viết từ từ gốc')}`]].map(([k, l], i) => `<button class="${i ? '' : 'on'}" data-mt="${k}">${l}</button>`).join('')}</div>
       <div id="mPane" hidden></div>
       <div id="mRead" class="md-grid">
         <div>
           <div class="md-tools" id="anBar">
-            ${[['ch', 'Cụm từ hay'], ['gl', 'Nghĩa dưới cụm'], ['lk', 'Từ nối'], ['role', 'Vai trò câu']].map(([k, l]) => `<label class="md-sw"><input type="checkbox" data-an="${k}" ${on(k) ? 'checked' : ''}><span></span>${l}</label>`).join('')}
-            <button class="btn sm ghost" id="hlMode" title="Bôi đen chữ trong bài để tô màu – tự lưu">🖍 Tô sáng</button><button class="btn sm ghost" id="hlClear" title="Xoá mọi chỗ tô sáng của bạn">↺</button>
+            ${[['ch', t('Cụm từ hay')], ['gl', t('Nghĩa dưới cụm')], ['lk', t('Từ nối')], ['role', t('Vai trò câu')]].map(([k, l]) => `<label class="md-sw"><input type="checkbox" data-an="${k}" ${on(k) ? 'checked' : ''}><span></span>${l}</label>`).join('')}
+            <button class="btn sm ghost" id="hlMode" title="${t('Bôi đen chữ trong bài để tô màu – tự lưu')}">🖍 ${t('Tô sáng')}</button><button class="btn sm ghost" id="hlClear" title="${t('Xoá mọi chỗ tô sáng của bạn')}">↺</button>
           </div>
           <article class="card annot md-paper ${['ch', 'gl', 'lk', 'role'].filter(on).map(k => 'an-' + k).join(' ')}" id="annot">${renderAnnotated(m.text)}</article>
-          <p class="tiny muted" style="margin-top:.5rem">💡 Di chuột / chạm vào cụm tô màu để xem nghĩa, bấm để lưu. Bôi đen bất kỳ chữ nào để tra nghĩa hoặc lưu cấu trúc của riêng bạn.</p>
+          <p class="tiny muted" style="margin-top:.5rem">💡 ${t('Di chuột / chạm vào cụm tô màu để xem nghĩa, bấm để lưu. Bôi đen bất kỳ chữ nào để tra nghĩa hoặc lưu cấu trúc của riêng bạn.')}</p>
         </div>
         <aside class="md-side">
           <div class="card">
-            <div class="row between"><h3 style="margin:0">🧩 Cụm từ hay <span class="muted small">(${chunks.length})</span></h3><button class="btn sm primary" id="saveAll">Lưu tất cả</button></div>
-            <div class="md-list">${chunks.map((c, i) => `<div class="md-item"><div><b>${esc(c.en)}</b><div class="small muted">${esc(c.vi)}</div></div><button class="icon-btn sm" data-sv="${i}" title="Lưu vào Sổ cụm từ">${App.inDeck(c.en) ? '✓' : '+'}</button></div>`).join('')}</div>
+            <div class="row between"><h3 style="margin:0">🧩 ${t('Cụm từ hay')} <span class="muted small">(${chunks.length})</span></h3><button class="btn sm primary" id="saveAll">${t('Lưu tất cả')}</button></div>
+            <div class="md-list">${chunks.map((c, i) => `<div class="md-item"><div><b>${esc(c.en)}</b><div class="small muted">${esc(c.vi)}</div></div><button class="icon-btn sm" data-sv="${i}" title="${t('Lưu vào Sổ cụm từ')}">${App.inDeck(c.en) ? '✓' : '+'}</button></div>`).join('')}</div>
           </div>
-          ${links.length ? `<div class="card" style="margin-top:1rem"><h3 style="margin:0 0 .5rem">🔗 Từ nối & liên kết</h3><div class="row">${links.map(l => `<span class="md-lchip">${esc(l)}</span>`).join('')}</div></div>` : ''}
+          ${links.length ? `<div class="card" style="margin-top:1rem"><h3 style="margin:0 0 .5rem">🔗 ${t('Từ nối & liên kết')}</h3><div class="row">${links.map(l => `<span class="md-lchip">${esc(l)}</span>`).join('')}</div></div>` : ''}
         </aside>
       </div>`;
     $$('[data-sv]').forEach(b => b.onclick = async () => {
       const c = chunks[+b.dataset.sv]; if (App.inDeck(c.en)) return;
       const sent = (plain(m.text).match(/[^.!?]+[.!?]+/g) || []).find(s => s.includes(c.en)) || '';
-      await App.addWord({ word: c.en, vi: c.vi, pos: 'phrase', ex: sent.trim(), emoji: '🧩', topic: 'phrases' }, sent ? { text: sent.trim(), title: `Bài mẫu Task ${m.task}` } : null, { silent: true });
+      await App.addWord({ word: c.en, vi: c.vi, pos: 'phrase', ex: sent.trim(), emoji: '🧩', topic: 'phrases' }, sent ? { text: sent.trim(), title: t('Bài mẫu Task {n}', { n: m.task }) } : null, { silent: true });
       b.textContent = '✓'; Sfx.correct();
     });
     $$('#mTabs button').forEach(b => b.onclick = () => {
@@ -94,23 +94,23 @@
     });
     $('#annot').addEventListener('click', e => {
       const ch = e.target.closest('.an-ch'); if (!ch) return;
-      savePhraseDialog({ phrase: ch.dataset.ph, vi: ch.dataset.vi, sentence: sentenceOf(ch), title: `Bài mẫu Task ${m.task}` });
+      savePhraseDialog({ phrase: ch.dataset.ph, vi: ch.dataset.vi, sentence: sentenceOf(ch), title: t('Bài mẫu Task {n}', { n: m.task }) });
     });
     $('#saveAll').onclick = async () => {
       const ps = [...m.text.matchAll(/\[\[([^|\]]+)\|([^\]]+)\]\]/g)];
       let n = 0;
       for (const [, en, vi] of ps) if (!App.inDeck(en)) {
         const sent = (plain(m.text).match(/[^.!?]+[.!?]+/g) || []).find(s => s.includes(en)) || '';
-        await App.addWord({ word: en, vi, pos: 'phrase', ex: sent.trim(), emoji: '🧩', topic: 'phrases' }, sent ? { text: sent.trim(), title: `Bài mẫu Task ${m.task}` } : null, { silent: true }); n++;
+        await App.addWord({ word: en, vi, pos: 'phrase', ex: sent.trim(), emoji: '🧩', topic: 'phrases' }, sent ? { text: sent.trim(), title: t('Bài mẫu Task {n}', { n: m.task }) } : null, { silent: true }); n++;
       }
-      Sfx.win(); toast(`Đã lưu ${n} cụm từ vào Sổ cụm từ`); $('#saveAll').disabled = true;
+      Sfx.win(); toast(t('Đã lưu {n} cụm từ vào Sổ cụm từ', { n })); $('#saveAll').disabled = true;
     };
     // Tô sáng tự do (lưu theo từng bài mẫu, chỉ trên máy)
     const hlKey = 'uhl:' + m.id, hlVer = String(m.text.length);
     Core.Store.get(hlKey, null).then(sv => { if (sv && sv.v === hlVer && $('#annot')) $('#annot').innerHTML = sv.h; });
     let hlOn = false;
-    $('#hlMode').onclick = () => { hlOn = !hlOn; $('#hlMode').classList.toggle('primary', hlOn); $('#annot').classList.toggle('hl-mode', hlOn); toast(hlOn ? '🖍 Bôi đen chữ trong bài để tô sáng' : 'Đã tắt tô sáng'); };
-    $('#hlClear').onclick = async () => { await Core.Store.remove(hlKey); $('#annot').innerHTML = renderAnnotated(m.text); toast('Đã xoá tô sáng'); };
+    $('#hlMode').onclick = () => { hlOn = !hlOn; $('#hlMode').classList.toggle('primary', hlOn); $('#annot').classList.toggle('hl-mode', hlOn); toast(hlOn ? `🖍 ${t('Bôi đen chữ trong bài để tô sáng')}` : t('Đã tắt tô sáng')); };
+    $('#hlClear').onclick = async () => { await Core.Store.remove(hlKey); $('#annot').innerHTML = renderAnnotated(m.text); toast(t('Đã xoá tô sáng')); };
     $('#annot').addEventListener('mouseup', () => setTimeout(async () => {
       if (!hlOn) return; const sel = getSelection(); if (!sel.rangeCount || sel.isCollapsed || !$('#annot').contains(sel.anchorNode)) return;
       const r = sel.getRangeAt(0), mk = document.createElement('mark'); mk.className = 'uhl';
@@ -130,7 +130,7 @@
   function finish(m, kind, right, total, box) {
     const pct = Math.round(right / Math.max(1, total) * 100);
     App.reward({ quizzes: 1, perfect: pct === 100 ? 1 : 0, xp: 5 + right * 2 }); pct >= 80 ? (Sfx.win(), confetti(80)) : Sfx.correct();
-    box.insertAdjacentHTML('beforeend', `<div class="feedback ${pct >= 70 ? 'ok' : 'no'}" style="position:static;margin-top:1rem"><b>${right}/${total} đúng (${pct}%)</b> · +${5 + right * 2} XP</div>`);
+    box.insertAdjacentHTML('beforeend', `<div class="feedback ${pct >= 70 ? 'ok' : 'no'}" style="position:static;margin-top:1rem"><b>${t('{right}/{total} đúng ({pct}%)', { right, total, pct })}</b> · +${5 + right * 2} XP</div>`);
   }
   // Ô điền + ngân hàng từ (dùng cho từ vựng & liên kết)
   function gapExercise(m, box, kind) {
@@ -139,11 +139,11 @@
     const html = paras(m.text).map(p => '<p>' + esc(stripRole(p)).replace(kind === 'vocab' ? /\[\[([^|\]]+)\|([^\]]+)\]\]/g : /\{\{([^}]+)\}\}/g, (x, a, vi) => { const raw = a.replace(/&#39;/g, "'").replace(/&quot;/g, '"').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&'); const i = answers.push(raw) - 1; return `<input class="gap" data-i="${i}" size="${Math.max(6, raw.length)}" autocomplete="off" spellcheck="false">${kind === 'vocab' && vi ? `<span class="gap-vi">${vi}</span>` : ''}`; })
       .replace(kind === 'vocab' ? /\{\{([^}]+)\}\}/g : /\[\[([^|\]]+)\|[^\]]+\]\]/g, '$1') + '</p>').join('');
     const bank = UI.shuffle([...new Set(answers)]);
-    box.innerHTML = `<div class="card"><p class="small muted">${kind === 'vocab' ? 'Điền các <b>cụm từ</b> vào chỗ trống. Bấm vào cụm trong ngân hàng để điền vào ô đang chọn.' : 'Điền <b>từ nối / cụm liên kết</b> phù hợp vào chỗ trống.'}</p>
-      ${kind === 'vocab' ? '<label class="md-sw" style="margin:.2rem 0 .6rem"><input type="checkbox" id="viHint" checked><span></span>Hiện gợi ý nghĩa cạnh ô trống</label>' : ''}
+    box.innerHTML = `<div class="card"><p class="small muted">${kind === 'vocab' ? t('Điền các <b>cụm từ</b> vào chỗ trống. Bấm vào cụm trong ngân hàng để điền vào ô đang chọn.') : t('Điền <b>từ nối / cụm liên kết</b> phù hợp vào chỗ trống.')}</p>
+      ${kind === 'vocab' ? `<label class="md-sw" style="margin:.2rem 0 .6rem"><input type="checkbox" id="viHint" checked><span></span>${t('Hiện gợi ý nghĩa cạnh ô trống')}</label>` : ''}
       <div class="bank">${bank.map(w => `<button class="chip bankw" style="border:2px solid var(--line);cursor:pointer">${esc(w)}</button>`).join('')}</div>
       <div class="annot" style="font-size:1rem;line-height:2.3;margin-top:1rem">${html}</div>
-      <div class="row" style="margin-top:1rem"><button class="btn primary" id="chk">Kiểm tra</button><button class="btn" id="show">Xem đáp án</button><button class="btn ghost" id="clr">Xóa hết</button></div></div>`;
+      <div class="row" style="margin-top:1rem"><button class="btn primary" id="chk">${t('Kiểm tra')}</button><button class="btn" id="show">${t('Xem đáp án')}</button><button class="btn ghost" id="clr">${t('Xóa hết')}</button></div></div>`;
     const vh = $('#viHint', box); if (vh) vh.onchange = () => box.classList.toggle('no-vi', !vh.checked);
     let focus = box.querySelector('.gap');
     $$('.gap', box).forEach(g => g.onfocus = () => { focus = g; });
@@ -169,10 +169,10 @@
       const opts = UI.shuffle(f.slice()).map(o => mm[2][0] === mm[2][0].toUpperCase() ? o[0].toUpperCase() + o.slice(1) : o);
       return `${esc(mm[1])}<select class="gap gsel" data-i="${i}"><option value="">…</option>${opts.map(o => `<option>${esc(o)}</option>`).join('')}</select>${esc(mm[3])}`;
     }).join('') + '</p>').join('');
-    box.innerHTML = `<div class="card"><p class="small muted">Chọn <b>dạng đúng</b> của từ ở mỗi ô (thì, số ít/số nhiều, so sánh, tính từ/trạng từ, mạo từ) cho phù hợp ngữ pháp.</p>
+    box.innerHTML = `<div class="card"><p class="small muted">${t('Chọn <b>dạng đúng</b> của từ ở mỗi ô (thì, số ít/số nhiều, so sánh, tính từ/trạng từ, mạo từ) cho phù hợp ngữ pháp.')}</p>
       <div class="annot" style="font-size:1rem;line-height:2.4">${html}</div>
-      <div class="row" style="margin-top:1rem"><button class="btn primary" id="chk">Kiểm tra</button><button class="btn" id="redo">🔀 Đổi vị trí khác</button></div></div>`;
-    $('#chk', box).onclick = () => { let r = 0; $$('.gsel', box).forEach(g => { const ok = g.value.toLowerCase() === answers[+g.dataset.i].toLowerCase(); g.classList.toggle('ok', ok); g.classList.toggle('no', !ok); if (ok) r++; else g.title = 'Đáp án: ' + answers[+g.dataset.i]; }); finish(m, 'gram', r, answers.length, box.firstElementChild); };
+      <div class="row" style="margin-top:1rem"><button class="btn primary" id="chk">${t('Kiểm tra')}</button><button class="btn" id="redo">🔀 ${t('Đổi vị trí khác')}</button></div></div>`;
+    $('#chk', box).onclick = () => { let r = 0; $$('.gsel', box).forEach(g => { const ok = g.value.toLowerCase() === answers[+g.dataset.i].toLowerCase(); g.classList.toggle('ok', ok); g.classList.toggle('no', !ok); if (ok) r++; else g.title = t('Đáp án: {ans}', { ans: answers[+g.dataset.i] }); }); finish(m, 'gram', r, answers.length, box.firstElementChild); };
     $('#redo', box).onclick = () => gramExercise(m, box);
   }
   // Chép câu: chỉ hiện chữ cái đầu, gõ lại cả câu từ trí nhớ
@@ -185,11 +185,11 @@
   }
   function lineExercise(m, box, mode) {
     const sents = sentencesOf(m);
-    box.innerHTML = `<div class="card"><p class="small muted">${mode === 'copy' ? 'Mỗi câu chỉ hiện <b>chữ cái đầu</b> của từng từ. Nhớ lại và gõ cả câu – luyện ghi nhớ cấu trúc câu band 8.' : 'Dịch <b>câu tiếng Việt</b> sang tiếng Anh theo cách diễn đạt học thuật, rồi so với bài mẫu.'}</p>
-      <div id="lines">${sents.map((x, i) => `<div class="line" data-i="${i}">${x.role ? `<span class="an-role" style="display:inline-block;background:#16a34a;color:#fff;border-radius:6px;padding:.05rem .5rem;font-size:.75rem;font-weight:700">${esc(x.role)}</span> ` : ''}<span class="lhint">${mode === 'copy' ? esc(hint(x.s)) : '<i class="muted">⏳ đang dịch…</i>'}</span>
-        <textarea class="input lin" rows="2" placeholder="Gõ câu tiếng Anh…" spellcheck="false"></textarea><div class="lres small"></div></div>`).join('')}</div>
-      <div class="row" style="margin-top:1rem"><button class="btn primary" id="chk">Kiểm tra tất cả</button><button class="btn" id="show">Xem bài mẫu</button></div></div>`;
-    if (mode === 'write') sents.forEach(async (x, i) => { const v = await Dict.translateVi(x.s); const el = box.querySelector(`.line[data-i="${i}"] .lhint`); if (el) el.innerHTML = `🇻🇳 <b>${esc(v || '(không dịch được)')}</b>`; });
+    box.innerHTML = `<div class="card"><p class="small muted">${mode === 'copy' ? t('Mỗi câu chỉ hiện <b>chữ cái đầu</b> của từng từ. Nhớ lại và gõ cả câu – luyện ghi nhớ cấu trúc câu band 8.') : t('Dịch <b>câu tiếng Việt</b> sang tiếng Anh theo cách diễn đạt học thuật, rồi so với bài mẫu.')}</p>
+      <div id="lines">${sents.map((x, i) => `<div class="line" data-i="${i}">${x.role ? `<span class="an-role" style="display:inline-block;background:#16a34a;color:#fff;border-radius:6px;padding:.05rem .5rem;font-size:.75rem;font-weight:700">${esc(x.role)}</span> ` : ''}<span class="lhint">${mode === 'copy' ? esc(hint(x.s)) : `<i class="muted">⏳ ${t('đang dịch…')}</i>`}</span>
+        <textarea class="input lin" rows="2" placeholder="${t('Gõ câu tiếng Anh…')}" spellcheck="false"></textarea><div class="lres small"></div></div>`).join('')}</div>
+      <div class="row" style="margin-top:1rem"><button class="btn primary" id="chk">${t('Kiểm tra tất cả')}</button><button class="btn" id="show">${t('Xem bài mẫu')}</button></div></div>`;
+    if (mode === 'write') sents.forEach(async (x, i) => { const v = await Dict.translateVi(x.s); const el = box.querySelector(`.line[data-i="${i}"] .lhint`); if (el) el.innerHTML = `🇻🇳 <b>${esc(v || t('(không dịch được)'))}</b>`; });
     $('#chk', box).onclick = () => {
       let r = 0;
       $$('.line', box).forEach(l => {
@@ -197,11 +197,11 @@
         if (!v) return;
         const sc = Math.round(UI.similarity(norm(v), norm(s)) * 100);
         if (sc >= (mode === 'copy' ? 90 : 60)) r++;
-        l.querySelector('.lres').innerHTML = `<b style="color:${sc >= 85 ? 'var(--good)' : sc >= 60 ? 'var(--hard)' : 'var(--again)'}">${sc}% giống bài mẫu</b> · ${diffHtml(v, s)}`;
+        l.querySelector('.lres').innerHTML = `<b style="color:${sc >= 85 ? 'var(--good)' : sc >= 60 ? 'var(--hard)' : 'var(--again)'}">${t('{n}% giống bài mẫu', { n: sc })}</b> · ${diffHtml(v, s)}`;
       });
       finish(m, mode, r, sents.length, box.firstElementChild);
     };
-    $('#show', box).onclick = () => $$('.line', box).forEach(l => { l.querySelector('.lres').innerHTML = `<span class="muted">Bài mẫu:</span> ${esc(sents[+l.dataset.i].s)}`; });
+    $('#show', box).onclick = () => $$('.line', box).forEach(l => { l.querySelector('.lres').innerHTML = `<span class="muted">${t('Bài mẫu:')}</span> ${esc(sents[+l.dataset.i].s)}`; });
   }
   // ================= Dạng bài kiểu Study4: sửa lỗi sai · chép cả bài · viết câu từ “từ gốc” =================
   // Bảng động từ bất quy tắc: gốc quá-khứ phân-từ-II (dùng để đưa về từ gốc và tạo lỗi sai thì)
@@ -242,13 +242,13 @@
       const mm = tok.match(/^([^A-Za-z]*)([A-Za-z]+)([^A-Za-z]*)$/); if (!mm) return;
       const w = mm[2], l = w.toLowerCase(), e = IELTS_DATA.INDEX[lemma(l)];
       let wrong = null, why = '';
-      if (/^(the|a|an)$/.test(l) && Math.random() < .5) { wrong = ''; why = 'Thiếu mạo từ'; }
-      else if (BASE[l] && PAST[BASE[l]] === l && !/^(was|were|had|did)$/.test(l)) { wrong = BASE[l]; why = 'Sai thì (cần quá khứ)'; }
-      else if (/^(was|were)$/.test(l)) { wrong = l === 'was' ? 'were' : 'was'; why = 'Sai hòa hợp chủ – vị'; }
-      else if (/ed$/.test(l) && lemma(l) !== l && e && /v/.test(e.pos || 'v')) { wrong = lemma(l); why = 'Sai thì / thiếu -ed'; }
-      else if (/ly$/.test(l) && KNOWN(l.slice(0, -2)) && l.length > 5) { wrong = l.replace(/ily$/, 'y').replace(/ally$/, 'al').replace(/ly$/, ''); if (!KNOWN(wrong)) wrong = null; else why = 'Cần trạng từ (-ly)'; }
-      else if (/[^s]s$/.test(l) && lemma(l) !== l && e && /^n/.test(e.pos || '')) { wrong = lemma(l); why = 'Danh từ số nhiều'; }
-      else if (/(er|est)$/.test(l) && lemma(l) !== l && !KNOWN(l)) { wrong = lemma(l); why = 'Thiếu so sánh hơn/nhất'; }
+      if (/^(the|a|an)$/.test(l) && Math.random() < .5) { wrong = ''; why = t('Thiếu mạo từ'); }
+      else if (BASE[l] && PAST[BASE[l]] === l && !/^(was|were|had|did)$/.test(l)) { wrong = BASE[l]; why = t('Sai thì (cần quá khứ)'); }
+      else if (/^(was|were)$/.test(l)) { wrong = l === 'was' ? 'were' : 'was'; why = t('Sai hòa hợp chủ – vị'); }
+      else if (/ed$/.test(l) && lemma(l) !== l && e && /v/.test(e.pos || 'v')) { wrong = lemma(l); why = t('Sai thì / thiếu -ed'); }
+      else if (/ly$/.test(l) && KNOWN(l.slice(0, -2)) && l.length > 5) { wrong = l.replace(/ily$/, 'y').replace(/ally$/, 'al').replace(/ly$/, ''); if (!KNOWN(wrong)) wrong = null; else why = t('Cần trạng từ (-ly)'); }
+      else if (/[^s]s$/.test(l) && lemma(l) !== l && e && /^n/.test(e.pos || '')) { wrong = lemma(l); why = t('Danh từ số nhiều'); }
+      else if (/(er|est)$/.test(l) && lemma(l) !== l && !KNOWN(l)) { wrong = lemma(l); why = t('Thiếu so sánh hơn/nhất'); }
       if (wrong != null && wrong !== l) cand.push({ i, pre: mm[1], post: mm[3], ans: w, wrong: w[0] === w[0].toUpperCase() && wrong ? wrong[0].toUpperCase() + wrong.slice(1) : wrong, why });
     });
     // chọn tối đa 12 lỗi, rải đều, không sát nhau
@@ -258,9 +258,9 @@
     const html = toks.map((tok, i) => { const c = at.get(i); if (!c) return tok === '\n\n' ? '</p><p>' : /\n\n/.test(tok) ? '</p><p>' : esc(tok);
       return c.wrong === '' ? `${esc(c.pre)}<input class="gap err-miss" data-k="${c.k}" size="4" placeholder="+" autocomplete="off" spellcheck="false">${esc(c.post)} ` + esc(c.post ? '' : '')
         : `${esc(c.pre)}<u class="err-w">${esc(c.wrong)}</u><input class="gap" data-k="${c.k}" size="${Math.max(5, c.ans.length)}" autocomplete="off" spellcheck="false">${esc(c.post)}`; }).join('');
-    box.innerHTML = `<div class="card"><p class="small muted">Bài mẫu đã bị <b>gài ${pick.length} lỗi ngữ pháp</b>. Từ <u class="err-w">gạch chân</u> có thể sai dạng – gõ dạng đúng vào ô bên cạnh; ô trống không gạch chân là chỗ <b>thiếu từ</b> (thường là mạo từ).</p>
+    box.innerHTML = `<div class="card"><p class="small muted">${t('Bài mẫu đã bị <b>gài {n} lỗi ngữ pháp</b>. Từ <u class="err-w">gạch chân</u> có thể sai dạng – gõ dạng đúng vào ô bên cạnh; ô trống không gạch chân là chỗ <b>thiếu từ</b> (thường là mạo từ).', { n: pick.length })}</p>
       <div class="annot" style="font-size:1rem;line-height:2.4"><p>${html}</p></div>
-      <div class="row" style="margin-top:1rem"><button class="btn primary" id="chk">Kiểm tra</button><button class="btn" id="show">Đáp án</button><button class="btn ghost" id="redo">🔀 Bộ lỗi khác</button></div></div>`;
+      <div class="row" style="margin-top:1rem"><button class="btn primary" id="chk">${t('Kiểm tra')}</button><button class="btn" id="show">${t('Đáp án')}</button><button class="btn ghost" id="redo">🔀 ${t('Bộ lỗi khác')}</button></div></div>`;
     const ans = k => pick[k];
     $('#chk', box).onclick = () => { let r = 0; $$('.gap', box).forEach(g => { const c = ans(+g.dataset.k), ok = norm(g.value) === norm(c.ans); g.classList.toggle('ok', ok); g.classList.toggle('no', !ok); g.title = ok ? '' : `${c.why}: ${c.ans}`; if (ok) r++; }); finish(m, 'gram', r, pick.length, box.firstElementChild); };
     $('#show', box).onclick = () => $$('.gap', box).forEach(g => { const c = ans(+g.dataset.k); g.value = c.ans; g.classList.remove('no'); g.title = c.why; });
@@ -277,12 +277,12 @@
       const i = answers.push(t) - 1; n++;
       return `<input class="slot" data-i="${i}" size="${Math.max(2, t.length)}" maxlength="${t.length + 4}" autocomplete="off" spellcheck="false" autocapitalize="off">`;
     }).join(' ')}</p>`).join('');
-    box.innerHTML = `<div class="card"><div class="row between"><p class="small muted" style="margin:0">Gõ lại <b>cả bài mẫu</b> – mỗi ô là một từ (độ dài ô = độ dài từ). Gõ xong bấm <kbd>Space</kbd> để sang ô tiếp theo.</p>
-      <label class="md-sw"><input type="checkbox" id="slotHint"><span></span>Gợi ý chữ đầu</label></div>
+    box.innerHTML = `<div class="card"><div class="row between"><p class="small muted" style="margin:0">${t('Gõ lại <b>cả bài mẫu</b> – mỗi ô là một từ (độ dài ô = độ dài từ). Gõ xong bấm <kbd>Space</kbd> để sang ô tiếp theo.')}</p>
+      <label class="md-sw"><input type="checkbox" id="slotHint"><span></span>${t('Gợi ý chữ đầu')}</label></div>
       <div class="slot-wrap">${html}</div>
-      <div class="row" style="margin-top:1rem"><button class="btn primary" id="chk">Kiểm tra</button><button class="btn ghost" id="clr">Xoá hết</button><span class="small muted" id="slotProg">0/${n} từ</span></div></div>`;
+      <div class="row" style="margin-top:1rem"><button class="btn primary" id="chk">${t('Kiểm tra')}</button><button class="btn ghost" id="clr">${t('Xoá hết')}</button><span class="small muted" id="slotProg">${t('{done}/{n} từ', { done: 0, n })}</span></div></div>`;
     const ins = $$('.slot', box);
-    const prog = () => { $('#slotProg', box).textContent = `${ins.filter(x => x.value.trim()).length}/${n} từ`; };
+    const prog = () => { $('#slotProg', box).textContent = t('{done}/{n} từ', { done: ins.filter(x => x.value.trim()).length, n }); };
     ins.forEach((inp, k) => inp.addEventListener('keydown', e => {
       if ((e.key === ' ' || e.key === 'Enter') && inp.value.trim()) { e.preventDefault(); if (ins[k + 1]) ins[k + 1].focus(); prog(); }
       else if (e.key === 'Backspace' && !inp.value && ins[k - 1]) { e.preventDefault(); ins[k - 1].focus(); }
@@ -297,20 +297,20 @@
   function lemmaExercise(m, box) {
     const sents = sentencesOf(m);
     const prompt = s => { const ts = tokens(s); return ts.map((t, k) => /^[A-Za-z]/.test(t) ? (t[0] === t[0].toUpperCase() && k > 0 && !/^I$/.test(t) ? t : (t.includes("'") ? t.split(/['’]/).map((x, j) => j ? "'" + x : lemma(x)).join(' / ') : lemma(t))) : t).join(' / '); };
-    box.innerHTML = `<div class="card"><p class="small muted">Mỗi câu được cho dưới dạng <b>từ gốc</b> (chưa chia thì, chưa thêm số nhiều/so sánh). Hãy viết lại thành câu hoàn chỉnh, đúng ngữ pháp – luyện “ngữ pháp chủ động” giống khi tự viết bài.</p>
-      <ol class="lem-list">${sents.map((x, i) => `<li class="line" data-i="${i}">${x.role ? `<span class="an-role slot-role">${esc(x.role)}</span> ` : ''}<div class="lem-q">${esc(prompt(x.s))}</div><textarea class="input lin" rows="2" placeholder="Viết câu hoàn chỉnh…" spellcheck="false"></textarea><div class="lres small"></div></li>`).join('')}</ol>
-      <div class="row" style="margin-top:1rem"><button class="btn primary" id="chk">Kiểm tra tất cả</button><button class="btn" id="show">Xem câu mẫu</button></div></div>`;
+    box.innerHTML = `<div class="card"><p class="small muted">${t('Mỗi câu được cho dưới dạng <b>từ gốc</b> (chưa chia thì, chưa thêm số nhiều/so sánh). Hãy viết lại thành câu hoàn chỉnh, đúng ngữ pháp – luyện “ngữ pháp chủ động” giống khi tự viết bài.')}</p>
+      <ol class="lem-list">${sents.map((x, i) => `<li class="line" data-i="${i}">${x.role ? `<span class="an-role slot-role">${esc(x.role)}</span> ` : ''}<div class="lem-q">${esc(prompt(x.s))}</div><textarea class="input lin" rows="2" placeholder="${t('Viết câu hoàn chỉnh…')}" spellcheck="false"></textarea><div class="lres small"></div></li>`).join('')}</ol>
+      <div class="row" style="margin-top:1rem"><button class="btn primary" id="chk">${t('Kiểm tra tất cả')}</button><button class="btn" id="show">${t('Xem câu mẫu')}</button></div></div>`;
     $('#chk', box).onclick = () => {
       let r = 0;
       $$('.line', box).forEach(l => {
         const s = sents[+l.dataset.i].s, v = l.querySelector('.lin').value.trim(); if (!v) return;
         const exact = norm(v) === norm(s), sc = Math.round(UI.similarity(norm(v), norm(s)) * 100);
         if (exact || sc >= 95) r++;
-        l.querySelector('.lres').innerHTML = exact ? '<b style="color:var(--good)">✅ Chính xác!</b>' : `<b style="color:${sc >= 85 ? 'var(--hard)' : 'var(--again)'}">${sc}% khớp</b> · ${diffHtml(v, s)}`;
+        l.querySelector('.lres').innerHTML = exact ? `<b style="color:var(--good)">✅ ${t('Chính xác!')}</b>` : `<b style="color:${sc >= 85 ? 'var(--hard)' : 'var(--again)'}">${t('{n}% khớp', { n: sc })}</b> · ${diffHtml(v, s)}`;
       });
       finish(m, 'write', r, sents.length, box.firstElementChild);
     };
-    $('#show', box).onclick = () => $$('.line', box).forEach(l => { l.querySelector('.lres').innerHTML = `<span class="muted">Câu mẫu:</span> ${esc(sents[+l.dataset.i].s)}`; });
+    $('#show', box).onclick = () => $$('.line', box).forEach(l => { l.querySelector('.lres').innerHTML = `<span class="muted">${t('Câu mẫu:')}</span> ${esc(sents[+l.dataset.i].s)}`; });
   }
   App.lemma = lemma;
 
@@ -318,15 +318,15 @@
 
   // ---------- Hộp thoại lưu cụm từ / cấu trúc ----------
   async function savePhraseDialog({ phrase, vi = '', sentence = '', title = '' }) {
-    const box = modal(`<h2>🧩 Lưu cụm từ / cấu trúc</h2>
+    const box = modal(`<h2>🧩 ${t('Lưu cụm từ / cấu trúc')}</h2>
       <div class="stack">
-        <label class="field"><span>Cụm từ hoặc cấu trúc</span><input class="input" id="pPh" value="${esc(phrase)}" placeholder="vd: pose a threat to / not only … but also …"></label>
-        <label class="field"><span>Nghĩa theo cụm</span><div class="row nowrap"><input class="input" id="pVi" value="${esc(vi)}" placeholder="Nghĩa tiếng Việt của cả cụm"><button class="btn sm" id="pTr" type="button">🌐 Dịch</button></div></label>
-        <label class="field"><span>Cách dùng / mẫu cấu trúc (tùy chọn)</span><input class="input" id="pUse" placeholder="vd: S + pose a threat to + N · dùng trong Writing Task 2"></label>
-        <label class="field"><span>Câu ví dụ / ngữ cảnh</span><textarea class="input" id="pEx">${esc(sentence)}</textarea></label>
+        <label class="field"><span>${t('Cụm từ hoặc cấu trúc')}</span><input class="input" id="pPh" value="${esc(phrase)}" placeholder="${t('vd: pose a threat to / not only … but also …')}"></label>
+        <label class="field"><span>${t('Nghĩa theo cụm')}</span><div class="row nowrap"><input class="input" id="pVi" value="${esc(vi)}" placeholder="${t('Nghĩa tiếng Việt của cả cụm')}"><button class="btn sm" id="pTr" type="button">🌐 ${t('Dịch')}</button></div></label>
+        <label class="field"><span>${t('Cách dùng / mẫu cấu trúc (tùy chọn)')}</span><input class="input" id="pUse" placeholder="${t('vd: S + pose a threat to + N · dùng trong Writing Task 2')}"></label>
+        <label class="field"><span>${t('Câu ví dụ / ngữ cảnh')}</span><textarea class="input" id="pEx">${esc(sentence)}</textarea></label>
       </div>
-      <div class="row between" style="margin-top:1rem"><button class="btn" data-close>Hủy</button><button class="btn primary" id="pSave">Lưu vào Sổ cụm từ</button></div>`);
-    const tr = async () => { const t = $('#pPh').value.trim(); if (!t) return; $('#pVi').placeholder = '⏳ Đang dịch…'; const v = await Dict.translateVi(t); if (!$('#pVi').value) $('#pVi').value = v; $('#pVi').placeholder = 'Nghĩa tiếng Việt của cả cụm'; };
+      <div class="row between" style="margin-top:1rem"><button class="btn" data-close>${t('Hủy')}</button><button class="btn primary" id="pSave">${t('Lưu vào Sổ cụm từ')}</button></div>`);
+    const tr = async () => { const ph = $('#pPh').value.trim(); if (!ph) return; $('#pVi').placeholder = `⏳ ${t('Đang dịch…')}`; const v = await Dict.translateVi(ph); if (!$('#pVi').value) $('#pVi').value = v; $('#pVi').placeholder = t('Nghĩa tiếng Việt của cả cụm'); };
     $('#pTr').onclick = tr;
     if (!vi) tr();
     $('#pSave').onclick = async () => {
@@ -335,7 +335,7 @@
       const card = await App.addWord({ word: p, vi: $('#pVi').value.trim(), pos: 'phrase', ex, emoji: '🧩', topic: 'phrases' }, ex ? { text: ex, title } : null);
       const use = $('#pUse').value.trim();
       if (use) { card.note = use; await Core.Cards.update(card); }
-      closeModal(); toast(`Đã lưu “${p}” – vào Sổ cụm từ để ôn`); Sfx.correct();
+      closeModal(); toast(t('Đã lưu “{p}” – vào Sổ cụm từ để ôn', { p })); Sfx.correct();
     };
     return box;
   }
@@ -374,7 +374,7 @@
     if (!info) { bar.hidden = true; return; }
     selInfo = info;
     const n = info.text.split(/\s+/).length;
-    bar.innerHTML = `${n <= 4 ? '<button data-act="look">🔎 Tra nghĩa</button>' : '<button data-act="tr">🌐 Dịch</button>'}${n >= 2 && n <= 14 ? '<button data-act="save">🧩 Lưu cụm</button>' : ''}${n <= 4 ? '<button data-act="say" title="Nghe">🔊</button>' : ''}`;
+    bar.innerHTML = `${n <= 4 ? `<button data-act="look">🔎 ${t('Tra nghĩa')}</button>` : `<button data-act="tr">🌐 ${t('Dịch')}</button>`}${n >= 2 && n <= 14 ? `<button data-act="save">🧩 ${t('Lưu cụm')}</button>` : ''}${n <= 4 ? `<button data-act="say" title="${t('Nghe')}">🔊</button>` : ''}`;
     bar.hidden = false; place(bar, info.rect);
   }, 10);
   document.addEventListener('mouseup', e => { if (!bar.contains(e.target) && !pop.contains(e.target)) onSelect(); });
@@ -388,22 +388,22 @@
     const info = selInfo, k = act.dataset.act;
     if (k === 'say') return UI.speak(info.text, state.settings.accent);
     bar.hidden = true;
-    if (k === 'save') { getSelection().removeAllRanges(); return savePhraseDialog({ phrase: info.text, sentence: info.sentence, title: 'Lưu từ Vocaband' }); }
-    pop.hidden = false; pop.innerHTML = `<div class="muted small">⏳ ${k === 'look' ? 'Đang tra' : 'Đang dịch'} “${esc(info.text.slice(0, 60))}”…</div>`; place(pop, info.rect);
+    if (k === 'save') { getSelection().removeAllRanges(); return savePhraseDialog({ phrase: info.text, sentence: info.sentence, title: t('Lưu từ Vocaband') }); }
+    pop.hidden = false; pop.innerHTML = `<div class="muted small">⏳ ${k === 'look' ? t('Đang tra “{text}”…', { text: esc(info.text.slice(0, 60)) }) : t('Đang dịch “{text}”…', { text: esc(info.text.slice(0, 60)) })}</div>`; place(pop, info.rect);
     if (k === 'tr') {
       const vi = await Dict.translateVi(info.text);
       const structs = window.VBStruct ? VBStruct.analyze(info.text, 4) : [];
-      pop.innerHTML = `<div class="row between nowrap"><b class="small">🌐 Bản dịch</b><button class="icon-btn sm" data-x>✕</button></div><div style="margin:.4rem 0;line-height:1.6">${esc(vi || 'Không dịch được – thử lại sau.')}</div>
-        ${structs.length ? `<div class="st-box"><b class="small">🧩 Cấu trúc trong đoạn</b>${structs.map(x => `<div class="st-row"><b>${esc(x.name)}</b> <i class="muted">“${esc(x.match)}”</i><div class="small muted">${esc(x.vi)}</div><a class="small" href="#/grammar/${esc(x.lesson)}">📐 Học bài này →</a></div>`).join('')}</div>` : ''}
+      pop.innerHTML = `<div class="row between nowrap"><b class="small">🌐 ${t('Bản dịch')}</b><button class="icon-btn sm" data-x>✕</button></div><div style="margin:.4rem 0;line-height:1.6">${esc(vi || t('Không dịch được – thử lại sau.'))}</div>
+        ${structs.length ? `<div class="st-box"><b class="small">🧩 ${t('Cấu trúc trong đoạn')}</b>${structs.map(x => `<div class="st-row"><b>${esc(x.name)}</b> <i class="muted">“${esc(x.match)}”</i><div class="small muted">${esc(x.vi)}</div><a class="small" href="#/grammar/${esc(x.lesson)}">📐 ${t('Học bài này →')}</a></div>`).join('')}</div>` : ''}
         <div data-aiout></div>
-        <div class="row" style="margin-top:.5rem"><button class="btn sm" data-sp>🔊 Nghe</button><button class="btn sm" data-sps>🐢</button><button class="btn sm primary" data-deep>🤖 Giải thích sâu</button></div>`;
+        <div class="row" style="margin-top:.5rem"><button class="btn sm" data-sp>🔊 ${t('Nghe')}</button><button class="btn sm" data-sps>🐢</button><button class="btn sm primary" data-deep>🤖 ${t('Giải thích sâu')}</button></div>`;
       $('[data-sp]', pop).onclick = () => UI.tts(info.text, state.settings.accent);
       $('[data-sps]', pop).onclick = () => UI.tts(info.text, state.settings.accent, 0.65);
       $('[data-deep]', pop).onclick = async ev => {
         if (!window.AI) return;
         const out = $('[data-aiout]', pop);
         if (!(await AI.getKey())) { const st = await AI.nanoStatus(); if (st === 'none' || st === 'unavailable') return AI.keyDialog(() => ev.target.click()); }
-        ev.target.disabled = true; out.innerHTML = '<div class="small muted">⏳ AI đang phân tích…</div>';
+        ev.target.disabled = true; out.innerHTML = `<div class="small muted">⏳ ${t('AI đang phân tích…')}</div>`;
         try { out.innerHTML = AI.renderExplain(await AI.explain(info.text, info.sentence)); } catch (e) { out.innerHTML = `<div class="small">❌ ${esc(AI.errText(e))}</div>`; }
         ev.target.disabled = false; place(pop, info.rect);
       };
@@ -412,24 +412,24 @@
       const d = (await Dict.quick(w)) || (await Dict.lookup(w, { examples: false, image: false }));
       if (!d || !d.found) {
         const vi = (d && d.vi) || await Dict.translateVi(info.text);
-        pop.innerHTML = `<div class="row between nowrap"><b>${esc(info.text)}</b><button class="icon-btn sm" data-x>✕</button></div><div class="vi" style="margin:.3rem 0">${esc(vi || 'Không tìm thấy')}</div>${info.text.includes(' ') ? '<button class="btn sm primary" data-ph>🧩 Lưu cụm</button>' : ''}`;
+        pop.innerHTML = `<div class="row between nowrap"><b>${esc(info.text)}</b><button class="icon-btn sm" data-x>✕</button></div><div class="vi" style="margin:.3rem 0">${esc(vi || t('Không tìm thấy'))}</div>${info.text.includes(' ') ? `<button class="btn sm primary" data-ph>🧩 ${t('Lưu cụm')}</button>` : ''}`;
       } else {
         pop.innerHTML = `<div class="row between nowrap"><div><b style="font-size:1.2rem">${esc(d.word)}</b> ${UI.posChip ? UI.posChip(d.pos) : ''}</div><button class="icon-btn sm" data-x>✕</button></div>
           <div class="row" style="gap:.3rem"><span class="ipa">${esc(d.ipa || '')}</span><button class="icon-btn sm" data-sp>🔊</button></div>
           <div class="vi" style="font-size:1.05rem;margin:.2rem 0">${esc(d.vi)}</div>
           ${d.def ? `<div class="small muted">${esc(d.def)}</div>` : ''}
           ${info.sentence && info.sentence !== info.text ? UI.ctxBox(info.sentence, d.word) : ''}
-          <div class="row" style="margin-top:.6rem"><button class="btn sm primary" data-save>${App.inDeck(d.word) ? '+ Thêm ngữ cảnh' : '+ Lưu flashcard'}</button>${info.text.includes(' ') ? '<button class="btn sm" data-ph>🧩 Lưu cụm</button>' : ''}<a class="btn sm ghost" href="#/dict/${encodeURIComponent(d.word)}">Chi tiết</a></div>`;
+          <div class="row" style="margin-top:.6rem"><button class="btn sm primary" data-save>${App.inDeck(d.word) ? `+ ${t('Thêm ngữ cảnh')}` : `+ ${t('Lưu flashcard')}`}</button>${info.text.includes(' ') ? `<button class="btn sm" data-ph>🧩 ${t('Lưu cụm')}</button>` : ''}<a class="btn sm ghost" href="#/dict/${encodeURIComponent(d.word)}">${t('Chi tiết')}</a></div>`;
         $('[data-sp]', pop).onclick = () => UI.speak(d.word, state.settings.accent, d.audio);
         $('[data-save]', pop).onclick = async ev => {
           const b = ev.currentTarget; b.disabled = true;
           const vi = info.sentence ? await Dict.translateVi(info.sentence) : '';
           await App.addWord(d, info.sentence ? { text: info.sentence, vi, title: document.title.replace(/ – Vocaband$/, '') || 'Vocaband' } : null);
-          b.textContent = '✓ Đã lưu';
+          b.textContent = `✓ ${t('Đã lưu')}`;
         };
         if (state.settings.autoSpeak) UI.speak(d.word, state.settings.accent, d.audio);
       }
-      const ph = $('[data-ph]', pop); if (ph) ph.onclick = () => { pop.hidden = true; savePhraseDialog({ phrase: info.text, sentence: info.sentence, title: 'Lưu từ Vocaband' }); };
+      const ph = $('[data-ph]', pop); if (ph) ph.onclick = () => { pop.hidden = true; savePhraseDialog({ phrase: info.text, sentence: info.sentence, title: t('Lưu từ Vocaband') }); };
     }
     place(pop, info.rect);
     $('[data-x]', pop).onclick = () => { pop.hidden = true; };
@@ -442,14 +442,14 @@
     const list = Object.values(state.cards).filter(isPhrase).sort((a, b) => b.added - a.added);
     const models = window.MODELS || [];
     view.innerHTML = `
-      <div class="page-head"><div><h1>🧩 Sổ cụm từ & cấu trúc</h1><p class="muted">Học theo <b>cụm</b> (chunk) giúp nói và viết tự nhiên hơn học từng từ rời. Lưu cụm từ, cấu trúc câu kèm nghĩa theo cụm, cách dùng và câu ví dụ – ôn đúng thời điểm vàng như từ vựng.</p></div>
-        <div class="row"><button class="btn primary" id="addP">＋ Thêm cụm / cấu trúc</button>${list.length >= 4 ? '<a class="btn" href="#/practice/learn?src=phrases">🧠 Học các cụm</a>' : ''}</div></div>
-      ${models.length ? `<div class="card"><h3>📄 Bài mẫu có chú thích cụm từ</h3><div class="row" style="margin-top:.5rem">${models.map(m => `<a class="chip" href="#/model/${m.id}">Task ${m.task} · ${esc(m.ref)} · Band ${esc(m.band)}</a>`).join('')}</div></div>` : ''}
+      <div class="page-head"><div><h1>🧩 ${t('Sổ cụm từ & cấu trúc')}</h1><p class="muted">${t('Học theo <b>cụm</b> (chunk) giúp nói và viết tự nhiên hơn học từng từ rời. Lưu cụm từ, cấu trúc câu kèm nghĩa theo cụm, cách dùng và câu ví dụ – ôn đúng thời điểm vàng như từ vựng.')}</p></div>
+        <div class="row"><button class="btn primary" id="addP">＋ ${t('Thêm cụm / cấu trúc')}</button>${list.length >= 4 ? `<a class="btn" href="#/practice/learn?src=phrases">🧠 ${t('Học các cụm')}</a>` : ''}</div></div>
+      ${models.length ? `<div class="card"><h3>📄 ${t('Bài mẫu có chú thích cụm từ')}</h3><div class="row" style="margin-top:.5rem">${models.map(m => `<a class="chip" href="#/model/${m.id}">Task ${m.task} · ${esc(m.ref)} · Band ${esc(m.band)}</a>`).join('')}</div></div>` : ''}
       <div class="card" style="margin-top:1rem" id="pList">${list.length ? list.map(c => `<div class="deck-row" style="grid-template-columns:minmax(0,1.2fr) minmax(0,1.6fr) auto">
           <div style="min-width:0"><b>${esc(c.word)}</b><div class="small" style="color:var(--accent);font-weight:700">${esc(c.vi)}</div>${c.note ? `<div class="tiny muted">📐 ${esc(c.note)}</div>` : ''}</div>
           <div class="small muted hide-sm">${c.contexts[0] ? `“${UI.highlight(c.contexts[0].text.slice(0, 140), c.word)}”` : esc(c.ex || '')}</div>
           <div class="row nowrap" style="gap:.3rem"><button class="icon-btn sm" data-speak="${esc(c.word)}">🔊</button>${App.masteryDots(c.srs)}</div></div>`).join('')
-        : '<div class="empty"><div class="em">🧩</div>Chưa có cụm từ nào. Bôi đen một cụm trong bài đọc, bài mẫu hay ví dụ từ điển rồi bấm “🧩 Lưu cụm này”, hoặc thêm thủ công.</div>'}</div>`;
+        : `<div class="empty"><div class="em">🧩</div>${t('Chưa có cụm từ nào. Bôi đen một cụm trong bài đọc, bài mẫu hay ví dụ từ điển rồi bấm “🧩 Lưu cụm này”, hoặc thêm thủ công.')}</div>`}</div>`;
     App.bindCommon();
     $('#addP').onclick = () => savePhraseDialog({ phrase: '' });
   };

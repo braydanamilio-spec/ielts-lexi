@@ -158,7 +158,7 @@
       // Đăng nhập tài khoản khác với lần trước → hỏi trước khi gộp dữ liệu trên máy vào
       const lastUid = await Store.get('lastUid', '');
       if (lastUid && lastUid !== Sync.user.uid && Object.keys(await Cards.all()).length) {
-        const keep = confirm('Máy này đang có dữ liệu học của tài khoản khác.\n\nOK = gộp dữ liệu trên máy vào tài khoản này\nHủy = chỉ dùng dữ liệu của tài khoản này');
+        const keep = confirm(t('Máy này đang có dữ liệu học của tài khoản khác.\n\nOK = gộp dữ liệu trên máy vào tài khoản này\nHủy = chỉ dùng dữ liệu của tài khoản này'));
         if (!keep) { await Store.set('cards', {}); await Store.set('stats', { days: {}, newToday: { day: '', n: 0 } }); await Store.set('game', null); await Store.set('deleted', {}); }
       }
       await Store.set('lastUid', Sync.user.uid);
@@ -191,9 +191,9 @@
       if (!docs.meta) { await syncExtension(); await App.load(); }
       if (docs.meta && docs.meta.hs) { const all = await Store.get('pulledHashes', {}); all[Sync.user.uid] = docs.meta.hs; await Store.set('pulledHashes', all); }
       await push();
-      toast(docs.meta ? '☁️ Đã đồng bộ dữ liệu học' + (extReady ? ' (kể cả add-on)' : '') : '☁️ Đã sao lưu dữ liệu lên tài khoản');
+      toast(docs.meta ? '☁️ ' + (extReady ? t('Đã đồng bộ dữ liệu học (kể cả add-on)') : t('Đã đồng bộ dữ liệu học')) : '☁️ ' + t('Đã sao lưu dữ liệu lên tài khoản'));
     } catch (e) {
-      if (e && (e.code === 'resource-exhausted' || /quota/i.test(e.message || ''))) { await Store.set('syncPausedUntil', Date.now() + 6 * 3600e3); setStatus('ok', 'Đồng bộ tạm nghỉ – dữ liệu vẫn trên máy.'); return; }
+      if (e && (e.code === 'resource-exhausted' || /quota/i.test(e.message || ''))) { await Store.set('syncPausedUntil', Date.now() + 6 * 3600e3); setStatus('ok', t('Đồng bộ tạm nghỉ – dữ liệu vẫn trên máy.')); return; }
       console.warn('sync', e); setStatus('error', e.message);
     }
   }
@@ -231,7 +231,7 @@
       setStatus('ok');
     } catch (e) {
       // Hết hạn mức miễn phí trong ngày → tạm dừng đồng bộ đến hôm sau; dữ liệu vẫn an toàn trên máy
-      if (e && (e.code === 'resource-exhausted' || /quota/i.test(e.message || ''))) { await Store.set('syncPausedUntil', Date.now() + 6 * 3600e3); setStatus('ok', 'Đồng bộ tạm nghỉ vài giờ (máy chủ miễn phí đã đủ lượt hôm nay) – dữ liệu vẫn lưu trên máy và sẽ tự đồng bộ sau.'); return; }
+      if (e && (e.code === 'resource-exhausted' || /quota/i.test(e.message || ''))) { await Store.set('syncPausedUntil', Date.now() + 6 * 3600e3); setStatus('ok', t('Đồng bộ tạm nghỉ vài giờ (máy chủ miễn phí đã đủ lượt hôm nay) – dữ liệu vẫn lưu trên máy và sẽ tự đồng bộ sau.')); return; }
       console.warn('push', e); setStatus('error', e.message);
     }
   }
@@ -254,7 +254,7 @@
       await firebase.auth().signInWithPopup(p);
     } catch (e) {
       if (e && e.code === 'auth/popup-blocked') return firebase.auth().signInWithRedirect(new firebase.auth.GoogleAuthProvider());
-      if (e && e.code !== 'auth/popup-closed-by-user') toast('Không đăng nhập được: ' + (e.message || e));
+      if (e && e.code !== 'auth/popup-closed-by-user') toast(t('Không đăng nhập được: {msg}', { msg: e.message || e }));
     }
   };
   // Mời đăng nhập khi đã có dữ liệu đáng giữ (≥ 10 thẻ) – tối đa 3 ngày nhắc 1 lần, không chặn việc học
@@ -264,14 +264,14 @@
     await Store.set('loginNudgeAt', Date.now());
     setTimeout(() => {
       if (Sync.user) return;
-      UI.modal(`<div style="text-align:center"><div style="font-size:2.6rem">☁️</div><h2 style="margin:.3rem 0">Bảo vệ ${n} thẻ bạn đã học</h2>
-        <p class="muted">Dữ liệu đang chỉ nằm trên trình duyệt này. Đăng nhập Google để <b>sao lưu tự động</b> và <b>học tiếp trên máy khác, điện thoại, tiện ích Chrome</b> – cùng một tài khoản, không trùng lặp.</p>
-        <div class="row center" style="margin-top:1rem"><button class="btn primary lg" id="nudgeIn">Đăng nhập với Google</button><button class="btn ghost" data-close>Để sau</button></div>
-        <p class="tiny muted" style="margin-top:.6rem">Miễn phí · chỉ lưu dữ liệu học của bạn · có thể đăng xuất bất cứ lúc nào</p></div>`);
+      UI.modal(`<div style="text-align:center"><div style="font-size:2.6rem">☁️</div><h2 style="margin:.3rem 0">${t('Bảo vệ {n} thẻ bạn đã học', { n })}</h2>
+        <p class="muted">${t('Dữ liệu đang chỉ nằm trên trình duyệt này. Đăng nhập Google để <b>sao lưu tự động</b> và <b>học tiếp trên máy khác, điện thoại, tiện ích Chrome</b> – cùng một tài khoản, không trùng lặp.')}</p>
+        <div class="row center" style="margin-top:1rem"><button class="btn primary lg" id="nudgeIn">${t('Đăng nhập với Google')}</button><button class="btn ghost" data-close>${t('Để sau')}</button></div>
+        <p class="tiny muted" style="margin-top:.6rem">${t('Miễn phí · chỉ lưu dữ liệu học của bạn · có thể đăng xuất bất cứ lúc nào')}</p></div>`);
       const b = document.getElementById('nudgeIn'); if (b) b.onclick = () => { UI.closeModal(); Sync.signIn(); };
     }, 4000);
   }
-  Sync.signOut = async () => { await push(); sentHashes = {}; await firebase.auth().signOut(); toast('Đã đăng xuất – dữ liệu vẫn còn trên máy này'); };
+  Sync.signOut = async () => { await push(); sentHashes = {}; await firebase.auth().signOut(); toast(t('Đã đăng xuất – dữ liệu vẫn còn trên máy này')); };
   Sync.now = () => pullMerge();
 
   function setStatus(s, msg) { Sync.status = s; Sync.msg = msg || ''; render(); }
@@ -281,19 +281,19 @@
   function render() {
     if (!box || !document.body.contains(box)) return;
     if (!supported) {
-      box.innerHTML = Store.isExtension ? `<h2>☁️ Tài khoản & đồng bộ</h2><p class="muted small">Tiện ích tự đồng bộ với tài khoản Google qua web app: mở <b>vocaband.web.app</b> và đăng nhập một lần – từ lưu bằng tiện ích sẽ tự gộp vào tài khoản (và ngược lại) mỗi khi bạn mở web app. Trên máy khác: cài tiện ích + đăng nhập cùng tài khoản trên web app là có đủ dữ liệu.</p><a class="btn primary" href="https://vocaband.web.app/#/settings" target="_blank" rel="noopener">☁️ Mở web app để đăng nhập & đồng bộ</a>`
-        : `<h2>☁️ Tài khoản & đồng bộ</h2><p class="muted">Đăng nhập và đồng bộ có trên bản web <a href="https://vocaband.web.app" target="_blank" rel="noopener">vocaband.web.app</a>.</p>`;
+      box.innerHTML = Store.isExtension ? `<h2>☁️ ${t('Tài khoản & đồng bộ')}</h2><p class="muted small">${t('Tiện ích tự đồng bộ với tài khoản Google qua web app: mở <b>vocaband.web.app</b> và đăng nhập một lần – từ lưu bằng tiện ích sẽ tự gộp vào tài khoản (và ngược lại) mỗi khi bạn mở web app. Trên máy khác: cài tiện ích + đăng nhập cùng tài khoản trên web app là có đủ dữ liệu.')}</p><a class="btn primary" href="https://vocaband.web.app/#/settings" target="_blank" rel="noopener">☁️ ${t('Mở web app để đăng nhập & đồng bộ')}</a>`
+        : `<h2>☁️ ${t('Tài khoản & đồng bộ')}</h2><p class="muted">${t('Đăng nhập và đồng bộ có trên bản web {link}.', { link: '<a href="https://vocaband.web.app" target="_blank" rel="noopener">vocaband.web.app</a>' })}</p>`;
       return;
     }
     const u = Sync.user;
-    const st = { idle: '', syncing: '⏳ Đang đồng bộ…', ok: `✓ Đã đồng bộ lúc ${new Date(Sync.lastSync).toLocaleTimeString('vi-VN')}`, error: `⚠️ Lỗi đồng bộ: ${esc(Sync.msg)}` }[Sync.status];
+    const st = { idle: '', syncing: '⏳ ' + t('Đang đồng bộ…'), ok: '✓ ' + t('Đã đồng bộ lúc {time}', { time: new Date(Sync.lastSync).toLocaleTimeString(window.I18N ? I18N.lang() : 'vi-VN') }), error: '⚠️ ' + t('Lỗi đồng bộ: {msg}', { msg: esc(Sync.msg) }) }[Sync.status];
     box.innerHTML = u ? `
       <div class="row between"><div class="row nowrap"><span class="avatar">${u.photoURL ? `<img src="${esc(u.photoURL)}" alt="" referrerpolicy="no-referrer">` : esc((u.displayName || u.email || '?')[0])}</span>
-        <div><b>${esc(u.displayName || 'Bạn')}</b><div class="small muted">${esc(u.email || '')}</div></div></div>
-        <div class="row"><button class="btn sm" id="syncNow">🔄 Đồng bộ ngay</button><button class="btn sm ghost" id="signOut">Đăng xuất</button></div></div>
-      <div class="small muted">${st || 'Dữ liệu học được tự động sao lưu và đồng bộ giữa các thiết bị.'}</div>`
-      : `<div class="row between"><div><h2 style="margin:0">☁️ Đăng nhập để không mất dữ liệu</h2><p class="muted small">Sao lưu flashcard, XP, chuỗi ngày học và học tiếp trên mọi thiết bị.</p></div>
-        <button class="btn primary" id="signIn"><svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg> Đăng nhập với Google</button></div>
+        <div><b>${esc(u.displayName || t('Bạn'))}</b><div class="small muted">${esc(u.email || '')}</div></div></div>
+        <div class="row"><button class="btn sm" id="syncNow">🔄 ${t('Đồng bộ ngay')}</button><button class="btn sm ghost" id="signOut">${t('Đăng xuất')}</button></div></div>
+      <div class="small muted">${st || t('Dữ liệu học được tự động sao lưu và đồng bộ giữa các thiết bị.')}</div>`
+      : `<div class="row between"><div><h2 style="margin:0">☁️ ${t('Đăng nhập để không mất dữ liệu')}</h2><p class="muted small">${t('Sao lưu flashcard, XP, chuỗi ngày học và học tiếp trên mọi thiết bị.')}</p></div>
+        <button class="btn primary" id="signIn"><svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg> ${t('Đăng nhập với Google')}</button></div>
         ${st ? `<div class="small muted">${st}</div>` : ''}`;
     const q = s => box.querySelector(s);
     if (q('#signIn')) q('#signIn').onclick = Sync.signIn;

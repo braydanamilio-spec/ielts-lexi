@@ -15,7 +15,7 @@
     ielts: { words: .22, listens: .2, readings: .2, writes: .16, spoken: .1, grammar: .12 },
     toeic: { words: .3, listens: .3, readings: .28, writes: 0, spoken: 0, grammar: .12 },
   };
-  const LABEL = { words: ['📌', 'Từ mới', '#/review'], listens: ['🎧', 'Phần nghe', '#/listening'], readings: ['📖', 'Bài đọc', '#/reading'], writes: ['✍️', 'Bài viết', '#/write'], spoken: ['🗣️', 'Lượt nói (điểm)', '#/speaking'], grammar: ['📐', 'Bài ngữ pháp', '#/grammar'] };
+  const LABEL = { words: ['📌', t('Từ mới học'), '#/review'], listens: ['🎧', t('Phần nghe'), '#/listening'], readings: ['📖', t('Bài đọc'), '#/reading'], writes: ['✍️', t('Bài viết'), '#/write'], spoken: ['🗣️', t('Lượt nói (điểm)'), '#/speaking'], grammar: ['📐', t('Bài ngữ pháp'), '#/grammar'] };
 
   const goal = () => state.settings.goal || null;
   const weeksLeft = g => Math.max(1, Math.ceil((new Date(g.date) - Date.now()) / (7 * DAY)));
@@ -43,53 +43,53 @@
   // Thẻ tóm tắt cho Trang chủ
   App.goalCard = async function () {
     const g = goal();
-    if (!g) return `<div class="card goal-mini"><div class="row between"><div><b>🎯 Đặt mục tiêu điểm & ngày thi</b><div class="small muted">Vocaband sẽ chia kế hoạch học từng tuần cho bạn</div></div><a class="btn sm primary" href="#/goal">Đặt mục tiêu</a></div></div>`;
-    const cur = await current(g.exam), { t } = weeklyTargets(g, cur), { out, dow } = thisWeek();
-    const keys = Object.keys(t), pct = Math.round(keys.reduce((a, k) => a + Math.min(1, out[k] / t[k]), 0) / keys.length * 100);
+    if (!g) return `<div class="card goal-mini"><div class="row between"><div><b>🎯 ${t('Đặt mục tiêu điểm & ngày thi')}</b><div class="small muted">${t('Vocaband sẽ chia kế hoạch học từng tuần cho bạn')}</div></div><a class="btn sm primary" href="#/goal">${t('Đặt mục tiêu')}</a></div></div>`;
+    const cur = await current(g.exam), { t: tg } = weeklyTargets(g, cur), { out, dow } = thisWeek();
+    const keys = Object.keys(tg), pct = Math.round(keys.reduce((a, k) => a + Math.min(1, out[k] / tg[k]), 0) / keys.length * 100);
     const exp = Math.round((dow + 1) / 7 * 100), days = Math.max(0, Math.ceil((new Date(g.date) - Date.now()) / DAY));
-    return `<a class="card goal-mini" href="#/goal" style="color:var(--text)"><div class="row between nowrap"><div><b>🎯 ${g.exam === 'toeic' ? 'TOEIC ' + g.target : 'IELTS ' + g.target}</b> <span class="small muted">· còn ${days} ngày · hiện ~${cur}</span></div><span class="chip ${pct >= exp ? 'ok' : ''}">Tuần này ${pct}%</span></div>
-      <div class="progress" style="margin-top:.5rem"><i style="width:${pct}%"></i></div><div class="tiny muted" style="margin-top:.3rem">${pct >= exp ? 'Đúng tiến độ 👍' : `Nên đạt ~${exp}% vào hôm nay – xem chỉ tiêu còn thiếu →`}</div></a>`;
+    return `<a class="card goal-mini" href="#/goal" style="color:var(--text)"><div class="row between nowrap"><div><b>🎯 ${g.exam === 'toeic' ? 'TOEIC ' + g.target : 'IELTS ' + g.target}</b> <span class="small muted">· ${t('còn {days} ngày · hiện ~{cur}', { days, cur })}</span></div><span class="chip ${pct >= exp ? 'ok' : ''}">${t('Tuần này {pct}%', { pct })}</span></div>
+      <div class="progress" style="margin-top:.5rem"><i style="width:${pct}%"></i></div><div class="tiny muted" style="margin-top:.3rem">${pct >= exp ? t('Đúng tiến độ') + ' 👍' : t('Nên đạt ~{exp}% vào hôm nay – xem chỉ tiêu còn thiếu →', { exp })}</div></a>`;
   };
 
   routes.goal = async function () {
     const g = goal() || { exam: 'ielts', target: 6.5, date: new Date(Date.now() + 120 * DAY).toISOString().slice(0, 10) };
     const cur = await current(g.exam);
-    const { hrs, gap, t } = weeklyTargets(g, cur), wl = weeksLeft(g), { out, dow } = thisWeek();
+    const { hrs, gap, t: tg } = weeklyTargets(g, cur), wl = weeksLeft(g), { out, dow } = thisWeek();
     const has = !!goal();
     const mocks = []; for (let w = 2; w <= wl; w += Math.max(2, Math.round(wl / 6))) mocks.push(new Date(Date.now() + w * 7 * DAY));
     view.innerHTML = `
-      <div class="page-head"><div><h1>🎯 Mục tiêu & kế hoạch học</h1><p class="muted">Nhập kỳ thi, điểm mục tiêu và ngày thi – Vocaband tính khối lượng cần học và chia chỉ tiêu từng tuần cho từng kỹ năng.</p></div></div>
+      <div class="page-head"><div><h1>🎯 ${t('Mục tiêu & kế hoạch học')}</h1><p class="muted">${t('Nhập kỳ thi, điểm mục tiêu và ngày thi – Vocaband tính khối lượng cần học và chia chỉ tiêu từng tuần cho từng kỹ năng.')}</p></div></div>
       <div class="grid g2">
         <div class="card">
-          <h3 style="margin-top:0">⚙️ Mục tiêu của bạn</h3>
+          <h3 style="margin-top:0">⚙️ ${t('Mục tiêu của bạn')}</h3>
           <div class="grid g2">
-            <label class="field"><span class="small">Kỳ thi</span><select class="input" id="gExam"><option value="ielts" ${g.exam === 'ielts' ? 'selected' : ''}>IELTS Academic</option><option value="toeic" ${g.exam === 'toeic' ? 'selected' : ''}>TOEIC L&R</option></select></label>
-            <label class="field"><span class="small">Điểm mục tiêu</span><input class="input" id="gTarget" type="number" step="${g.exam === 'toeic' ? 5 : 0.5}" min="${g.exam === 'toeic' ? 300 : 4}" max="${g.exam === 'toeic' ? 990 : 9}" value="${g.target}"></label>
-            <label class="field"><span class="small">Ngày thi</span><input class="input" id="gDate" type="date" value="${esc(g.date)}"></label>
-            <label class="field"><span class="small">Điểm hiện tại (ước tính)</span><input class="input" value="${cur}" disabled></label>
+            <label class="field"><span class="small">${t('Kỳ thi')}</span><select class="input" id="gExam"><option value="ielts" ${g.exam === 'ielts' ? 'selected' : ''}>IELTS Academic</option><option value="toeic" ${g.exam === 'toeic' ? 'selected' : ''}>TOEIC L&R</option></select></label>
+            <label class="field"><span class="small">${t('Điểm mục tiêu')}</span><input class="input" id="gTarget" type="number" step="${g.exam === 'toeic' ? 5 : 0.5}" min="${g.exam === 'toeic' ? 300 : 4}" max="${g.exam === 'toeic' ? 990 : 9}" value="${g.target}"></label>
+            <label class="field"><span class="small">${t('Ngày thi')}</span><input class="input" id="gDate" type="date" value="${esc(g.date)}"></label>
+            <label class="field"><span class="small">${t('Điểm hiện tại (ước tính)')}</span><input class="input" value="${cur}" disabled></label>
           </div>
-          <div class="tiny muted" style="margin:.4rem 0 .8rem">Điểm hiện tại lấy từ lần thi thử gần nhất (hoặc bài kiểm tra đầu vào). <a href="${g.exam === 'toeic' ? '#/toeic-test/1' : '#/mock'}">Thi thử để cập nhật →</a></div>
-          <button class="btn primary" id="gSave">${has ? 'Cập nhật kế hoạch' : 'Lập kế hoạch'}</button>
+          <div class="tiny muted" style="margin:.4rem 0 .8rem">${t('Điểm hiện tại lấy từ lần thi thử gần nhất (hoặc bài kiểm tra đầu vào).')} <a href="${g.exam === 'toeic' ? '#/toeic-test/1' : '#/mock'}">${t('Thi thử để cập nhật →')}</a></div>
+          <button class="btn primary" id="gSave">${has ? t('Cập nhật kế hoạch') : t('Lập kế hoạch')}</button>
         </div>
         <div class="card hero-main">
-          <h3 style="color:#fff;margin:0">📅 ${wl} tuần · cần tăng ${g.exam === 'toeic' ? gap + ' điểm' : gap.toFixed(1) + ' band'}</h3>
-          <div style="font-size:2.2rem;font-weight:800;margin:.3rem 0">${hrs} giờ/tuần</div>
-          <div style="color:#e0e7ff" class="small">≈ ${Math.round(hrs * 60 / 7)} phút mỗi ngày. ${hrs >= (g.exam === 'toeic' ? 15 : 25) ? '⚠️ Mục tiêu khá gấp – cân nhắc lùi ngày thi hoặc tăng thời gian học.' : 'Học đều mỗi ngày hiệu quả hơn học dồn cuối tuần.'}</div>
+          <h3 style="color:#fff;margin:0">📅 ${g.exam === 'toeic' ? t('{wl} tuần · cần tăng {gap} điểm', { wl, gap }) : t('{wl} tuần · cần tăng {gap} band', { wl, gap: gap.toFixed(1) })}</h3>
+          <div style="font-size:2.2rem;font-weight:800;margin:.3rem 0">${t('{hrs} giờ/tuần', { hrs })}</div>
+          <div style="color:#e0e7ff" class="small">≈ ${t('{m} phút mỗi ngày.', { m: Math.round(hrs * 60 / 7) })} ${hrs >= (g.exam === 'toeic' ? 15 : 25) ? '⚠️ ' + t('Mục tiêu khá gấp – cân nhắc lùi ngày thi hoặc tăng thời gian học.') : t('Học đều mỗi ngày hiệu quả hơn học dồn cuối tuần.')}</div>
         </div>
       </div>
-      <div class="card" style="margin-top:1rem"><div class="row between"><h3 style="margin:0">📊 Chỉ tiêu tuần này</h3><span class="small muted">Hôm nay là ngày ${dow + 1}/7 của tuần</span></div>
-        <div class="goal-grid">${Object.entries(t).map(([k, v]) => { const [em, name, href] = LABEL[k], done = out[k], p = Math.min(100, Math.round(done / v * 100)); return `<a class="goal-it" href="${href}"><div class="row between nowrap"><span>${em} <b>${name}</b></span><span class="small ${p >= 100 ? 'good' : ''}">${done}/${v}</span></div><div class="progress"><i style="width:${p}%;${p >= 100 ? 'background:var(--good)' : ''}"></i></div></a>`; }).join('')}</div>
-        <div class="tiny muted" style="margin-top:.5rem">Số liệu tự cập nhật khi bạn học. Bấm từng mục để học ngay.</div></div>
-      <div class="card" style="margin-top:1rem"><h3 style="margin-top:0">🏁 Lịch thi thử gợi ý</h3><div class="row">${mocks.map((d, i) => `<span class="chip">Lần ${i + 1}: ${d.toLocaleDateString('vi-VN')}</span>`).join('') || '<span class="muted small">Thi thử ngay tuần này để đo điểm xuất phát.</span>'}</div>
-        <p class="small muted" style="margin-bottom:0">Thi thử đều đặn giúp đo tiến bộ thật và điều chỉnh kế hoạch – điểm hiện tại và chỉ tiêu tuần sẽ tự tính lại sau mỗi lần thi.</p></div>`;
+      <div class="card" style="margin-top:1rem"><div class="row between"><h3 style="margin:0">📊 ${t('Chỉ tiêu tuần này')}</h3><span class="small muted">${t('Hôm nay là ngày {d}/7 của tuần', { d: dow + 1 })}</span></div>
+        <div class="goal-grid">${Object.entries(tg).map(([k, v]) => { const [em, name, href] = LABEL[k], done = out[k], p = Math.min(100, Math.round(done / v * 100)); return `<a class="goal-it" href="${href}"><div class="row between nowrap"><span>${em} <b>${name}</b></span><span class="small ${p >= 100 ? 'good' : ''}">${done}/${v}</span></div><div class="progress"><i style="width:${p}%;${p >= 100 ? 'background:var(--good)' : ''}"></i></div></a>`; }).join('')}</div>
+        <div class="tiny muted" style="margin-top:.5rem">${t('Số liệu tự cập nhật khi bạn học. Bấm từng mục để học ngay.')}</div></div>
+      <div class="card" style="margin-top:1rem"><h3 style="margin-top:0">🏁 ${t('Lịch thi thử gợi ý')}</h3><div class="row">${mocks.map((d, i) => `<span class="chip">${t('Lần {n}: {date}', { n: i + 1, date: d.toLocaleDateString(I18N.lang()) })}</span>`).join('') || `<span class="muted small">${t('Thi thử ngay tuần này để đo điểm xuất phát.')}</span>`}</div>
+        <p class="small muted" style="margin-bottom:0">${t('Thi thử đều đặn giúp đo tiến bộ thật và điều chỉnh kế hoạch – điểm hiện tại và chỉ tiêu tuần sẽ tự tính lại sau mỗi lần thi.')}</p></div>`;
     $('#gExam').onchange = e => { const t2 = $('#gTarget'); if (e.target.value === 'toeic') { t2.step = 5; t2.min = 300; t2.max = 990; if (+t2.value < 300) t2.value = 750; } else { t2.step = .5; t2.min = 4; t2.max = 9; if (+t2.value > 9) t2.value = 6.5; } };
     $('#gSave').onclick = async () => {
       const exam = $('#gExam').value, target = +$('#gTarget').value, date = $('#gDate').value;
-      if (!date || new Date(date) < Date.now()) return toast('Chọn ngày thi trong tương lai');
-      if (exam === 'ielts' && (target < 4 || target > 9)) return toast('Band IELTS từ 4.0 đến 9.0');
-      if (exam === 'toeic' && (target < 300 || target > 990)) return toast('Điểm TOEIC từ 300 đến 990');
+      if (!date || new Date(date) < Date.now()) return toast(t('Chọn ngày thi trong tương lai'));
+      if (exam === 'ielts' && (target < 4 || target > 9)) return toast(t('Band IELTS từ 4.0 đến 9.0'));
+      if (exam === 'toeic' && (target < 300 || target > 990)) return toast(t('Điểm TOEIC từ 300 đến 990'));
       state.settings.goal = { exam, target, date, at: Date.now() }; await App.saveSettings();
-      toast('🎯 Đã lập kế hoạch! Chỉ tiêu tuần hiện trên Trang chủ.'); routes.goal();
+      toast('🎯 ' + t('Đã lập kế hoạch! Chỉ tiêu tuần hiện trên Trang chủ.')); routes.goal();
     };
   };
 })();

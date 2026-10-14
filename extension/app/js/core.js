@@ -2,6 +2,7 @@
  * Không đụng tới DOM để có thể chạy bằng importScripts().
  */
 (function (g) {
+  const t = (typeof self !== 'undefined' && self.t) || ((s, v) => (v ? s.replace(/\{(\w+)\}/g, (m, k) => (v[k] != null ? v[k] : m)) : s));
   // ---------- Storage: chrome.storage.local trong add-on, localStorage trên web ----------
   const hasChrome = typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local && !(typeof location !== 'undefined' && /[?&]sandbox=1/.test(location.search));
   // ?sandbox=1 → dữ liệu thử nghiệm tách riêng, không đụng dữ liệu học thật (dùng khi kiểm thử)
@@ -136,13 +137,13 @@
 
     preview(s, grade) {
       if (s.reps === 0) {
-        if (grade === 0) return '1 phút';
-        if (grade === 1) return (s.step || 0) === 0 ? '6 phút' : '10 phút';
-        if (grade === 2 && !(s.step > 0)) return '10 phút';
-      } else if (grade === 0) return '1 phút';
+        if (grade === 0) return t('{n} phút', { n: 1 });
+        if (grade === 1) return (s.step || 0) === 0 ? t('{n} phút', { n: 6 }) : t('{n} phút', { n: 10 });
+        if (grade === 2 && !(s.step > 0)) return t('{n} phút', { n: 10 });
+      } else if (grade === 0) return t('{n} phút', { n: 1 });
       const n = SRS.review({ ...s }, grade, Date.now(), true);
       const d = Math.round((n.due - Date.now()) / DAY);
-      return d <= 1 ? '1 ngày' : d < 30 ? `${d} ngày` : d < 365 ? `${Math.round(d / 30)} tháng` : `${(d / 365).toFixed(1)} năm`;
+      return d <= 1 ? t('1 ngày') : d < 30 ? t('{n} ngày', { n: d }) : d < 365 ? t('{n} tháng', { n: Math.round(d / 30) }) : t('{n} năm', { n: (d / 365).toFixed(1) });
     },
 
     // Khả năng còn nhớ lúc này theo đường cong quên lãng của FSRS

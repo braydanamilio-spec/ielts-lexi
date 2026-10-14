@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # Build bản web tối ưu vào dist/: rút gọn (minify) JS/CSS bằng esbuild, giữ nguyên cấu trúc file (script cổ điển, không bundle)
+bash "$(dirname "$0")/build-i18n.sh"
 set -euo pipefail
 cd "$(dirname "$0")/.."
 rm -rf dist && cp -R web dist
