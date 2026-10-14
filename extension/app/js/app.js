@@ -648,7 +648,7 @@
           (e.oxford || []).forEach(m => { const g2 = grp(key(m.pos)); g2.defs = g2.defs.concat(m.defs); });
           if (!(e.oxford || []).length) (e.meanings || []).forEach(m => { const g2 = grp(key(m.pos)); g2.defs = g2.defs.concat(m.defs.slice(0, 3)); });
           const list = G.filter(x => x.vi.length || x.defs.length);
-          return list.length ? `<div style="margin-top:1.2rem"><h3>📖 ${t('Nghĩa theo từ loại')}</h3>${list.map(x => `<div class="pos-block"><div class="pos-head"><span class="chip pos">${esc(t(x.pos))}</span>${x.vi.length ? `<b class="vi">${x.vi.map(esc).join(', ')}</b>` : ''}</div>
+          return list.length ? `<div style="margin-top:1.2rem"><h3>📖 ${t('Nghĩa theo từ loại')}</h3>${list.map(x => `<div class="pos-block"><div class="pos-head"><span class="chip pos">${esc(I18N.lang() === 'vi' ? Object.keys(VIP).find(k => VIP[k] === x.pos) || x.pos : x.pos)}</span>${x.vi.length ? `<b class="vi">${x.vi.map(esc).join(', ')}</b>` : ''}</div>
             ${x.defs.length ? `<ol>${x.defs.slice(0, 4).map(d => `<li>${esc(d.def)}${d.ex ? `<div class="ex small">“${highlight(d.ex, e.word)}” <button class="ctx-say" data-saysent="${esc(d.ex)}" title="${t('Nghe cả câu')}">🔊</button></div>` : ''}</li>`).join('')}</ol>` : ''}</div>`).join('')}
             <div class="tiny muted">${t('Nguồn: Oxford Languages (qua Google), Wiktionary')}</div></div>` : '';
         })()}
