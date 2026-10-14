@@ -20,7 +20,15 @@
   $('#syncRow').innerHTML = linked && linked.email
     ? `<span>☁️ Đồng bộ với <b>${esc(linked.email)}</b> · ${ago(linked.at)}</span><a href="#" id="syncNow">Đồng bộ ngay</a>`
     : `<span>⚠️ Chưa đồng bộ tài khoản – dữ liệu chỉ ở máy này</span><a href="#" id="syncNow" class="strong">☁️ Đồng bộ với Google</a>`;
-  $('#syncNow').onclick = e => { e.preventDefault(); chrome.tabs.create({ url: 'https://vocaband.web.app/#/settings' }); window.close(); };
+  $('#syncNow').onclick = async e => {
+    e.preventDefault();
+    if (!linked || !linked.email) { chrome.tabs.create({ url: 'https://vocaband.web.app/#/settings' }); return window.close(); }
+    // Đã liên kết: mở Vocaband ở tab nền để gộp dữ liệu với tài khoản, xong tự đóng – không làm phiền
+    const a = $('#syncNow'); a.textContent = '⏳ Đang đồng bộ…'; a.style.pointerEvents = 'none';
+    const r = await chrome.runtime.sendMessage({ type: 'syncNow' }).catch(() => null);
+    a.textContent = r && r.ok ? '✓ Đã đồng bộ' : 'Thử lại'; a.style.pointerEvents = '';
+    if (r && r.ok) setTimeout(() => location.reload(), 800);
+  };
 
   $('#dbl').checked = settings.dblclickOn !== false;
   $('#selMode').value = settings.selectMode || 'icon';

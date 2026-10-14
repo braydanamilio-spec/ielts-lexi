@@ -98,7 +98,10 @@
     const merged = mergeCards(await Cards.all(), ext.cards || {}, deleted);
     await Store.set('deleted', deleted);
     await Cards.save(merged);
-    await extCall('set', { cards: await Cards.all(), deleted });
+    // Gộp cả lịch sử ôn (chuỗi ngày 🔥, mục tiêu hôm nay) để add-on và web hiển thị cùng con số
+    const stats = mergeStats(await Core.Stats.get(), ext.stats || { days: {} });
+    await Store.set('stats', stats);
+    await extCall('set', { cards: await Cards.all(), deleted, stats });
     return Object.keys(ext.cards || {}).length;
   }
   Sync.syncExtension = syncExtension;
@@ -224,7 +227,7 @@
       if (writes) await batch.commit();
       // Ghi nhớ trạng thái đã khớp với cloud → lần sau chỉ tải gói thay đổi
       if (writes) { const all = await Store.get('pulledHashes', {}); all[Sync.user.uid] = hs; await Store.set('pulledHashes', all); }
-      if (extReady) { extCall('set', { cards: await Cards.all(), deleted: await Store.get('deleted', {}) }); extCall('linked', { email: Sync.user.email, name: Sync.user.displayName || '' }); }
+      if (extReady) { extCall('set', { cards: await Cards.all(), deleted: await Store.get('deleted', {}), stats: await Core.Stats.get() }); extCall('linked', { email: Sync.user.email, name: Sync.user.displayName || '' }); }
       Object.assign(sentHashes, pending); // chỉ ghi nhận "đã gửi" khi commit thành công
       dirty = false;
       Sync.lastSync = Date.now();

@@ -177,6 +177,15 @@ chrome.runtime.onMessage.addListener((msg, sender, reply) => {
       case 'explain': return reply(await aiExplain(msg.text, msg.sentence));
       case 'testNotify': await sendReminder(true); return reply({ ok: true });
       case 'openApp': await openApp(msg.hash); return reply({ ok: true });
+      case 'syncNow': {
+        // Trang Vocaband (đã đăng nhập) tự gộp dữ liệu qua cầu nối rồi gửi 'linked' → chờ tín hiệu đó, tối đa 25 giây
+        const before = ((await chrome.storage.local.get('linked')).linked || {}).at || 0;
+        const tab = await chrome.tabs.create({ url: 'https://vocaband.web.app/#/home', active: false });
+        let ok = false;
+        for (let i = 0; i < 25 && !ok; i++) { await new Promise(r => setTimeout(r, 1000)); ok = (((await chrome.storage.local.get('linked')).linked || {}).at || 0) > before; }
+        chrome.tabs.remove(tab.id).catch(() => {});
+        return reply({ ok });
+      }
       default: reply({});
     }
   } catch (e) { reply({ error: String(e && e.message || e) }); } })();
