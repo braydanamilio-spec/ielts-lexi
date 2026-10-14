@@ -9,6 +9,27 @@
   const SANDBOX = typeof location !== 'undefined' && /[?&]sandbox=1/.test(location.search);
   const PREFIX = SANDBOX ? 'sbx.' : 'ielts.';
 
+  // Dữ liệu lớn (flashcard) trên web: IndexedDB (dung lượng hàng GB) thay vì localStorage (~5MB) → người học chăm không bị
+  // "đầy bộ nhớ" âm thầm. Tự chuyển dữ liệu cũ sang lần đầu; trình duyệt không có IndexedDB → vẫn dùng localStorage.
+  const BIG = new Set(['cards']);
+  let dbp = null;
+  const idb = () => dbp || (dbp = new Promise((res, rej) => {
+    if (typeof indexedDB === 'undefined') return rej(new Error('no-idb'));
+    const rq = indexedDB.open('vocaband', 1);
+    rq.onupgradeneeded = () => rq.result.createObjectStore('kv');
+    rq.onsuccess = () => res(rq.result); rq.onerror = () => rej(rq.error); rq.onblocked = () => rej(new Error('blocked'));
+  }));
+  const idbDo = (mode, fn) => idb().then(db => new Promise((res, rej) => { const tx = db.transaction('kv', mode), r = fn(tx.objectStore('kv')); tx.oncomplete = () => res(r && r.result); tx.onerror = tx.onabort = () => rej(tx.error); }));
+  const bigGet = async key => {
+    let v = await idbDo('readonly', st => st.get(PREFIX + key));
+    const raw = localStorage.getItem(PREFIX + key);
+    if (raw) { // chuyển từ localStorage (lần đầu, hoặc tab bản cũ vừa ghi): gộp, giữ bản sửa mới nhất của từng thẻ
+      const old = JSON.parse(raw);
+      if (v && typeof v === 'object' && old && typeof old === 'object') { for (const [k, c] of Object.entries(old)) if (!v[k] || ((c && c.mod) || 0) > ((v[k] && v[k].mod) || 0)) v[k] = c; } else v = old;
+      await idbDo('readwrite', st => st.put(v, PREFIX + key)); localStorage.removeItem(PREFIX + key);
+    }
+    return v;
+  };
   const Store = {
     async get(key, fallback) {
       try {
@@ -16,16 +37,19 @@
           const r = await chrome.storage.local.get(key);
           return r[key] !== undefined ? r[key] : fallback;
         }
+        if (BIG.has(key)) { try { const v = await bigGet(key); return v !== undefined ? v : fallback; } catch (e) { /* không có IndexedDB → localStorage */ } }
         const raw = localStorage.getItem(PREFIX + key);
         return raw ? JSON.parse(raw) : fallback;
       } catch (e) { return fallback; }
     },
     async remove(key) {
       if (hasChrome) return chrome.storage.local.remove(key);
+      if (BIG.has(key)) await idbDo('readwrite', st => st.delete(PREFIX + key)).catch(() => {});
       localStorage.removeItem(PREFIX + key);
     },
     async set(key, value) {
       if (hasChrome) return chrome.storage.local.set({ [key]: value });
+      if (BIG.has(key)) { try { await idbDo('readwrite', st => st.put(value, PREFIX + key)); localStorage.removeItem(PREFIX + key); return; } catch (e) { /* không có IndexedDB → localStorage */ } }
       try { localStorage.setItem(PREFIX + key, JSON.stringify(value)); }
       catch (e) {
         // Hết dung lượng: xóa bộ nhớ đệm từ điển (có thể tra lại) rồi thử lần nữa
