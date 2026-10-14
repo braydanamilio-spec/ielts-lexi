@@ -796,3 +796,35 @@ mark.cbt-hl { background: #fde047; color: #111; cursor: pointer; }
 .idea-it:last-child { border-bottom: 0; }
 .idea-ch { cursor: pointer; border: 1px solid var(--line); }
 .idea-ch:hover { border-color: var(--primary); color: var(--primary); }
+/* Bài tập kiểu Study4 */
+.gap-vi { display: inline-block; font-size: .72rem; font-weight: 600; color: #be123c; background: rgba(244, 63, 94, .1); border-radius: 6px; padding: .05rem .4rem; margin: 0 .3rem; vertical-align: middle; }
+.no-vi .gap-vi { display: none; }
+u.err-w { text-decoration: underline wavy #db2777; text-underline-offset: 4px; }
+.err-miss { min-width: 3rem; border-style: dashed !important; }
+.slot-wrap { line-height: 2.6; font-size: 1rem; }
+.slot { border: 0; border-bottom: 2px solid var(--line); background: transparent; font: inherit; padding: 0 .1rem; text-align: center; color: inherit; margin: 0 .05rem; }
+.slot:focus { outline: none; border-bottom-color: var(--primary); background: var(--primary-soft); }
+.slot.ok { border-bottom-color: var(--good); color: var(--good); } .slot.no { border-bottom-color: var(--again); color: var(--again); }
+.slot-pun { margin-left: -.25rem; }
+.slot-role { display: inline-block; font-size: .7rem; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: #fff; background: #16a34a; border-radius: 6px; padding: .05rem .5rem; vertical-align: .15em; }
+.lem-list { padding-left: 1.2rem; display: grid; gap: .9rem; }
+.lem-q { font-family: ui-monospace, Menlo, monospace; font-size: .9rem; color: var(--muted); margin: .2rem 0 .4rem; line-height: 1.6; }
+.annot.hl-mode { cursor: text; outline: 2px dashed rgba(245, 158, 11, .5); outline-offset: 6px; }
+mark.uhl { background: #fde68a; color: inherit; border-radius: 3px; padding: 0 .1rem; }
+/* Trợ lý viết */
+.wa-box { margin-top: .8rem; }
+.wa-list { display: grid; gap: .5rem; max-height: 420px; overflow: auto; }
+.wa-it { border: 1px solid var(--line); border-radius: 12px; padding: .55rem .7rem; background: var(--surface); }
+.wa-tag { display: inline-block; color: #fff; font-size: .68rem; font-weight: 800; padding: .08rem .45rem; border-radius: 6px; text-transform: uppercase; letter-spacing: .03em; }
+.wa-bad { color: #e11d48; }
+.wa-rep { cursor: pointer; border: 1px solid #16a34a; color: #15803d; background: rgba(22, 163, 74, .08); }
+.dict-line { font-size: 1.15rem; line-height: 2.4; text-align: center; }
+.dict-h { border: 0; border-bottom: 2px solid var(--primary); background: var(--primary-soft); border-radius: 6px 6px 0 0; font: inherit; text-align: center; color: inherit; margin: 0 .1rem; padding: 0 .2rem; }
+.dict-h:focus { outline: none; box-shadow: 0 0 0 2px var(--primary); }
+.dict-h.ok { border-bottom-color: var(--good); background: rgba(22,163,74,.12); } .dict-h.no { border-bottom-color: var(--again); background: rgba(229,72,77,.12); }
+kbd { font-family: ui-monospace, Menlo, monospace; font-size: .75em; padding: .05rem .35rem; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 5px; background: var(--surface); }
+.sample-box { margin-top: .8rem; padding: .7rem .9rem; border-radius: 12px; background: var(--surface-2); }
+.sample-box summary { cursor: pointer; }
+.sample-txt { margin-top: .6rem; line-height: 1.8; }
+.sm-s.on { background: rgba(245, 158, 11, .25); border-radius: 4px; }
+.sm-v { cursor: pointer; border: 1px solid var(--line); }

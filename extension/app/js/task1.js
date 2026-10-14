@@ -148,6 +148,7 @@
       timer = setInterval(() => { left--; const el = $('#clock'); if (!el) return clearInterval(timer); el.textContent = `${String(Math.floor(Math.max(0, left) / 60)).padStart(2, '0')}:${String(Math.max(0, left) % 60).padStart(2, '0')}`; el.style.color = left < 180 ? 'var(--again)' : ''; if (left <= 0) { clearInterval(timer); timer = null; toast('⏰ Hết 20 phút!'); } }, 1000);
     };
     $('#go').onclick = () => analyse(ta.value, d);
+    if (window.Assist && $('#t1')) Assist.attach($('#t1'), $('#t1').parentElement);
   };
 
   // Chấm Task 1 (thuần, dùng chung cho Phòng viết & Thi thử 4 kỹ năng)

@@ -290,19 +290,22 @@
     intro();
   };
 
-  // ================= CHÉP CHÍNH TẢ =================
-  routes.dictation = function (id) {
+  // ================= CHÉP CHÍNH TẢ (3 mức như các nền tảng lớn) =================
+  // Điền từ (trung bình) ≈ 35% từ · Điền từ (khó) ≈ 65% từ · Chép cả câu. Phím tắt: Space/Tab ô sau · Enter kiểm tra/câu sau · \ nghe lại · Shift+←/→ đổi câu
+  const STOPW = new Set('a an the and or but of to in on at by for with from is are was were be been it this that these those i you he she we they my your his her our their as so if than then there here'.split(' '));
+  routes.dictation = function (id, query) {
     const p = byId(id);
     if (!p) return routes.listening();
     const lines = p.script.map((l, i) => ({ ...l, i })).filter(l => l.t && l.t.split(/\s+/).length >= 4);
     let k = 0, score = 0, done = 0;
+    let mode = (query && query.get('m')) || state.settings.dictMode || 'mid', auto = !!state.settings.dictAuto;
     const cast = castVoices(p);
-    const say = (l, slow) => { speechSynthesis.cancel(); const c = cast[l.s] || cast._narrator; UI.splitSentences(l.t).forEach(t => { const u = new SpeechSynthesisUtterance(t); u.lang = c.lang; if (c.voice) u.voice = c.voice; u.pitch = c.pitch; u.rate = slow ? 0.7 : (state.settings.listenRate || 0.95); speechSynthesis.speak(u); }); };
-    App.cleanup = () => speechSynthesis.cancel();
+    const say = (l, slow) => { speechSynthesis.cancel(); const c = cast[l.s] || cast._narrator; UI.splitSentences(l.t).forEach((t, j, arr) => { const u = new SpeechSynthesisUtterance(t); u.lang = c.lang; if (c.voice) u.voice = c.voice; u.pitch = c.pitch; u.rate = slow ? 0.7 : (state.settings.listenRate || 0.95); if (j === arr.length - 1 && auto) u.onend = () => { if (lines[k] === l && !checked) autoT = setTimeout(() => say(l), 1800); }; speechSynthesis.speak(u); }); };
+    let autoT = null, checked = false;
+    App.cleanup = () => { speechSynthesis.cancel(); clearTimeout(autoT); document.onkeydown = null; };
     const toks = s => s.replace(/[’‘]/g, "'").split(/\s+/).filter(Boolean);
     const clean = w => w.toLowerCase().replace(/[^a-z0-9'%]/g, '');
     function diff(target, given) {
-      // So khớp từng từ (LCS) → đúng / sai / thiếu
       const a = toks(target), b = toks(given).map(clean).filter(Boolean), A = a.map(clean);
       const dp = Array.from({ length: A.length + 1 }, () => new Array(b.length + 1).fill(0));
       for (let x = A.length - 1; x >= 0; x--) for (let y = b.length - 1; y >= 0; y--) dp[x][y] = A[x] === b[y] ? dp[x + 1][y + 1] + 1 : Math.max(dp[x + 1][y], dp[x][y + 1]);
@@ -311,32 +314,59 @@
       while (y < b.length) out.push(`<span class="dk extra">${esc(b[y++])}</span>`);
       return { html: out.join(' '), pct: A.filter(Boolean).length ? dp[0][0] / A.filter(Boolean).length : 0 };
     }
+    // Chọn từ để đục lỗ: ưu tiên từ nội dung (không phải hư từ), rải đều trong câu, ổn định theo câu
+    const holes = (words, ratio) => { const idx = words.map((w, i) => ({ w: clean(w), i })).filter(x => x.w); const content = idx.filter(x => !STOPW.has(x.w)); const need = Math.max(1, Math.round(idx.length * ratio)); const pool = content.length >= need ? content : idx; const step = pool.length / need; const pick = new Set(); for (let j = 0; j < need && j < pool.length; j++) pick.add(pool[Math.floor(j * step)].i); return pick; };
     const draw = () => {
+      clearTimeout(autoT); checked = false;
       if (k >= lines.length) {
         const pct = done ? Math.round(score / done * 100) : 0;
         App.reward({ quizzes: 1, dictations: 1, xp: 10 + Math.round(pct / 5) });
-        view.innerHTML = `<div class="study-wrap"><div class="card celebrate empty"><div class="em">⌨️</div><h2>Chính xác ${pct}%</h2><p class="muted">${done} câu đã chép. Chép chính tả đều đặn giúp tai nhận ra nối âm, nuốt âm và trọng âm câu.</p><div class="row center"><a class="btn primary" href="#/listen/${p.id}">🎯 Làm câu hỏi phần này</a><a class="btn" href="#/listening">Về Luyện nghe</a></div></div></div>`;
+        view.innerHTML = `<div class="study-wrap"><div class="card celebrate empty"><div class="em">⌨️</div><h2>Chính xác ${pct}%</h2><p class="muted">${done} câu đã chép. Chép chính tả đều đặn giúp tai nhận ra nối âm, nuốt âm và trọng âm câu.</p><div class="row center"><a class="btn primary" href="#/listen/${p.id}">🎯 Làm câu hỏi phần này</a><a class="btn" href="#/dictation/${p.id}?m=${mode === 'mid' ? 'hard' : 'full'}">Thử mức khó hơn</a><a class="btn" href="#/listening">Về Luyện nghe</a></div></div></div>`;
         return;
       }
-      const l = lines[k];
+      const l = lines[k], words = toks(l.t);
+      const H = mode === 'full' ? null : holes(words, mode === 'hard' ? 0.65 : 0.35);
+      const body = mode === 'full' ? `<textarea id="dIn" rows="3" class="dict-in" placeholder="Gõ lại cả câu bạn nghe được… (Enter để kiểm tra)" spellcheck="false"></textarea>`
+        : `<div class="dict-line">${words.map((w, i) => { if (!H.has(i)) return `<span>${esc(w)}</span>`; const m = w.match(/^([^A-Za-z0-9]*)(.*?)([^A-Za-z0-9%']*)$/); return `${esc(m[1])}<input class="dict-h" data-i="${i}" size="${Math.max(3, m[2].length)}" autocomplete="off" spellcheck="false" autocapitalize="off">${esc(m[3])}`; }).join(' ')}</div>`;
       view.innerHTML = `<div class="study-wrap"><div class="study-top"><a class="icon-btn" href="#/listening">✕</a><div class="progress"><i style="width:${k / lines.length * 100}%"></i></div><span class="small muted">${k + 1}/${lines.length}</span></div>
-        <div class="card q-card"><div class="tiny muted">⌨️ Chép chính tả · ${esc(p.title)} · ${esc((p.speakers[l.s] || {}).name || '')}</div>
-          <div class="row center" style="margin:1rem 0"><button class="btn primary lg" id="dPlay">🔊 Nghe</button><button class="btn" id="dSlow">🐢 Nghe chậm</button></div>
-          <textarea id="dIn" rows="3" class="dict-in" placeholder="Gõ lại những gì bạn nghe được… (Enter để kiểm tra)" spellcheck="false"></textarea>
+        <div class="card q-card"><div class="row between"><span class="tiny muted">⌨️ Chép chính tả · ${esc(p.title)} · ${esc((p.speakers[l.s] || {}).name || '')}</span>
+          <select class="input" id="dMode" style="width:auto;padding:.3rem .5rem;font-size:.85rem"><option value="mid" ${mode === 'mid' ? 'selected' : ''}>Điền từ (trung bình)</option><option value="hard" ${mode === 'hard' ? 'selected' : ''}>Điền từ (khó)</option><option value="full" ${mode === 'full' ? 'selected' : ''}>Chép cả câu</option></select></div>
+          <div class="row center" style="margin:1rem 0"><button class="btn" id="dPrev" title="Câu trước (Shift+←)">‹ Câu trước</button><button class="btn primary lg" id="dPlay" title="Nghe lại (\\)">🔊 Nghe</button><button class="btn" id="dSlow">🐢</button><button class="btn" id="dNext" title="Câu sau (Shift+→)">Câu sau ›</button></div>
+          ${body}
           <div id="dFb" style="margin-top:.6rem"></div>
-          <div class="row" style="margin-top:.6rem"><button class="btn primary" id="dChk">Kiểm tra</button><button class="btn ghost" id="dSkip">Bỏ qua</button></div></div></div>`;
+          <div class="row between" style="margin-top:.6rem"><div class="row"><button class="btn primary" id="dChk">Kiểm tra</button><button class="btn ghost" id="dAns">Đáp án</button><button class="btn ghost" id="dClr">Xoá hết</button></div>
+            <label class="md-sw"><input type="checkbox" id="dAuto" ${auto ? 'checked' : ''}><span></span>Tự động phát lại câu</label></div>
+          <div class="tiny muted" style="margin-top:.6rem">Phím tắt: <kbd>Space</kbd>/<kbd>Tab</kbd> sang ô sau · <kbd>Enter</kbd> kiểm tra / câu tiếp · <kbd>\\</kbd> nghe lại · <kbd>Shift</kbd>+<kbd>←</kbd>/<kbd>→</kbd> đổi câu · <kbd>Backspace</kbd> ở ô trống để về ô trước</div></div></div>`;
+      const hs = $$('.dict-h');
       $('#dPlay').onclick = () => say(l); $('#dSlow').onclick = () => say(l, true);
-      setTimeout(() => say(l), 300); $('#dIn').focus();
-      let checked = false;
+      $('#dPrev').onclick = () => { if (k > 0) { k--; draw(); } };
+      $('#dNext').onclick = () => { k++; draw(); };
+      $('#dMode').onchange = e => { mode = e.target.value; state.settings.dictMode = mode; App.saveSettings(); draw(); };
+      $('#dAuto').onchange = e => { auto = e.target.checked; state.settings.dictAuto = auto; App.saveSettings(); if (auto) say(l); };
+      $('#dClr').onclick = () => { hs.forEach(h => { h.value = ''; h.className = 'dict-h'; }); const t = $('#dIn'); if (t) t.value = ''; $('#dFb').innerHTML = ''; checked = false; (hs[0] || t).focus(); };
+      setTimeout(() => say(l), 300); (hs[0] || $('#dIn')).focus();
       const check = () => {
         if (checked) { k++; draw(); return; }
-        checked = true; const d = diff(l.t, $('#dIn').value); done++; score += d.pct;
-        d.pct >= 0.9 ? Sfx.correct() : Sfx.wrong();
-        $('#dFb').innerHTML = `<div class="feedback ${d.pct >= 0.9 ? 'ok' : 'no'}" style="position:static"><b>${Math.round(d.pct * 100)}% chính xác</b><div style="margin-top:.4rem;line-height:1.9">${d.html}</div><div class="tiny muted" style="margin-top:.3rem"><span class="dk ok">đúng</span> <span class="dk miss">bỏ sót</span> <span class="dk extra">thừa/sai</span></div></div>`;
+        checked = true; clearTimeout(autoT); done++;
+        let pct;
+        if (mode === 'full') { const d = diff(l.t, $('#dIn').value); pct = d.pct; $('#dFb').innerHTML = `<div class="feedback ${pct >= 0.9 ? 'ok' : 'no'}" style="position:static"><b>${Math.round(pct * 100)}% chính xác</b><div style="margin-top:.4rem;line-height:1.9">${d.html}</div><div class="tiny muted" style="margin-top:.3rem"><span class="dk ok">đúng</span> <span class="dk miss">bỏ sót</span> <span class="dk extra">thừa/sai</span></div></div>`; }
+        else { let r = 0; hs.forEach(h => { const a = clean(words[+h.dataset.i]), ok = clean(h.value) === a; h.classList.add(ok ? 'ok' : 'no'); if (!ok) h.title = words[+h.dataset.i]; if (ok) r++; }); pct = hs.length ? r / hs.length : 1; $('#dFb').innerHTML = `<div class="feedback ${pct >= 0.9 ? 'ok' : 'no'}" style="position:static"><b>${r}/${hs.length} ô đúng</b><div class="small" style="margin-top:.3rem">${esc(l.t)}</div></div>`; }
+        score += pct; pct >= 0.9 ? Sfx.correct() : Sfx.wrong();
         $('#dChk').textContent = 'Câu tiếp ↵';
       };
-      $('#dChk').onclick = check; $('#dSkip').onclick = () => { k++; draw(); };
-      $('#dIn').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); check(); } });
+      $('#dChk').onclick = check;
+      $('#dAns').onclick = () => { hs.forEach(h => { h.value = words[+h.dataset.i].replace(/^[^A-Za-z0-9]*|[^A-Za-z0-9%']*$/g, ''); }); const t = $('#dIn'); if (t) t.value = l.t; };
+      hs.forEach((h, j) => h.addEventListener('keydown', e => {
+        if (e.key === ' ' || (e.key === 'Tab' && !e.shiftKey)) { e.preventDefault(); if (hs[j + 1]) hs[j + 1].focus(); }
+        else if ((e.key === 'Backspace' || e.key === 'Delete') && !h.value && hs[j - 1]) { e.preventDefault(); hs[j - 1].focus(); }
+        else if (e.key === 'Tab' && e.shiftKey && hs[j - 1]) { e.preventDefault(); hs[j - 1].focus(); }
+      }));
+      document.onkeydown = e => {
+        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); check(); }
+        else if (e.key === '\\') { e.preventDefault(); say(l); }
+        else if (e.shiftKey && e.key === 'ArrowLeft') { e.preventDefault(); $('#dPrev').click(); }
+        else if (e.shiftKey && e.key === 'ArrowRight') { e.preventDefault(); $('#dNext').click(); }
+      };
     };
     draw();
   };

@@ -130,6 +130,7 @@
       }, 1000);
     };
     $('#analyze').onclick = () => report(ta.value, p, true);
+    if (window.Assist) Assist.attach(ta, ta.parentElement);
   };
 
   async function report(text, p, fresh) {

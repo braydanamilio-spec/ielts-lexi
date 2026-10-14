@@ -40,7 +40,7 @@
             items: [
               { n: 11, text: 'a reason why some families were unable to use libraries that charged fees', a: 'B', cue: 'many working families had neither the money nor the leisure time to use them' },
               { n: 12, text: 'a forecast that libraries would soon no longer exist', a: 'E', cue: 'some predicted that they would disappear within a generation' },
-              { n: 13, text: 'examples of items other than books that people can borrow', a: 'F', cue: 'Some libraries lend tools, musical instruments and even fishing rods' },
+              { n: 13, text: 'examples of practical equipment, not media, that people can borrow', a: 'F', cue: 'Some libraries lend tools, musical instruments and even fishing rods' },
             ] },
         ],
         vocab: [

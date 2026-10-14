@@ -103,7 +103,42 @@
       $('#qBox').innerHTML = part === 'p2'
         ? `<div class="example-box" style="border-left-color:var(--primary)"><b style="font-size:1.1rem">${esc(t.p2.q)}</b><div class="small" style="margin-top:.4rem">You should say:</div><ul style="margin:.2rem 0 0;padding-left:1.2rem">${t.p2.points.map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>`
         : `<div style="font-size:1.25rem;font-weight:700">${esc(qs[qi])}</div>`;
+      drawSample();
     };
+    // Câu trả lời mẫu band 7.5–8 + luyện shadowing (nghe từng câu → nói lặp lại → chấm độ giống)
+    const drawSample = () => {
+      const key = part === 'p2' ? t.p2.q : qs[qi], smp = (window.SPEAK_SAMPLES || {})[key];
+      let el = $('#sampleBox'); if (!el) { el = document.createElement('div'); el.id = 'sampleBox'; $('#qBox').after(el); }
+      if (!smp) { el.innerHTML = ''; return; }
+      const sents = UI.splitSentences(smp.a);
+      el.innerHTML = `<details class="sample-box"><summary><b>📝 Câu trả lời mẫu (band 7.5–8)</b> <span class="tiny muted">– xem sau khi đã tự trả lời</span></summary>
+        <div class="sample-txt">${sents.map((x, i) => `<span class="sm-s" data-i="${i}">${esc(x)}</span>`).join(' ')}</div>
+        ${(smp.vocab || []).length ? `<div class="row" style="gap:.3rem;margin:.5rem 0">${smp.vocab.map(([en, vi]) => `<button class="chip sm-v" data-en="${esc(en)}" data-vi="${esc(vi)}" title="${esc(vi)} – bấm để lưu">+ ${esc(en)}</button>`).join('')}</div>` : ''}
+        <div class="row"><button class="btn sm" id="smPlay">🔊 Nghe cả bài</button><button class="btn sm primary" id="smShadow">🔁 Luyện shadowing</button></div><div id="smShadowBox"></div></details>`;
+      $$('.sm-v', el).forEach(b => b.onclick = () => App.savePhraseDialog && App.savePhraseDialog({ phrase: b.dataset.en, vi: b.dataset.vi, sentence: sents.find(x => x.toLowerCase().includes(b.dataset.en.toLowerCase().split(' ')[0])) || '', title: 'Speaking mẫu' }));
+      $('#smPlay', el).onclick = () => UI.tts(smp.a, state.settings.accent, 0.95, { onSentence: i => { $$('.sm-s', el).forEach((x, j) => x.classList.toggle('on', j === i)); } });
+      $('#smShadow', el).onclick = () => shadow(sents, $('#smShadowBox', el));
+    };
+    function shadow(sents, box) {
+      let k = 0, total = 0;
+      const step = () => {
+        if (k >= sents.length) { box.innerHTML = `<div class="feedback ok" style="position:static;margin-top:.6rem"><b>Hoàn thành shadowing · trung bình ${Math.round(total / sents.length)}% giống mẫu</b></div>`; App.reward({ spoken: 3, xp: 10 }); return; }
+        const s2 = sents[k];
+        box.innerHTML = `<div class="card" style="margin-top:.6rem;box-shadow:none;border:1px solid var(--line)"><div class="tiny muted">Câu ${k + 1}/${sents.length} – nghe rồi nói lặp lại, bắt chước nhịp và ngữ điệu</div>
+          <div style="font-size:1.1rem;margin:.4rem 0">${esc(s2)}</div><div class="row"><button class="btn sm" id="shL">🔊 Nghe</button><button class="btn sm" id="shS">🐢</button><button class="btn sm primary" id="shR">🎙️ Nói lại</button><button class="btn sm ghost" id="shN">Bỏ qua →</button></div><div id="shRes" class="small" style="margin-top:.4rem"></div></div>`;
+        const say = r => UI.tts(s2, state.settings.accent, r);
+        $('#shL').onclick = () => say(); $('#shS').onclick = () => say(0.7); $('#shN').onclick = () => { k++; step(); };
+        $('#shR').onclick = () => {
+          $('#shRes').textContent = '🔴 Đang nghe…';
+          UI.recognize(s2, state.settings.accent, {
+            result: ({ heard, score, audio }) => { total += score; $('#shRes').innerHTML = `<b style="color:${score >= 80 ? 'var(--good)' : score >= 60 ? 'var(--hard)' : 'var(--again)'}">${score}% giống mẫu</b> · máy nghe: “${esc(heard)}” ${audio ? `<audio controls src="${audio}" style="height:30px;vertical-align:middle"></audio>` : ''} <button class="btn sm" id="shNext">Câu tiếp →</button>`; $('#shNext').onclick = () => { k++; step(); }; },
+            error: e => { $('#shRes').textContent = UI.recErrorText ? UI.recErrorText(e) : 'Không nhận được giọng nói'; },
+          });
+        };
+        say();
+      };
+      step();
+    }
     showQ();
     const askText = () => part === 'p2' ? `${t.p2.q} You should say: ${t.p2.points.join(', ')}.` : qs[qi];
     $('#hear').onclick = () => tts(askText(), state.settings.accent, 0.95);
