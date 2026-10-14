@@ -120,7 +120,7 @@
             <div class="vi" style="margin:.3rem 0">${esc(c.vi)}</div>
             ${c.def ? `<div>${esc(c.def)}</div>` : ''}
             ${c.ex ? `<div class="example-box" style="margin-top:.8rem">${highlight(c.ex, c.word)} <button class="icon-btn sm" data-speak-text="${esc(c.ex)}">🔊</button></div>` : ''}
-            ${c.contexts.length ? `<div style="margin-top:.8rem"><b class="small">📌 Ngữ cảnh của bạn</b>${c.contexts.slice(0, 2).map(x => `<div class="ex small" style="margin-top:.3rem">“${highlight(x.text, c.word)}”${x.title ? ` <span class="muted">— ${esc(x.title)}</span>` : ''}${x.vi ? `<div style="font-style:normal">🇻🇳 ${esc(x.vi)}</div>` : ''}</div>`).join('')}</div>` : ''}
+            ${c.contexts.length ? `<div style="margin-top:.8rem"><b class="small">📌 Ngữ cảnh của bạn</b>${c.contexts.slice(0, 2).map(x => `<div class="ex small" style="margin-top:.3rem">“${highlight(x.text, c.word)}” <button class="ctx-say sm" data-saysent="${esc(x.text)}" title="Nghe cả câu">🔊</button>${x.title ? ` <span class="muted">— ${esc(x.title)}</span>` : ''}${x.vi ? `<div style="font-style:normal">🇻🇳 ${esc(x.vi)}</div>` : ''}</div>`).join('')}</div>` : ''}
             ${(c.sentences || []).length ? `<div style="margin-top:.8rem"><b class="small">💬 Câu song ngữ</b>${c.sentences.map(x => `<div class="small" style="margin-top:.3rem">${highlight(x.en, c.word)}<div class="muted">${esc(x.vi)}</div></div>`).join('')}</div>` : ''}
             ${c.col.length ? `<div class="small" style="margin-top:.8rem">🔗 ${c.col.map(esc).join(' · ')}</div>` : ''}
             ${c.syn.length ? `<div class="small" style="margin-top:.3rem">≈ ${c.syn.map(esc).join(', ')}</div>` : ''}

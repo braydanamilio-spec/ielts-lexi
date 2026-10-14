@@ -213,5 +213,20 @@
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   }
 
-  g.UI = { recUrl, clearRecs, $, $$, esc, shuffle, wordRegex, highlight, cloze, clozeAnswer, similarity, toast, modal, closeModal, xpFloat, speak, tts, stopSpeak, recognize, stopRecognize, recErrorText, voicesFor, pickVoice, splitSentences, pic, levelChip, posChip, masteryDots, ring, download };
+  // Ô ngữ cảnh có nút nghe cả câu (🔊 tốc độ chuẩn · 🐢 chậm) – dùng chung cho mọi bảng tra
+  function ctxBox(sentence, word, extra = '') {
+    if (!sentence) return '';
+    return `<div class="ctx-box ${extra}"><div class="ctx-tx">📌 ${highlight(sentence, word)}</div><div class="ctx-act"><button class="ctx-say" data-saysent="${esc(sentence)}" title="Nghe cả câu" aria-label="Nghe cả câu">🔊</button><button class="ctx-say" data-saysent="${esc(sentence)}" data-slow="1" title="Nghe chậm" aria-label="Nghe chậm">🐢</button></div></div>`;
+  }
+  if (typeof document !== 'undefined') document.addEventListener('click', e => {
+    const b = e.target.closest && e.target.closest('[data-saysent]'); if (!b) return;
+    e.preventDefault(); e.stopPropagation();
+    const playing = b.classList.contains('on');
+    document.querySelectorAll('.ctx-say.on').forEach(x => x.classList.remove('on'));
+    if (playing) return stopSpeak();
+    b.classList.add('on');
+    const st = (g.App && g.App.state && g.App.state.settings) || {};
+    tts(b.dataset.saysent, st.accent || 'en-GB', (b.dataset.slow || e.shiftKey) ? 0.7 : undefined, { onEnd: () => b.classList.remove('on') });
+  }, true);
+  g.UI = { ctxBox, recUrl, clearRecs, $, $$, esc, shuffle, wordRegex, highlight, cloze, clozeAnswer, similarity, toast, modal, closeModal, xpFloat, speak, tts, stopSpeak, recognize, stopRecognize, recErrorText, voicesFor, pickVoice, splitSentences, pic, levelChip, posChip, masteryDots, ring, download };
 })(typeof self !== 'undefined' ? self : this);

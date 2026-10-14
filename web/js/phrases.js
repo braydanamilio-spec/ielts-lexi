@@ -280,7 +280,7 @@
           <div class="row" style="gap:.3rem"><span class="ipa">${esc(d.ipa || '')}</span><button class="icon-btn sm" data-sp>🔊</button></div>
           <div class="vi" style="font-size:1.05rem;margin:.2rem 0">${esc(d.vi)}</div>
           ${d.def ? `<div class="small muted">${esc(d.def)}</div>` : ''}
-          ${info.sentence && info.sentence !== info.text ? `<div class="example-box small" style="margin-top:.5rem">📌 ${UI.highlight(info.sentence, d.word)}</div>` : ''}
+          ${info.sentence && info.sentence !== info.text ? UI.ctxBox(info.sentence, d.word) : ''}
           <div class="row" style="margin-top:.6rem"><button class="btn sm primary" data-save>${App.inDeck(d.word) ? '+ Thêm ngữ cảnh' : '+ Lưu flashcard'}</button>${info.text.includes(' ') ? '<button class="btn sm" data-ph>🧩 Lưu cụm</button>' : ''}<a class="btn sm ghost" href="#/dict/${encodeURIComponent(d.word)}">Chi tiết</a></div>`;
         $('[data-sp]', pop).onclick = () => UI.speak(d.word, state.settings.accent, d.audio);
         $('[data-save]', pop).onclick = async ev => {

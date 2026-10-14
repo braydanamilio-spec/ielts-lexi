@@ -98,7 +98,7 @@
         <div class="row"><span class="ipa">${esc(e.ipa)}</span><button class="icon-btn sm" data-s>🔊</button></div>
         <div class="vi" style="font-size:1.05rem">${esc(e.vi)}</div>
         ${e.def ? `<div class="small" style="margin-top:.3rem">${esc(e.def)}</div>` : ''}
-        <div class="example-box small" style="margin-top:.6rem">📌 ${UI.highlight(sentence, e.word === word ? word : e.word)}</div>
+        ${UI.ctxBox(sentence, e.word === word ? word : e.word)}
         <div class="row" style="margin-top:.7rem"><button class="btn sm primary" data-save>${saved ? '+ Thêm ngữ cảnh' : '+ Lưu flashcard'}</button><a class="btn sm" href="#/dict/${encodeURIComponent(e.word)}">Chi tiết</a></div>`;
       $('[data-x]', pop).onclick = closePop;
       $('[data-s]', pop).onclick = () => speak(e.word, state.settings.accent, e.audio);

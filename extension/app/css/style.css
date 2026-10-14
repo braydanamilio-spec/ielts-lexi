@@ -717,3 +717,13 @@ mark.cbt-hl { background: #fde047; color: #111; cursor: pointer; }
 .annot.an-lk .an-lk { box-shadow: inset 0 -2px 0 #f59e0b; font-weight: 600; }
 :root[data-theme="dark"] .annot.an-ch .an-ch { background: rgba(143, 132, 255, .16); }
 :root[data-theme="dark"] .annot.an-gl .an-ch .an-gl { color: #fda4af; }
+
+/* Ô ngữ cảnh + nút nghe cả câu */
+.ctx-box { display: flex; gap: .6rem; align-items: flex-start; margin-top: .6rem; padding: .65rem .75rem; border-radius: 12px; background: var(--primary-soft); border-left: 3px solid var(--primary); font-size: .9rem; line-height: 1.6; }
+.ctx-tx { flex: 1; min-width: 0; }
+.ctx-act { display: flex; flex-direction: column; gap: .3rem; }
+.ctx-say { width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); cursor: pointer; display: inline-grid; place-items: center; font-size: .85rem; transition: transform .12s, background .15s; padding: 0; }
+.ctx-say:hover { transform: scale(1.08); border-color: var(--primary); }
+.ctx-say.on { background: var(--primary); border-color: var(--primary); animation: ctxpulse 1.2s infinite; }
+.ctx-say.sm { width: 24px; height: 24px; font-size: .72rem; vertical-align: middle; }
+@keyframes ctxpulse { 50% { box-shadow: 0 0 0 5px rgba(91, 76, 240, .18); } }
