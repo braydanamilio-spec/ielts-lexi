@@ -73,6 +73,7 @@
               <div class="row"><select class="input" id="pSel" style="width:auto;padding:.35rem .6rem">${Object.keys(OUTLINE).map(ty => `<optgroup label="${esc(ty)}">${PROMPTS.filter(x => x.type === ty).map(x => `<option value="${x.id}" ${x.id === p.id ? 'selected' : ''}>Đề ${x.id.slice(1)} · ${esc((App.topicOf(x.topic) || { name: x.topic }).name)}</option>`).join('')}</optgroup>`).join('')}</select>
               <button class="btn sm" id="rndP" title="Đề ngẫu nhiên">🎲</button></div></div>
             <p style="font-size:1.08rem;font-weight:600;margin:.8rem 0 0">${esc(p.text)}</p>
+            <a class="btn sm ghost" href="#/ideas/${esc(p.topic)}" style="margin-top:.5rem">💡 Bí ý? Mở ngân hàng ý tưởng chủ đề này</a>
             <details style="margin-top:.6rem"><summary class="small"><b>🧭 Dàn ý gợi ý cho dạng ${esc(p.type)}</b></summary><ol class="small" style="margin:.4rem 0 0;padding-left:1.2rem">${(OUTLINE[p.type] || []).map(x => `<li style="margin:.25rem 0">${esc(x)}</li>`).join('')}</ol></details>
             <div class="row between" style="margin-top:.5rem"><p class="tiny muted" style="margin:0">Viết ít nhất 250 từ · thời gian gợi ý 40 phút</p>${(window.MODELS || []).some(m => m.id === 't2-' + p.id) ? `<a class="btn sm" href="#/model/t2-${p.id}">📄 Bài mẫu band 8 có chú thích</a>` : ''}</div>
           </div>

@@ -49,6 +49,8 @@
     rec = null; media = null; stream = null; UI.stopSpeak();
   };
 
+  // Chủ đề bổ sung (js/speak/*.js nạp trước): window.SPEAK_MORE = [{ topic, title, p1: [...], p2: { q, points }, p3: [...] }]
+  (window.SPEAK_MORE || []).forEach(t => { if (!BANK.some(b => b.title === t.title)) BANK.push(t); });
   App.speakBank = BANK;
   routes.speaking = function (arg) {
     const seg = (arg || '').split('/');

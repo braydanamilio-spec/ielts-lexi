@@ -786,3 +786,13 @@ mark.cbt-hl { background: #fde047; color: #111; cursor: pointer; }
 .toeic-u:has(.toeic-pass) { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
 @media (max-width: 860px) { .toeic-u:has(.toeic-pass) { grid-template-columns: minmax(0, 1fr); } }
 .toeic-pass { background: var(--surface-2); border-radius: 12px; padding: .9rem 1rem; line-height: 1.7; font-size: .95rem; }
+.goal-mini { display: block; }
+.goal-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: .6rem; margin-top: .8rem; }
+.goal-it { border: 1px solid var(--line); border-radius: 12px; padding: .6rem .75rem; color: var(--text); text-decoration: none; display: grid; gap: .4rem; }
+.goal-it:hover { border-color: var(--primary); }
+.goal-it .good { color: var(--good); font-weight: 700; }
+.idea summary { cursor: pointer; }
+.idea-it { padding: .6rem 0; border-bottom: 1px dashed var(--line); }
+.idea-it:last-child { border-bottom: 0; }
+.idea-ch { cursor: pointer; border: 1px solid var(--line); }
+.idea-ch:hover { border-color: var(--primary); color: var(--primary); }

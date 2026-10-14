@@ -10,6 +10,13 @@
   const R_PART = { 5: 'Hoàn thành câu', 6: 'Hoàn thành đoạn văn', 7: 'Đọc hiểu' };
   // Đánh dấu dữ liệu TOEIC để trang Luyện nghe hiển thị đúng tên Part
   T().listening.forEach(p => { p.exam = 'toeic'; });
+  // Xoay vị trí đáp án 4 lựa chọn theo mẫu cố định → A/B/C/D phân bố đều (chấm theo chỉ số nên vẫn đúng)
+  const PAT = [2, 0, 3, 1, 3, 2, 0, 1, 1, 3, 0, 2];
+  T().listening.forEach(p => p.groups.forEach(g => g.type === 'mcq' && !g._rot && (g._rot = 1) && g.items.forEach(it => {
+    if (it.options.length !== 4) return;
+    const want = PAT[it.n % PAT.length], r = (it.a - want + 4) % 4; if (!r) return;
+    it.options = it.options.slice(r).concat(it.options.slice(0, r)); it.a = want;
+  })));
   // Quy đổi % đúng → điểm thang 5–495 mỗi phần (ước tính tuyến tính có hiệu chỉnh nhẹ; không phải bảng chính thức)
   const scaled = pct => Math.max(5, Math.min(495, Math.round((5 + 490 * Math.pow(pct, 1.08)) / 5) * 5));
   const words = () => IELTS_DATA.TOPICS.filter(t => t.group === 'toeic');
@@ -23,7 +30,7 @@
         <div class="card hero-main" style="background:linear-gradient(135deg,#0ea5a4,#1e40af)">
           <h2 style="color:#fff;margin:0">🏁 Thi thử Listening + Reading</h2>
           <p style="color:#e0f2fe;margin:.4rem 0 .8rem">Làm trọn bộ câu hỏi, chấm tự động và quy đổi điểm 10–990 (ước tính).</p>
-          <div class="row">${best.total ? `<span class="chip" style="background:rgba(255,255,255,.2);color:#fff">Cao nhất: ${best.total}/990</span>` : ''}<a class="btn" style="background:#fff;color:#0f172a" href="#/toeic-test/1">Bắt đầu thi thử</a></div>
+          <div class="row">${best.total ? `<span class="chip" style="background:rgba(255,255,255,.2);color:#fff">Cao nhất: ${best.total}/990</span>` : ''}${[...new Set(T().listening.map(p => p.test))].filter(n => T().reading.some(r => r.test === n)).map(n => `<a class="btn" style="background:#fff;color:#0f172a" href="#/toeic-test/${n}">Thi thử Test ${n}</a>`).join('')}</div>
         </div>
         <div class="card">
           <h3 style="margin-top:0">📚 Từ vựng TOEIC (TSL)</h3>
@@ -34,10 +41,10 @@
         </div>
       </div>
       <h2 style="margin-top:1.4rem">🎧 Listening</h2>
-      <div class="grid auto">${T().listening.map(p => `<div class="card"><span class="chip">Part ${p.part} · ${L_PART[p.part] || ''}</span><h3 style="margin:.5rem 0 .2rem">${esc(p.title)}</h3><div class="small muted">${App.listening ? App.listening.qNums(p).length : ''} câu</div>
+      <div class="grid auto">${T().listening.map(p => `<div class="card"><span class="chip">Part ${p.part} · ${L_PART[p.part] || ''}</span><h3 style="margin:.5rem 0 .2rem">Test ${p.test} · ${esc(p.title)}</h3><div class="small muted">${App.listening ? App.listening.qNums(p).length : ''} câu</div>
         <div class="row" style="margin-top:.6rem"><a class="btn sm primary" href="#/listen/${p.id}">🎯 Luyện tập</a><a class="btn sm" href="#/listen/${p.id}?mode=exam">⏱ Nghe 1 lần</a><a class="btn sm ghost" href="#/dictation/${p.id}">⌨️ Chép chính tả</a></div></div>`).join('') || '<div class="card muted">Đang cập nhật.</div>'}</div>
       <h2 style="margin-top:1.4rem">📖 Reading</h2>
-      <div class="grid auto">${T().reading.flatMap(t => t.parts.map(pt => `<div class="card"><span class="chip">Part ${pt.part} · ${R_PART[pt.part] || ''}</span><h3 style="margin:.5rem 0 .2rem">${esc(pt.title)}</h3><div class="small muted">${countPart(pt)} câu</div>
+      <div class="grid auto">${T().reading.flatMap(t => t.parts.map(pt => `<div class="card"><span class="chip">Part ${pt.part} · ${R_PART[pt.part] || ''}</span><h3 style="margin:.5rem 0 .2rem">Test ${t.test} · ${esc(pt.title)}</h3><div class="small muted">${countPart(pt)} câu</div>
         <div class="row" style="margin-top:.6rem"><a class="btn sm primary" href="#/toeic-r/${t.id}?part=${pt.part}">🎯 Luyện Part ${pt.part}</a></div></div>`)).join('') || '<div class="card muted">Đang cập nhật.</div>'}</div>
       <div class="card" style="margin-top:1.2rem"><h3 style="margin-top:0">💡 Chiến lược TOEIC</h3><ul class="small" style="line-height:1.8;padding-left:1.1rem">
         <li><b>Part 2:</b> nghe kỹ từ để hỏi (When/Where/Who…); cẩn thận đáp án lặp lại âm giống câu hỏi – thường là bẫy.</li>

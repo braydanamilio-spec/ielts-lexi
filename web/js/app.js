@@ -177,14 +177,14 @@
   const G = 'js/grammar/', BUNDLES = {
     grammar: [...['tenses', 'verbs', 'sentences', 'foundation', 'academic', 'chapters', 'book2', 'drills-a', 'drills-b', 'drills-c'].map(f => G + f + '.js'), 'js/grammar.js'],
     pron: ['js/pron/sounds.js', 'js/pron/skills.js', 'js/pron.js'],
-    listening: ['js/qengine.js', ...[1, 2, 3, 4, 5].map(n => `js/listen/test${n}.js`), 'js/listening.js'],
-    writing: ['js/write/task2-more.js', 'js/write/task1-more.js', 'js/write.js', 'js/task1.js', 'js/models.js'],
-    mock: ['js/qengine.js', 'js/readtest/test1.js', 'js/readtest/test2.js', 'js/readtest/test3.js', 'js/mock.js'],
+    listening: ['js/qengine.js', ...[1, 2, 3, 4, 5, 6].map(n => `js/listen/test${n}.js`), 'js/listening.js'],
+    writing: ['js/write/task2-more.js', 'js/write/task1-more.js', 'js/write/ideas.js', 'js/write.js', 'js/task1.js', 'js/models.js', 'js/ideas.js'],
+    mock: ['js/qengine.js', 'js/readtest/test1.js', 'js/readtest/test2.js', 'js/readtest/test3.js', 'js/readtest/test4.js', 'js/mock.js'],
     tsl: ['js/lib/tsl-a.js', 'js/lib/tsl-b.js'],
-    toeic: ['js/qengine.js', 'js/toeic/reading1.js', 'js/toeic/listening1.js', 'js/toeic.js'],
+    toeic: ['js/qengine.js', 'js/toeic/reading1.js', 'js/toeic/reading2.js', 'js/toeic/listening1.js', 'js/toeic/listening2.js', 'js/toeic.js'],
   };
   const ROUTE_BUNDLE = { grammar: 'grammar', placement: 'grammar', pron: 'pron', listening: 'listening', listen: ['listening', 'toeic'], 'listen-test': 'listening', dictation: ['listening', 'toeic'],
-    toeic: ['tsl', 'listening', 'toeic'], 'toeic-r': ['toeic'], 'toeic-test': ['listening', 'toeic'], library: 'tsl', topic: 'tsl', practice: 'tsl', dict: 'tsl', write: 'writing', task1: 'writing', model: 'writing', phrases: 'writing', mock: ['listening', 'writing', 'mock'] };
+    toeic: ['tsl', 'listening', 'toeic'], 'toeic-r': ['toeic'], 'toeic-test': ['listening', 'toeic'], library: 'tsl', topic: 'tsl', practice: 'tsl', dict: 'tsl', write: 'writing', task1: 'writing', model: 'writing', phrases: 'writing', ideas: 'writing', mock: ['listening', 'writing', 'mock'] };
   const bundleP = {};
   const loadScript = src => new Promise(res => { const s = document.createElement('script'); s.src = src; s.async = false; s.onload = s.onerror = () => res(); document.head.appendChild(s); });
   // Tải song song nhưng chạy đúng thứ tự (async=false); file thiếu được bỏ qua
@@ -201,7 +201,7 @@
     if (b.some(x => !App.loaded(x))) view.innerHTML = '<div class="card empty"><div class="em">⏳</div>Đang tải…</div>';
     if (b.length) { await App.need(...b); if (my !== routeSeq) return; }
     const fn = routes[name] || routes.home;
-    const navKey = name === 'topic' ? 'library' : name === 'practice' && arg === 'speak' ? 'speak' : name === 'read' ? 'reading' : /^(listen|listen-test|dictation)$/.test(name) ? 'listening' : /^toeic/.test(name) ? 'toeic' : name;
+    const navKey = name === 'topic' ? 'library' : name === 'practice' && arg === 'speak' ? 'speak' : name === 'read' ? 'reading' : /^(listen|listen-test|dictation)$/.test(name) ? 'listening' : /^toeic/.test(name) ? 'toeic' : name === 'ideas' ? 'write' : name;
     $$('#nav a, #bnav a').forEach(a => a.classList.toggle('active', a.dataset.route === navKey));
     UI.stopSpeak(); UI.clearRecs();
     document.onkeydown = null;
@@ -312,6 +312,7 @@
         </div>
       </div>
 
+      <div id="goalCard" style="margin-top:1rem"></div>
       <div class="card" id="todayPlan" style="margin-top:1rem"></div>
 
       <div class="grid g4 stats" style="margin-top:1rem">
@@ -385,6 +386,7 @@
       }
     };
     drawGolden();
+    if (App.goalCard) App.goalCard().then(h => { const el = $('#goalCard'); if (el) el.innerHTML = h; });
     if (App.todayPlan) App.todayPlan().then(tasks => {
       const el = $('#todayPlan'); if (!el) return;
       const n = tasks.filter(t => t.done).length;
@@ -711,7 +713,7 @@
     const list = Object.values(state.cards);
     view.innerHTML = `
       <div class="page-head"><div><h1>Sổ từ của bạn</h1><p class="muted">${list.length} từ · ${masteredCount()} đã thuộc</p></div>
-        <div class="row"><a class="btn sm" href="#/practice/learn?src=deck">🧠 Học</a><a class="btn sm" href="#/practice/test?src=deck">📝 Kiểm tra</a><button class="btn sm" id="exportBtn">⬇️ Xuất</button><label class="btn sm">⬆️ Nhập<input type="file" id="importFile" accept="application/json" hidden></label></div></div>
+        <div class="row"><a class="btn sm" href="#/practice/learn?src=deck">🧠 Học</a><a class="btn sm" href="#/practice/test?src=deck">📝 Kiểm tra</a><button class="btn sm" id="exportBtn">⬇️ Xuất</button><label class="btn sm">⬆️ Nhập<input type="file" id="importFile" accept="application/json" hidden></label><button class="btn sm" id="ankiOut" title="Tạo file nhập thẳng vào Anki (File → Import)">🃏 Xuất sang Anki</button><label class="btn sm" title="Nhập file .txt/.tsv/.csv xuất từ Anki (Notes in Plain Text)">🃏 Nhập từ Anki<input type="file" id="ankiIn" accept=".txt,.tsv,.csv,text/plain,text/csv" hidden></label></div></div>
       <div class="grid g4" style="margin-bottom:1rem">
         <input class="input" id="filterQ" placeholder="Tìm từ hoặc nghĩa…">
         <select class="input" id="filterTopic"><option value="">Tất cả bộ từ</option>${TOPICS.map(t => `<option value="${t.id}">${t.emoji} ${esc(t.name)}</option>`).join('')}<option value="mine">📌 Từ tự thêm</option></select>
@@ -740,11 +742,45 @@
     draw();
     $('#exportBtn').onclick = exportData;
     $('#importFile').onchange = importData;
+    $('#ankiOut').onclick = exportAnki;
+    $('#ankiIn').onchange = importAnki;
   };
 
   async function exportData() {
     const blob = new Blob([JSON.stringify({ app: 'ielts-lexi', version: 2, exported: new Date().toISOString(), cards: state.cards, stats: state.stats, game: state.game, settings: state.settings }, null, 2)], { type: 'application/json' });
     download(blob, `ielts-lexi-${todayKey()}.json`);
+  }
+  // ---------- Liên thông Anki ----------
+  // Xuất: file văn bản có header Anki (tab, HTML) – Anki → File → Import nhận ngay thành thẻ Basic, kèm tag chủ đề
+  function exportAnki() {
+    const clean = x => String(x || '').replace(/[\t\r\n]+/g, ' ').trim();
+    const rows = Object.values(state.cards).map(c => {
+      const ctx = (c.contexts || [])[0];
+      const front = `<b>${esc(clean(c.word))}</b>${c.ipa ? `<br><span style="color:#888">${esc(clean(c.ipa))}</span>` : ''}`;
+      const back = [c.vi && `<b>${esc(clean(c.vi))}</b>`, c.def && esc(clean(c.def)), (ctx && ctx.text) ? `<i>${esc(clean(ctx.text))}</i>` : c.ex ? `<i>${esc(clean(c.ex))}</i>` : '', ctx && ctx.vi ? esc(clean(ctx.vi)) : ''].filter(Boolean).join('<br>');
+      const tags = ['vocaband', c.topic || '', c.level || ''].filter(Boolean).map(t => String(t).replace(/\s+/g, '_')).join(' ');
+      return [front, back, tags].join('\t');
+    });
+    const head = '#separator:tab\n#html:true\n#notetype:Basic\n#tags column:3\n';
+    download(new Blob([head + rows.join('\n')], { type: 'text/plain;charset=utf-8' }), `vocaband-anki-${todayKey()}.txt`);
+    toast(`Đã xuất ${rows.length} thẻ – mở Anki → File → Import → chọn file này`, 4500);
+  }
+  // Nhập: file "Notes in Plain Text" của Anki (tab) hoặc CSV 2 cột: mặt trước = từ, mặt sau = nghĩa
+  async function importAnki(e) {
+    const f = e.target.files[0]; if (!f) return;
+    const strip = x => String(x || '').replace(/<br\s*\/?>/gi, ' · ').replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/\[sound:[^\]]*\]/g, '').replace(/^"|"$/g, '').trim();
+    const lines = (await f.text()).split(/\r?\n/).filter(l => l.trim() && !l.startsWith('#')).slice(0, 5000);
+    let n = 0, skip = 0;
+    for (const l of lines) {
+      const cols = l.includes('\t') ? l.split('\t') : l.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/);
+      const word = strip(cols[0]).split(' · ')[0].toLowerCase(), vi = strip(cols[1] || '');
+      if (!word || word.length > 60 || !/[a-z]/i.test(word)) { skip++; continue; }
+      if (App.inDeck(word)) { skip++; continue; }
+      const lib = IELTS_DATA.INDEX[word];
+      await addWord(lib ? { ...lib } : { word, vi: vi.slice(0, 200), pos: /\s/.test(word) ? 'phrase' : '', emoji: '🃏', topic: 'anki' }, null, { silent: true }); n++;
+    }
+    e.target.value = '';
+    await load(); toast(`🃏 Đã nhập ${n} thẻ từ Anki${skip ? ` (bỏ qua ${skip} dòng trùng/không hợp lệ)` : ''}`, 4500); route();
   }
   async function importData(e) {
     const f = e.target.files[0]; if (!f) return;
