@@ -157,7 +157,7 @@ a.chip:hover { background: var(--primary-soft); color: var(--primary); }
 .chip.lv.C1, .chip.lv.C2 { background: var(--gold-soft); color: #b45309; }
 .chip.pos { font-style: italic; }
 .chip.ok { background: var(--good-soft); color: var(--good); }
-.tabs { display: flex; gap: .35rem; padding: .3rem; background: var(--surface-2); border-radius: 14px; overflow-x: auto; scrollbar-width: none; }
+.tabs { display: flex; gap: .35rem; padding: .3rem; background: var(--surface-2); border-radius: 14px; overflow-x: auto; scrollbar-width: none; max-width: 100%; } /* max-width: thanh tab inline-flex không tràn khỏi màn hình điện thoại, vuốt ngang được */
 .tabs button { border: 0; background: transparent; padding: .5rem .95rem; border-radius: 10px; font-weight: 700; color: var(--muted); cursor: pointer; white-space: nowrap; }
 .tabs button.on { background: var(--surface); color: var(--text); box-shadow: var(--shadow-sm); }
 .ipa { font-family: var(--ipa); color: var(--muted); }
@@ -881,3 +881,8 @@ kbd { font-family: ui-monospace, Menlo, monospace; font-size: .75em; padding: .0
 .pos-block ol { margin: .4rem 0 0 1.2rem; padding: 0; line-height: 1.6; } .pos-block li { margin: .25rem 0; }
 /* Điện thoại: nút chính của bước học luôn trong tầm tay (không phải cuộn tìm) */
 @media (max-width: 560px) { #gotIt { position: sticky; bottom: calc(72px + env(safe-area-inset-bottom)); z-index: 5; box-shadow: 0 6px 20px rgba(0,0,0,.25); } }
+/* Điện thoại: các nút trong thẻ chính chia đều 1 hàng, chữ không bị xuống dòng lệch */
+@media (max-width: 560px) {
+  .hero-main .row > .btn.lg { flex: 1 1 0; min-width: 0; justify-content: center; padding-left: .6rem; padding-right: .6rem; font-size: .95rem; white-space: nowrap; }
+  .hero-main .row:has(> .btn.lg) { flex-wrap: nowrap; gap: .5rem; }
+}
