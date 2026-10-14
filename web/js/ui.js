@@ -206,7 +206,7 @@
           try {
             const ac = new (g.AudioContext || g.webkitAudioContext)({ sampleRate: 16000 }), buf = await ac.decodeAudioData(await blob.arrayBuffer()); ac.close && ac.close();
             const asr = await whisper(p => toast(t('Đang tải mô hình nhận dạng giọng nói… {p}%', { p: Math.round(p) })));
-            const out = await asr(buf.getChannelData(0)), heard = String((out && out.text) || '').trim();
+            const out = await asr(buf.getChannelData(0)), heard = String((out && out.text) || '').replace(/\[[^\]]*\]|\([^)]*\)/g, ' ').replace(/\s+/g, ' ').trim(); // bỏ nhãn [BLANK_AUDIO], (music)…
             cb.result && cb.result({ heard, score: Math.round(similarity(heard, target) * 100), audio, alts: [heard] });
           } catch (e) { cb.error && cb.error('whisper'); }
           cb.end && cb.end();
