@@ -503,8 +503,8 @@
         <div class="card q-card">
           ${pic(w).replace('class="pic"', 'class="pic" style="width:110px;margin:0 auto 1rem"')}
           <div class="entry-word">${esc(w.word)}</div>
-          <div class="row center"><span class="ipa" style="font-size:1.1rem">${esc(w.ipa)}</span><button class="icon-btn" id="model" title="Nghe mẫu">🔊</button><button class="icon-btn" id="modelSlow" title="Nghe chậm">🐢</button></div>
-          ${w.vi ? `<div class="vi" style="font-size:1rem;margin-top:.3rem">${esc(w.vi)}</div>` : ''}
+          <div class="row center"><span class="ipa" id="ipaW" style="font-size:1.1rem">${esc(w.ipa) || (w.ipaUS ? '' : '<span class="muted small">đang tra phiên âm…</span>')}</span><button class="icon-btn" id="model" title="Nghe mẫu">🔊</button><button class="icon-btn" id="modelSlow" title="Nghe chậm">🐢</button></div>
+          <div class="vi" id="viW" style="font-size:1rem;margin-top:.3rem">${esc(w.vi || '')}</div>
           <div style="margin:1.6rem 0 .6rem"><button class="mic" id="mic" title="Bấm và nói">🎙️</button></div>
           <div class="muted small" id="hint">${SR ? 'Bấm micro rồi đọc to từ trên' : '⚠️ Trình duyệt không hỗ trợ nhận dạng giọng nói – hãy dùng Chrome hoặc Edge.'}</div>
           <div id="result" style="margin-top:1rem"></div>
@@ -513,6 +513,14 @@
       </div>`;
       $('#model').onclick = () => speak(w.word, accent(), w.audio);
       $('#modelSlow').onclick = () => tts(w.word, accent(), 0.55);
+      // Từ ngoài thư viện (vd. mở từ add-on): tự tra phiên âm UK/US, nghĩa và bản ghi phát âm
+      if (!w.ipa || !w.vi || !w.audio) Dict.quick(w.word).then(d => {
+        if (!d || !d.found || items[i] !== w) return;
+        w.ipa = w.ipa || d.ipa || ''; w.ipaUS = w.ipaUS || d.ipaUS || ''; w.vi = w.vi || d.vi || ''; w.audio = w.audio || d.audio || '';
+        const ip = $('#ipaW'); if (ip) ip.innerHTML = w.ipaUS && w.ipaUS !== w.ipa ? `🇬🇧 ${esc(w.ipa)} · 🇺🇸 ${esc(w.ipaUS)}` : esc(w.ipa || '');
+        const vi = $('#viW'); if (vi) vi.textContent = w.vi;
+        if (App.inDeck(w.word)) Cards.patch(w.word, c => { if (!c.ipa && w.ipa) c.ipa = w.ipa; if (!c.ipaUS && w.ipaUS) c.ipaUS = w.ipaUS; if (!c.vi && w.vi) c.vi = w.vi; });
+      }).catch(() => { const ip = $('#ipaW'); if (ip && !w.ipa) ip.textContent = ''; });
       $('#skipW').onclick = () => { i++; show(); };
       $('#nextW').onclick = () => { i++; show(); };
       setTimeout(() => speak(w.word, accent(), w.audio), 300);
