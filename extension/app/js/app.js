@@ -1085,7 +1085,7 @@
 
   // ================= CHÀO MỪNG & THIẾT LẬP BAN ĐẦU =================
   // Bộ chọn ngôn ngữ giao diện: chỉ liệt kê ngôn ngữ đã dịch đầy đủ (tránh giao diện nửa nọ nửa kia)
-  App.langPicker = () => `<div class="tabs" data-lang-pick style="display:inline-flex">${['en', 'vi'].map(l => `<button data-v="${l}" class="${I18N.lang() === l ? 'on' : ''}">${I18N.LANGS[l][1]}</button>`).join('')}</div>`;
+  App.langPicker = () => `<div class="tabs" data-lang-pick style="display:inline-flex">${I18N.SUPPORTED.map(l => `<button data-v="${l}" class="${I18N.lang() === l ? 'on' : ''}">${I18N.LANGS[l][1]}</button>`).join('')}</div>`;
   document.addEventListener('click', e => { const b = e.target.closest('[data-lang-pick] [data-v]'); if (b && b.dataset.v !== I18N.lang()) I18N.set(b.dataset.v); });
   routes.welcome = function (step) {
     document.body.classList.add('bare');
