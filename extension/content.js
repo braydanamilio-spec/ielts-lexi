@@ -28,6 +28,8 @@
   // Ngôn ngữ giao diện: theo lựa chọn trên web Vocaband (đồng bộ qua cầu nối), mặc định theo ngôn ngữ Chrome
   let UI_LANG = (chrome.i18n && chrome.i18n.getUILanguage ? chrome.i18n.getUILanguage() : navigator.language || 'en').toLowerCase().startsWith('vi') ? 'vi' : 'en';
   try { chrome.storage.local.get('uiLang').then(r => { if (r.uiLang === 'vi' || r.uiLang === 'en') UI_LANG = r.uiLang; }).catch(() => {}); chrome.storage.onChanged.addListener(ch => { if (ch.uiLang && /^(vi|en)$/.test(ch.uiLang.newValue)) UI_LANG = ch.uiLang.newValue; }); } catch (x) { /* bản cũ */ }
+  const ML = () => { if (UI_LANG === 'vi') return 'vi'; const l = (navigator.language || 'en').toLowerCase(); return l.startsWith('vi') ? 'en' : l.startsWith('zh') ? (/tw|hk|hant/.test(l) ? 'zh-TW' : 'zh-CN') : l.split('-')[0]; };
+  const FLAG = l => ({ vi: '🇻🇳', es: '🇪🇸', pt: '🇧🇷', fr: '🇫🇷', de: '🇩🇪', id: '🇮🇩', th: '🇹🇭', 'zh-CN': '🇨🇳', 'zh-TW': '🇹🇼', ja: '🇯🇵', ko: '🇰🇷', hi: '🇮🇳', ar: '🇸🇦', ru: '🇷🇺', tr: '🇹🇷' })[l] || '🌐';
   const EN = {
     'Dịch với Vocaband': 'Translate with Vocaband', 'Nghe câu ví dụ': 'Play example', 'Quay lại từ trước': 'Back to previous word', 'Quay lại': 'Back',
     'Anh–Mỹ': 'US English', 'Nghe giọng Anh–Anh (phím P)': 'British pronunciation (P key)', 'Nghe giọng Anh–Mỹ': 'American pronunciation', 'Nghe chậm': 'Play slowly',
@@ -341,11 +343,11 @@
     current = word;
     const st = (await chrome.storage.local.get('settings')).settings || {};
     const accent = st.accent || 'en-GB';
-    let e = null, saved = false, ctxVi = '', didSave = false, spoke = false, note = null;
+    let e = null, saved = false, ctxVi = '', mlW = '', didSave = false, spoke = false, note = null;
 
     const audioFor = acc => !e ? '' : acc === 'en-US' ? (e.audioUS || e.audio) : (e.audio && !/-us\.mp3$/.test(e.audio) ? e.audio : '');
     const sayWord = (acc, rate) => speak(e ? e.word : word, rate ? '' : audioFor(acc), acc, rate);
-    const paintCtx = () => { const el = b.querySelector('.ctxvi'); if (el && current === word) el.textContent = ctxVi ? '🇻🇳 ' + ctxVi : ''; };
+    const paintCtx = () => { const el = b.querySelector('.ctxvi'); if (el && current === word) el.textContent = ctxVi ? FLAG(ML()) + ' ' + ctxVi : ''; };
 
     function render() {
       preloadAudio(audioFor('en-GB')); preloadAudio(audioFor('en-US'));
@@ -358,7 +360,7 @@
       (e.oxford && e.oxford.length ? e.oxford : e.meanings || []).forEach(m => { const g2 = grp(toEn(m.pos)); if (!g2.defs.length) g2.defs = (m.defs || []).filter(d => d.def).slice(0, 2); });
       const shown = groups.filter(x => x.vi.length || x.defs.length).slice(0, 3);
       const hasEx = shown.some(x => x.defs.some(d => d.ex));
-      const defs = shown.map(x => `<div class="pg"><span class="chip">${esc(UI_LANG === 'vi' ? POSV[x.pos] || x.pos : x.pos)}</span>${x.vi.length ? `<span class="pvi">${esc(x.vi.join(', '))}</span>` : ''}${x.defs.map(d => `<div class="pdef">${linkify(d.def)}${d.ex ? `<span class="pex">“${linkify(d.ex, e.word)}” <button class="spk mini" data-text="${esc(d.ex)}" title="${tx('Nghe câu ví dụ')}">🔊</button></span>` : ''}</div>`).join('')}</div>`).join('');
+      const defs = shown.map(x => `<div class="pg"><span class="chip">${esc(UI_LANG === 'vi' ? POSV[x.pos] || x.pos : x.pos)}</span>${x.vi.length && ML() === 'vi' ? `<span class="pvi">${esc(x.vi.join(', '))}</span>` : ''}${x.defs.map(d => `<div class="pdef">${linkify(d.def)}${d.ex ? `<span class="pex">“${linkify(d.ex, e.word)}” <button class="spk mini" data-text="${esc(d.ex)}" title="${tx('Nghe câu ví dụ')}">🔊</button></span>` : ''}</div>`).join('')}</div>`).join('');
       const ctxHtml = context ? linkify(context, word) : '';
       b.innerHTML = H(`
         <div class="head">
@@ -367,7 +369,7 @@
             <div>${hist.length ? `<button class="back" title="${tx('Quay lại từ trước')}">←</button>` : ''}<span class="w">${esc(e.word)}</span>${e.pos ? `<span class="chip">${esc(UI_LANG === 'vi' ? e.pos : toEn(e.pos))}</span>` : ''}${e.level ? `<span class="chip lv">${esc(e.level)}</span>` : ''}</div>
             <div class="ipa">${esc(e.ipa || '')}${e.ipaUS && e.ipaUS !== e.ipa ? ` · <span title="${tx('Anh–Mỹ')}">${esc(e.ipaUS)}</span>` : ''}</div>
             <div class="spks"><button class="spk" data-acc="en-GB" title="${tx('Nghe giọng Anh–Anh (phím P)')}">🔊 UK</button><button class="spk" data-acc="en-US" title="${tx('Nghe giọng Anh–Mỹ')}">🔊 US</button><button class="spk" data-slow title="${tx('Nghe chậm')}">🐢</button></div>
-            <div class="vi">${esc(e.vi)}</div>
+            <div class="vi">${ML() === 'vi' ? esc(e.vi) : esc(mlW)}</div>
           </div>
         </div>
         <div class="body">
@@ -407,7 +409,7 @@
 
     // Cụm từ không có trong từ điển: dịch cả cụm, mỗi từ bấm vào tra riêng, vẫn lưu được thành flashcard
     async function renderPhrase(vi) {
-      if (!vi) { try { vi = ((await chrome.runtime.sendMessage({ type: 'translate', text: word })) || {}).vi || ''; } catch (x) { vi = ''; } }
+      if (!vi) { try { vi = ((await chrome.runtime.sendMessage({ type: 'translate', text: word, tl: ML() })) || {}).vi || ''; } catch (x) { vi = ''; } }
       if (current !== word) return;
       const multi = /\s/.test(word);
       // Tên riêng: trong câu gốc viết hoa mà không đứng đầu câu (Switzerland, London…)
@@ -442,7 +444,8 @@
       if (st.autoSpeak !== false) speak(word, '', accent);
     }
 
-    if (context) chrome.runtime.sendMessage({ type: 'translate', text: context }).then(r => { ctxVi = (r && r.vi) || ''; paintCtx(); }).catch(() => {});
+    if (ML() !== 'vi' && ML() !== 'en') chrome.runtime.sendMessage({ type: 'translate', text: word, tl: ML() }).then(r => { mlW = (r && r.vi) || ''; const el = b.querySelector('.vi'); if (el && current === word && mlW.toLowerCase() !== word.toLowerCase()) el.textContent = mlW; }).catch(() => {});
+    if (context && ML() !== 'en') chrome.runtime.sendMessage({ type: 'translate', text: context, tl: ML() }).then(r => { ctxVi = (r && r.vi) || ''; paintCtx(); }).catch(() => {});
     const full = chrome.runtime.sendMessage({ type: 'lookup', word });
     full.catch(() => {}); // tránh lỗi "Uncaught (in promise)" khi add-on vừa được cập nhật
     let q;
@@ -532,7 +535,7 @@
     b.innerHTML = H(`<div class="muted">${tx('⏳ Đang dịch…')}</div>`);
     position(info.rect);
     let r;
-    try { r = await chrome.runtime.sendMessage({ type: 'translate', text: info.text }); }
+    try { r = await chrome.runtime.sendMessage({ type: 'translate', text: info.text, tl: ML() }); }
     catch (e) { b.innerHTML = H(`<div class="muted">${tx('Add-on vừa được cập nhật – hãy tải lại trang.')}</div>`); return; }
     if (current !== info.text) return;
     const vi = (r && r.vi) || '';
@@ -542,10 +545,10 @@
     const st = (await chrome.storage.local.get('settings')).settings || {};
     const accent = st.accent || 'en-GB';
     b.innerHTML = H(`
-      <div class="tr-head"><b>${tx('🌐 Dịch đoạn đã chọn')}</b><span class="chip">${tx('Anh → Việt')}</span><button class="x" id="close" title="${tx('Đóng (Esc)')}">×</button></div>
+      <div class="tr-head"><b>${tx('🌐 Dịch đoạn đã chọn')}</b><span class="chip">${ML() === 'vi' ? tx('Anh → Việt') : ML() === 'en' ? 'EN' : 'EN → ' + ML().toUpperCase()}</span><button class="x" id="close" title="${tx('Đóng (Esc)')}">×</button></div>
       <div class="body">
         <div class="src">${esc(info.text)}</div>
-        <div class="tr">${vi ? esc(vi) : tx('Không dịch được đoạn này.')}</div>
+        ${ML() === 'en' ? '' : `<div class="tr">${vi ? esc(vi) : tx('Không dịch được đoạn này.')}</div>`}
         ${words.length > 1 && words.length <= 12 ? `<div class="def" style="margin-top:8px"><b>${tx('Tra từng từ:')}</b> ${words.map(x => `<span class="lw chipw" data-w="${esc(x.toLowerCase())}">${esc(x)}</span>`).join(' ')}</div>` : ''}
         ${structs.length ? `<div class="st"><b>${tx('🧩 Cấu trúc trong đoạn')}</b>${structs.map(x => `<div class="st-i"><div><span class="st-n">${esc(x.name)}</span> <span class="st-m">“${esc(x.match)}”</span></div><div class="st-v">${esc(x.vi)}</div><button class="st-l" data-lesson="${esc(x.lesson)}">${tx('📐 Học bài ngữ pháp này →')}</button></div>`).join('')}</div>` : ''}
         <div id="aiEx"></div>

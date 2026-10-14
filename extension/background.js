@@ -193,7 +193,7 @@ chrome.runtime.onMessage.addListener((msg, sender, reply) => {
         const card = await Cards.add(msg.entry, msg.context);
         return reply({ ok: true, card });
       }
-      case 'translate': return reply({ vi: await Dict.translateVi(msg.text) });
+      case 'translate': return reply({ vi: !msg.tl || msg.tl === 'vi' ? await Dict.translateVi(msg.text) : msg.tl === 'en' ? '' : await Dict.translateTo(msg.text, msg.tl) });
       case 'notes': { // ghi chú học từ soạn sẵn (nằm trong gói add-on, theo chữ cái đầu)
         const w = String(msg.word || '').toLowerCase(), c = /^[a-z]/.test(w) ? w[0] : '_';
         self.__notes = self.__notes || {};
