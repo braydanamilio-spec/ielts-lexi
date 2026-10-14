@@ -241,7 +241,7 @@
       items.forEach(it => {
         const item = $(`[data-bs="${it.n}"]`, body), given = $$('[data-ans] button', item).map(b => b.textContent).join(' ');
         const correct = it.chunks.join(' '), ok = [correct, ...(it.alt || [])].some(x => x.toLowerCase() === given.toLowerCase());
-        const sentence = (it.starter ? it.starter + ' ' : '') + cap(correct) + (it.end || '.');
+        const sentence = (it.starter ? it.starter + ' ' : '') + (!it.starter || /[.!?]$/.test(it.starter) ? cap(correct) : correct) + (it.end || '.');
         if (ok) right++; else log('grammar', task, it.n, it.prompt, sentence, given, it.explain);
         item.classList.add(ok ? 'ok' : 'no');
         $$('button', item).forEach(b => { b.disabled = true; });
