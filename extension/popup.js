@@ -2,7 +2,16 @@
   const { Store, Cards, Stats, DEFAULT_SETTINGS, todayKey } = Core;
   const $ = s => document.querySelector(s);
   const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  const open = hash => { chrome.tabs.create({ url: chrome.runtime.getURL('app/index.html') + hash }); window.close(); };
+  // Mở ứng dụng: dùng lại tab Vocaband đang mở (không mở thêm tab), chờ Chrome mở xong rồi mới đóng popup
+  const open = async hash => {
+    const base = chrome.runtime.getURL('app/index.html');
+    try {
+      const [tab] = await chrome.tabs.query({ url: base + '*' });
+      if (tab) { await chrome.tabs.update(tab.id, { url: base + hash, active: true }); await chrome.windows.update(tab.windowId, { focused: true }); }
+      else await chrome.tabs.create({ url: base + hash });
+    } catch (e) { await chrome.tabs.create({ url: base + hash }).catch(() => {}); }
+    window.close();
+  };
 
   const settings = { ...DEFAULT_SETTINGS, ...(await Store.get('settings', {})) };
   const [cards, stats] = await Promise.all([Cards.all(), Stats.get()]);
@@ -13,6 +22,16 @@
   $('#goalTxt').textContent = `${done}/${settings.dailyGoal}`;
   $('#goalBar').style.width = Math.min(100, done / settings.dailyGoal * 100) + '%';
   $('#review').onclick = () => open(total ? '#/review' : '#/library');
+  // Chi tiết thẻ cần học: ôn lại / từ mới (như Anki) – biết rõ hôm nay cần làm gì
+  const { due, newCount } = Cards.dueCount(cards, settings, stats);
+  $('#dueChips').innerHTML = `<span class="pp-chip">🔁 ${due} ôn lại</span><span class="pp-chip">✨ ${newCount} từ mới</span>`;
+  if (!total) $('#review').textContent = 'Thêm từ mới →';
+  // Từ vừa lưu gần đây: nhìn lại nhanh, bấm để xem chi tiết
+  const recent = Object.values(cards).filter(c => c.added).sort((a, b) => b.added - a.added).slice(0, 5);
+  if (recent.length) {
+    $('#recent').innerHTML = `<div class="pp-sec">🕘 Vừa lưu gần đây</div>${recent.map(c => `<a href="#" class="pp-word" data-w="${esc(c.word)}"><b>${esc(c.word)}</b><span>${esc(String(c.vi || '').split(/[,;]/)[0])}</span></a>`).join('')}`;
+    document.querySelectorAll('.pp-word').forEach(a => a.onclick = e => { e.preventDefault(); open('#/dict/' + encodeURIComponent(a.dataset.w)); });
+  }
   $('#open').onclick = e => { e.preventDefault(); open('#/home'); };
   // Trạng thái đồng bộ tài khoản (liên kết qua web app vocaband.web.app)
   const { linked } = await chrome.storage.local.get('linked');
