@@ -894,3 +894,7 @@ kbd { font-family: ui-monospace, Menlo, monospace; font-size: .75em; padding: .0
   .w-cta { flex-direction: column; align-items: stretch; } .w-cta .btn { width: 100%; justify-content: center; }
 }
 @media (max-width: 900px) { body:not(.bare) .toast { bottom: calc(84px + env(safe-area-inset-bottom)); } } /* không che thanh điều hướng dưới */
+.wk-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .5rem; margin-top: .7rem; }
+.wk-cell { display: flex; flex-direction: column; align-items: center; padding: .6rem .3rem; border-radius: 12px; background: var(--surface-2); text-align: center; }
+.wk-cell b { font-size: 1.3rem; line-height: 1.2; } .wk-cell small { font-size: .72rem; color: var(--muted); }
+.wk-cell i { font-style: normal; font-size: .7rem; font-weight: 700; margin-top: .15rem; } .wk-cell i.up { color: var(--good); } .wk-cell i.down { color: var(--again); }

@@ -347,6 +347,7 @@
       </div>
 
       <div id="goalCard" style="margin-top:1rem"></div>
+      <div id="weekCard"></div>
       <div class="card" id="todayPlan" style="margin-top:1rem"></div>
 
       <div class="grid g4 stats" style="margin-top:1rem">
@@ -421,6 +422,16 @@
     };
     drawGolden();
     if (App.goalCard) App.goalCard().then(h => { const el = $('#goalCard'); if (el) el.innerHTML = h; });
+    // Tổng kết tuần (kiểu báo cáo tuần của Duolingo): tuần này so với tuần trước – thấy rõ tiến bộ, có động lực duy trì
+    (() => {
+      const D = state.game.days || {}, sum = (from, n) => { const o = { newWords: 0, reviews: 0, quizzes: 0, xp: 0, active: 0 }; for (let i = 0; i < n; i++) { const d = new Date(from); d.setDate(d.getDate() - i); const x = D[todayKey(d)]; if (x) { o.newWords += x.newWords || 0; o.reviews += x.reviews || 0; o.quizzes += x.quizzes || 0; o.xp += x.xp || 0; if (x.xp || x.reviews) o.active++; } } return o; };
+      const now = new Date(), dow = (now.getDay() + 6) % 7, cur = sum(now, dow + 1), lastEnd = new Date(now); lastEnd.setDate(now.getDate() - dow - 1); const prev = sum(lastEnd, 7);
+      if (!prev.xp && !cur.xp) return;
+      const cell = (em, label, a, b) => { const d = a - b; return `<div class="wk-cell"><span>${em}</span><b>${a}</b><small>${label}</small>${b || a ? `<i class="${d >= 0 ? 'up' : 'down'}">${d >= 0 ? '▲' : '▼'} ${Math.abs(d)}</i>` : ''}</div>`; };
+      const el = $('#weekCard'); if (!el) return;
+      el.innerHTML = `<div class="card" style="margin-top:1rem"><div class="row between"><b>📅 ${t('Tuần này của bạn')}</b><span class="tiny muted">${t('so với cả tuần trước')}</span></div>
+        <div class="wk-grid">${cell('✨', t('Từ mới'), cur.newWords, prev.newWords)}${cell('🔁', t('Lượt ôn'), cur.reviews, prev.reviews)}${cell('🎯', t('Bài luyện'), cur.quizzes, prev.quizzes)}${cell('🔥', t('Ngày học'), cur.active, prev.active)}</div></div>`;
+    })();
     if (App.todayPlan) App.todayPlan().then(tasks => {
       const el = $('#todayPlan'); if (!el) return;
       const n = tasks.filter(t => t.done).length;
