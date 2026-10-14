@@ -130,7 +130,7 @@
           { w: 'discharge', vi: 'thải ra, xả ra' },
           { w: 'pilot test', vi: 'thử nghiệm thí điểm' },
           { w: 'habitat', vi: 'môi trường sống' },
-          { w: 'plume', vi: 'đám bụi/trầm tích lan toả trong nước' },
+          { w: 'plume', vi: 'đám bụi/trầm tích lan tỏa trong nước' },
           { w: 'smother', vi: 'làm ngạt, vùi lấp' },
           { w: 'common heritage of mankind', vi: 'di sản chung của nhân loại' },
           { w: 'materialise', vi: 'trở thành hiện thực' },

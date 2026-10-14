@@ -5,7 +5,7 @@
     id: 'rt6', test: 6,
     passages: [
       /* ───────────────────────── PASSAGE 1 ───────────────────────── */
-      { n: 1, title: 'The Glass of the Volcano', titleVi: 'Thuỷ tinh núi lửa và những mạng lưới trao đổi thời tiền sử', topic: 'History', level: 'B1',
+      { n: 1, title: 'The Glass of the Volcano', titleVi: 'Thủy tinh núi lửa và những mạng lưới trao đổi thời tiền sử', topic: 'History', level: 'B1',
         paras: [
           { k: 'A', t: "Long before metal tools existed, one material offered people a cutting edge of extraordinary quality. Obsidian is a natural glass that forms when lava rich in silica cools so quickly that crystals do not have time to grow. When struck skilfully with another stone, it breaks into flakes with edges that can be thinner than those of a modern steel scalpel, and some surgeons have even experimented with obsidian blades for delicate operations. Prehistoric people used it to make knives, arrowheads and scrapers, and in some cultures it was also polished to make mirrors. Yet obsidian is far from common. It is produced only by particular kinds of volcanic eruption, and many volcanic regions contain no usable sources at all." },
           { k: 'B', t: "This scarcity is what makes obsidian so valuable to archaeologists. Pieces of it, often finished tools but also waste flakes left over from toolmaking, are regularly found at sites hundreds of kilometres from the nearest volcano. Since obsidian cannot form in such places, it must have been carried there by people. The question is how. Did travellers make long journeys to collect it themselves, or did it pass from hand to hand through networks of exchange? To answer this question, researchers first need to know exactly where each piece came from." },
@@ -45,7 +45,7 @@
         ],
         vocab: [
           { w: 'cutting edge', vi: 'lưỡi cắt' },
-          { w: 'silica', vi: 'silic điôxít' },
+          { w: 'silica', vi: 'silic điôxit' },
           { w: 'flake', vi: 'mảnh tước (đá)' },
           { w: 'scalpel', vi: 'dao mổ' },
           { w: 'scarcity', vi: 'sự khan hiếm' },
@@ -109,7 +109,7 @@
         vocab: [
           { w: 'indicator', vi: 'chỉ báo, dấu hiệu' },
           { w: 'meltwater', vi: 'nước băng tan' },
-          { w: 'hydroelectric power', vi: 'thuỷ điện' },
+          { w: 'hydroelectric power', vi: 'thủy điện' },
           { w: 'mass balance', vi: 'cân bằng khối lượng' },
           { w: 'calving', vi: 'sự vỡ băng (khối băng tách ra)' },
           { w: 'physically demanding', vi: 'đòi hỏi nhiều sức lực' },
