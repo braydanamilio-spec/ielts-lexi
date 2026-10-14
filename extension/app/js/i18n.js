@@ -14,6 +14,8 @@
   const KEY = 'vb.uiLang';
   const read = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
   function detect() {
+    // ?hl=xx (liên kết hreflang cho SEO từng quốc gia) – ưu tiên và ghi nhớ
+    try { const hl = new URLSearchParams(g.location && location.search).get('hl'); if (hl && SUPPORTED.includes(hl)) { try { localStorage.setItem(KEY, hl); } catch (e) { /* bỏ qua */ } return hl; } } catch (e) { /* bỏ qua */ }
     const saved = read(KEY); if (saved && SUPPORTED.includes(saved)) return saved;
     const navs = (g.navigator && (navigator.languages || [navigator.language])) || [];
     for (const l of navs) { const b = String(l || '').toLowerCase().split('-')[0]; if (SUPPORTED.includes(b)) return b; }
@@ -50,6 +52,16 @@
       document.write(`<script src="js/i18n/en.js"><\/script>`);
       if (lang !== 'en') document.write(`<script src="js/i18n/${lang}.js"><\/script>`);
     }
-    document.addEventListener('DOMContentLoaded', () => { apply(); if (lang !== 'vi' && /^Vocaband –/.test(document.title)) document.title = 'Vocaband – Free IELTS & TOEIC vocabulary: FSRS flashcards, dictionary, mock tests'; });
+    // Tiêu đề & mô tả trang theo ngôn ngữ (Google đọc được tiêu đề do JS đặt) – khóa dịch nằm trong từ điển giao diện
+    const TITLE = 'Vocaband – Học từ vựng IELTS & TOEIC miễn phí: flashcard FSRS, từ điển, thi thử';
+    const DESC = 'Học từ vựng IELTS, TOEIC & TOEFL miễn phí: flashcard FSRS, từ điển song ngữ có phát âm, luyện 4 kỹ năng và thi thử có giải thích chi tiết.';
+    document.addEventListener('DOMContentLoaded', () => {
+      apply();
+      // Trang ?hl=xx là phiên bản riêng của ngôn ngữ đó (không phải bản trùng của trang gốc)
+      try { if (new URLSearchParams(location.search).get('hl') === lang) { const c = document.querySelector('link[rel="canonical"]'); if (c) c.href = c.href.split('?')[0] + '?hl=' + lang; } } catch (e) { /* bỏ qua */ }
+      if (lang === 'vi') return;
+      document.title = t(TITLE);
+      const m = document.querySelector('meta[name="description"]'); if (m) m.setAttribute('content', t(DESC));
+    });
   }
 })(typeof self !== 'undefined' ? self : this);

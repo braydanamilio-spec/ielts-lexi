@@ -2042,6 +2042,10 @@
   'Cài <b>Google Speech Services</b> (Dịch vụ giọng nói của Google) từ CH Play và tải giọng tiếng Anh chất lượng cao để nghe tự nhiên hơn.': 'Install <b>Speech Services by Google</b> from Google Play and download a high-quality English voice for more natural audio.',
   'Dùng Chrome hoặc Edge mới nhất để có giọng đọc tự nhiên hơn.': 'Use the latest Chrome or Edge for more natural voices.',
 }); })(typeof self !== 'undefined' ? self : this);
+(function (g) { Object.assign(g.I18N_DICT.en, {
+  'Vocaband – Học từ vựng IELTS & TOEIC miễn phí: flashcard FSRS, từ điển, thi thử': 'Vocaband – Free IELTS & TOEIC vocabulary: FSRS flashcards, dictionary, mock tests',
+  'Học từ vựng IELTS, TOEIC & TOEFL miễn phí: flashcard FSRS, từ điển song ngữ có phát âm, luyện 4 kỹ năng và thi thử có giải thích chi tiết.': 'Learn IELTS, TOEIC & TOEFL vocabulary free: FSRS flashcards, a bilingual dictionary with pronunciation, 4-skill practice and mock tests with detailed explanations.',
+}); })(typeof self !== 'undefined' ? self : this);
 
 /* English UI strings – toefl.js (TOEFL iBT practice, 2026 format) */
 (function (g) { const D = g.I18N_DICT = g.I18N_DICT || {}; D.en = Object.assign(D.en || {}, {

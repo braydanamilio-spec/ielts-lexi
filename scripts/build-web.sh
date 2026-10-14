@@ -12,3 +12,5 @@ before=$(cd web && cat $FILES | wc -c)
 after=$(cd dist && cat $FILES | wc -c)
 gz=$(cd dist && cat $FILES | gzip -9 | wc -c)
 echo "✓ dist/: JS+CSS $((before/1024))KB → $((after/1024))KB (gzip ~$((gz/1024))KB tổng; trang đầu chỉ tải phần lõi)"
+
+node scripts/build-seo.mjs

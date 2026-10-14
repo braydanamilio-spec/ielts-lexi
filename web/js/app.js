@@ -1131,7 +1131,11 @@
 
   // ================= CHÀO MỪNG & THIẾT LẬP BAN ĐẦU =================
   // Bộ chọn ngôn ngữ giao diện: chỉ liệt kê ngôn ngữ đã dịch đầy đủ (tránh giao diện nửa nọ nửa kia)
-  App.langPicker = () => `<div class="tabs" data-lang-pick style="display:inline-flex">${I18N.SUPPORTED.map(l => `<button data-v="${l}" class="${I18N.lang() === l ? 'on' : ''}">${I18N.LANGS[l][1]}</button>`).join('')}</div>`;
+  // ≤ 3 ngôn ngữ: nút bấm; nhiều hơn: danh sách thả xuống, tên ngôn ngữ viết bằng chính tiếng đó (Español, 日本語…)
+  App.langPicker = () => I18N.SUPPORTED.length <= 3
+    ? `<div class="tabs" data-lang-pick style="display:inline-flex">${I18N.SUPPORTED.map(l => `<button data-v="${l}" class="${I18N.lang() === l ? 'on' : ''}">${I18N.LANGS[l][1]}</button>`).join('')}</div>`
+    : `<select class="input lang-select" data-lang-select aria-label="Language">${I18N.SUPPORTED.map(l => `<option value="${l}" ${I18N.lang() === l ? 'selected' : ''}>${I18N.LANGS[l][1]}</option>`).join('')}</select>`;
+  document.addEventListener('change', e => { if (e.target.matches && e.target.matches('[data-lang-select]') && e.target.value !== I18N.lang()) I18N.set(e.target.value); });
   document.addEventListener('click', e => { const b = e.target.closest('[data-lang-pick] [data-v]'); if (b && b.dataset.v !== I18N.lang()) I18N.set(b.dataset.v); });
   routes.welcome = function (step) {
     document.body.classList.add('bare');
