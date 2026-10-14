@@ -153,7 +153,7 @@
   function route() {
     const { name, arg, query } = parseHash();
     const fn = routes[name] || routes.home;
-    const navKey = name === 'topic' ? 'library' : name === 'practice' && arg === 'speak' ? 'speak' : name === 'read' ? 'reading' : name;
+    const navKey = name === 'topic' ? 'library' : name === 'practice' && arg === 'speak' ? 'speak' : name === 'read' ? 'reading' : /^(listen|listen-test|dictation)$/.test(name) ? 'listening' : name;
     $$('#nav a, #bnav a').forEach(a => a.classList.toggle('active', a.dataset.route === navKey));
     UI.stopSpeak();
     document.onkeydown = null;

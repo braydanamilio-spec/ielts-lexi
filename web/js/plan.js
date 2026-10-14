@@ -17,7 +17,7 @@
     else list.unshift({ ...m, key, n: 1, at: Date.now(), fixed: false });
     await Store.set('mistakes', list.slice(0, 300));
   }));
-  const KIND = { vocab: ['🔤', 'Từ vựng'], grammar: ['📐', 'Ngữ pháp'], reading: ['📖', 'Đọc hiểu'] };
+  const KIND = { vocab: ['🔤', 'Từ vựng'], grammar: ['📐', 'Ngữ pháp'], reading: ['📖', 'Đọc hiểu'], listening: ['🎧', 'Nghe'] };
 
   routes.mistakes = async function () {
     const list = await Store.get('mistakes', []);
@@ -38,7 +38,8 @@
         <div class="row" style="margin-top:.6rem"><button class="btn sm" data-fix="${esc(x.key)}">✓ Đã hiểu</button>
           ${x.kind === 'grammar' && x.ref ? `<a class="btn sm ghost" href="#/grammar/${esc(x.ref)}">📐 Xem lại bài</a>` : ''}
           ${x.kind === 'vocab' && x.ref ? `<a class="btn sm ghost" href="#/dict/${encodeURIComponent(x.ref)}">🔎 Tra lại từ</a>${App.inDeck(x.ref) ? '' : `<button class="btn sm ghost" data-add-seed="${esc(x.ref)}">+ Flashcard</button>`}` : ''}
-          ${x.kind === 'reading' && x.ref ? `<a class="btn sm ghost" href="#/read/${esc(x.ref)}">📖 Đọc lại bài</a>` : ''}</div></div>`).join('')
+          ${x.kind === 'reading' && x.ref ? `<a class="btn sm ghost" href="#/read/${esc(x.ref)}">📖 Đọc lại bài</a>` : ''}
+          ${x.kind === 'listening' && x.ref ? `<a class="btn sm ghost" href="#/listen/${esc(x.ref)}">🎧 Nghe lại phần này</a>` : ''}</div></div>`).join('')
         : '<div class="card empty"><div class="em">🎉</div>Không có lỗi sai nào cần xem lại.</div>';
       App.bindCommon();
       $$('[data-fix]').forEach(b => b.onclick = async () => {
@@ -121,6 +122,10 @@
     const G = window.GRAMMAR || [], gd = g.grammarDone || {};
     const weakG = G.find(l => gd[l.id] != null && gd[l.id] < 80) || G.find(l => gd[l.id] == null && (!s.placement || s.placement.grammar < 70 || l.level !== 'A2'));
     if (weakG) tasks.push({ em: '📐', t: `Ngữ pháp: ${weakG.title}`, sub: gd[weakG.id] != null ? `Lần trước ${gd[weakG.id]}% – làm lại cho chắc` : `Học từng bước + ${weakG.quiz.length} câu luyện tập`, href: `#/grammar/${weakG.id}`, done: (d.quizzes || 0) > 0 && gd[weakG.id] >= 80 });
+    // Nghe: phần chưa làm / làm chưa tốt (mỗi ngày 1 phần ~8 phút)
+    const LS = window.LISTENING || [], ld = g.listenDone || {};
+    const nextL = LS.find(p => ld[p.id] == null) || LS.find(p => ld[p.id] < 8);
+    if (nextL) tasks.push({ em: '🎧', t: `Nghe: Test ${nextL.test} · Part ${nextL.part}`, sub: ld[nextL.id] != null ? `Lần trước ${ld[nextL.id]}/10 – nghe lại có lời thoại` : `${nextL.title} · 10 câu`, href: `#/listen/${nextL.id}`, done: false });
     // Phát âm
     const PR = window.PRON || [], pd = g.pronDone || {};
     const nextP = PR.find(p => pd[p.id] == null);

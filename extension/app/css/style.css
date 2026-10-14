@@ -575,3 +575,43 @@ mark.cbt-hl { background: #fde047; color: #111; cursor: pointer; }
 .dr-part.right { background: rgba(22,163,74,.15); } .dr-part.wrong { background: rgba(229,72,77,.15); }
 .dr textarea.dr-in { width: 100%; border: 2px solid var(--line); border-radius: 10px; padding: .6rem .7rem; font: inherit; background: var(--card, #fff); color: inherit; resize: vertical; }
 .dr .dr-in.ok { border-color: #16a34a; } .dr .dr-in.no { border-color: #e5484d; }
+
+/* ===== Luyện nghe ===== */
+.lplayer { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; position: sticky; top: 64px; z-index: 5; margin: 1rem 0; }
+.lplayer select { border: 1px solid var(--line); border-radius: 10px; padding: .45rem .5rem; background: var(--card, #fff); color: inherit; font: inherit; }
+.lnow { margin-left: auto; }
+.lgrid { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 1rem; align-items: start; }
+@media (max-width: 900px) { .lgrid { grid-template-columns: minmax(0, 1fr); } .lnow { margin-left: 0; width: 100%; } }
+.ltrans { position: sticky; top: 140px; max-height: calc(100vh - 160px); overflow: auto; }
+.ltr { position: relative; margin-top: .6rem; }
+.ltr.blur .tl { filter: blur(5px); user-select: none; pointer-events: none; }
+.tl { padding: .45rem .55rem; border-radius: 10px; line-height: 1.65; cursor: pointer; transition: background .2s; }
+.tl:hover { background: rgba(109, 93, 252, .06); }
+.tl.now { background: rgba(109, 93, 252, .14); box-shadow: inset 3px 0 0 var(--brand, #6d5dfc); }
+.tl.say { color: var(--muted); font-size: .9rem; }
+.tl .spk { display: inline-block; font-weight: 800; font-size: .78rem; color: var(--brand, #6d5dfc); margin-right: .45rem; text-transform: uppercase; letter-spacing: .02em; }
+.tl.has-ev { background: rgba(250, 204, 21, .16); }
+.tl .evn { display: inline-block; margin-left: .4rem; font-size: .7rem; font-weight: 800; background: #facc15; color: #422006; border-radius: 99px; padding: .05rem .45rem; }
+.lq-group { margin-bottom: 1.3rem; }
+.lq-instr { background: var(--soft, rgba(109,93,252,.06)); border-radius: 10px; padding: .6rem .8rem; margin-bottom: .6rem; font-size: .92rem; }
+.lq-item { padding: .45rem .3rem; border-radius: 10px; }
+.lq-item.ok { background: rgba(22, 163, 74, .08); } .lq-item.no { background: rgba(229, 72, 77, .08); } .lq-item.half { background: rgba(245, 158, 11, .1); }
+.lq-gap { line-height: 2.3; }
+.lq-gap .gap { min-width: 8rem; }
+.qn { display: inline-grid; place-items: center; min-width: 1.6rem; height: 1.6rem; padding: 0 .3rem; border-radius: 7px; background: var(--text, #111); color: var(--bg, #fff); font-weight: 800; font-size: .78rem; margin: 0 .35rem; }
+.lq-opts { display: grid; gap: .3rem; margin: .4rem 0 0 2.2rem; }
+.lq-opts label { display: flex; gap: .45rem; align-items: flex-start; cursor: pointer; padding: .25rem .4rem; border-radius: 8px; }
+.lq-opts label:hover { background: rgba(109, 93, 252, .06); }
+.lq-row { display: flex; align-items: center; gap: .4rem; flex-wrap: wrap; }
+.lq-row select { border: 2px solid var(--line); border-radius: 8px; padding: .3rem .4rem; font: inherit; background: var(--card, #fff); color: inherit; }
+.lq-row .lq-fb { width: 100%; }
+.lq-box { border: 2px solid var(--line); border-radius: 12px; padding: .6rem .8rem; margin-bottom: .6rem; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: .25rem .8rem; font-size: .92rem; }
+.lq-table .lq-item { border-bottom: 1px dashed var(--line); border-radius: 0; }
+.lq-fb { font-size: .88rem; margin-top: .25rem; }
+.lvocab { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: .3rem .9rem; }
+.lsheet { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: .35rem; font-size: .9rem; }
+.lsheet > div { padding: .35rem .5rem; border-radius: 8px; display: flex; gap: .35rem; flex-wrap: wrap; align-items: baseline; }
+.lsheet .ok { background: rgba(22, 163, 74, .08); } .lsheet .no { background: rgba(229, 72, 77, .08); }
+.dict-in { width: 100%; border: 2px solid var(--line); border-radius: 12px; padding: .7rem .8rem; font: inherit; font-size: 1.05rem; background: var(--card, #fff); color: inherit; resize: vertical; }
+.dk { padding: .05rem .25rem; border-radius: 5px; }
+.dk.ok { background: rgba(22, 163, 74, .14); } .dk.miss { background: rgba(229, 72, 77, .16); text-decoration: underline wavy #e5484d; } .dk.extra { background: rgba(245, 158, 11, .18); text-decoration: line-through; }
