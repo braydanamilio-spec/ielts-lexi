@@ -189,7 +189,16 @@
     toefl: ['listening', 'toefl'], 'toefl-p': ['listening', 'toefl'],
     toeic: ['tsl', 'listening', 'toeic'], 'toeic-r': ['toeic'], 'toeic-test': ['listening', 'toeic'], library: 'tsl', topic: 'tsl', practice: 'tsl', dict: 'tsl', write: 'writing', task1: 'writing', model: 'writing', phrases: 'writing', ideas: 'writing', rtype: 'mock', speaking: 'speak', mock: ['listening', 'writing', 'mock'] };
   const bundleP = {};
-  const loadScript = src => new Promise(res => { const s = document.createElement('script'); s.src = src; s.async = false; s.onload = s.onerror = () => res(); document.head.appendChild(s); });
+  // Phần nặng (đề thi, từ vựng, ngữ pháp…) tải từ CDN jsDelivr (miễn phí, không giới hạn băng thông, gắn đúng phiên bản commit)
+  // → máy chủ chính chỉ phục vụ phần lõi, chịu được lượng người dùng lớn gấp nhiều lần. CDN lỗi → tự lấy từ máy chủ chính.
+  const CDN = (!Store.isExtension && !(window.VBNative && VBNative.is) && document.querySelector('meta[name="vb-cdn"]') || {}).content || '';
+  let cdnDown = false;
+  const loadOne = src => new Promise(res => { const s = document.createElement('script'); s.src = src; s.async = false; s.onload = () => res(true); s.onerror = () => res(false); document.head.appendChild(s); });
+  const loadScript = async src => {
+    if (CDN && !cdnDown && await loadOne(CDN + src.replace(/\.js$/, '.min.js'))) return;
+    if (CDN && !cdnDown) cdnDown = true; // từ giờ dùng máy chủ chính cho các file còn lại (giữ đúng thứ tự)
+    await loadOne(src);
+  };
   // Tải song song nhưng chạy đúng thứ tự (async=false); file thiếu được bỏ qua
   App.need = (...names) => Promise.all(names.map(n => bundleP[n] || (bundleP[n] = Promise.all(BUNDLES[n].map(loadScript)))));
   App.loaded = n => !!bundleP[n];
