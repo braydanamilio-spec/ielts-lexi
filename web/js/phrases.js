@@ -469,7 +469,7 @@
         <div class="row"><button class="btn primary" id="addP">＋ ${t('Thêm cụm / cấu trúc')}</button>${list.length >= 4 ? `<a class="btn" href="#/practice/learn?src=phrases">🧠 ${t('Học các cụm')}</a>` : ''}</div></div>
       ${models.length ? `<div class="card"><h3>📄 ${t('Bài mẫu có chú thích cụm từ')}</h3><div class="row" style="margin-top:.5rem">${models.map(m => `<a class="chip" href="#/model/${m.id}">Task ${m.task} · ${esc(m.ref)} · Band ${esc(m.band)}</a>`).join('')}</div></div>` : ''}
       <div class="card" style="margin-top:1rem" id="pList">${list.length ? list.map(c => `<div class="deck-row" style="grid-template-columns:minmax(0,1.2fr) minmax(0,1.6fr) auto">
-          <div style="min-width:0"><b>${esc(c.word)}</b><div class="small" style="color:var(--accent);font-weight:700">${esc(c.vi)}</div>${c.note ? `<div class="tiny muted">📐 ${esc(c.note)}</div>` : ''}</div>
+          <div style="min-width:0"><b>${esc(c.word)}</b><div class="small" style="color:var(--accent);font-weight:700">${esc(I18N.meanLang() === 'en' && c.def ? c.def : c.vi)}</div>${c.note ? `<div class="tiny muted">📐 ${esc(c.note)}</div>` : ''}</div>
           <div class="small muted hide-sm">${c.contexts[0] ? `“${UI.highlight(c.contexts[0].text.slice(0, 140), c.word)}”` : esc(c.ex || '')}</div>
           <div class="row nowrap" style="gap:.3rem"><button class="icon-btn sm" data-speak="${esc(c.word)}">🔊</button>${App.masteryDots(c.srs)}</div></div>`).join('')
         : `<div class="empty"><div class="em">🧩</div>${t('Chưa có cụm từ nào. Bôi đen một cụm trong bài đọc, bài mẫu hay ví dụ từ điển rồi bấm “🧩 Lưu cụm này”, hoặc thêm thủ công.')}</div>`}</div>`;
