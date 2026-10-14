@@ -1600,6 +1600,7 @@
 (function (g) { Object.assign(g.I18N_DICT.en, { 'Sắp thi hoặc muốn học thêm? Ôn trước {n} thẻ đến hạn trong 2 ngày tới.': 'Exam coming up or want more? Review {n} cards due in the next 2 days now.', 'Ôn trước →': 'Review ahead →' }); })(typeof self !== 'undefined' ? self : this);
 (function (g) { Object.assign(g.I18N_DICT.en, { 'Làm lại lỗi sai': 'Retry mistakes', 'Xem danh sách': 'View list', 'Gõ đáp án của bạn': 'Type your answer', 'Hiện đáp án': 'Show answer', 'Mình làm đúng': 'I got it right', 'Vẫn sai': 'Still wrong' }); })(typeof self !== 'undefined' ? self : this);
 (function (g) { Object.assign(g.I18N_DICT.en, { 'Làm lại {n} lỗi sai': 'Retry {n} mistakes', 'Tự nhớ lại đáp án – sửa lỗi = tăng điểm nhanh nhất': 'Recall the answer yourself – fixing mistakes is the fastest way to score higher' }); })(typeof self !== 'undefined' ? self : this);
+(function (g) { Object.assign(g.I18N_DICT.en, { 'Hoàn tác lần chấm vừa rồi (Z)': 'Undo last grade (Z)', 'Đã hoàn tác – chấm lại thẻ này': 'Undone – grade this card again' }); })(typeof self !== 'undefined' ? self : this);
 
 /* English UI strings – web/js/app.js, web/index.html (app shell) */
 (function (g) { const D = g.I18N_DICT = g.I18N_DICT || {}; D.en = Object.assign(D.en || {}, {

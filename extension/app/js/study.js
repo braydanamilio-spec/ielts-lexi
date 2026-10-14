@@ -90,6 +90,17 @@
     </div></div>`;
   }
 
+  async function undo() {
+    const L = session.last; if (!L) return; session.last = null;
+    const c0 = state.cards[L.key]; if (c0) { c0.srs = L.srs; await Cards.update(c0); state.cards[L.key] = c0; }
+    Object.assign(session, { queue: L.queue, done: L.done, again: L.again, missed: L.missed, xp: Math.max(0, session.xp - L.xp) });
+    // gỡ lượt ôn & XP vừa cộng
+    const st = await Stats.get(), k = Core.todayKey(); st.days[k] = Math.max(0, (st.days[k] || 1) - 1); if (L.wasNew && st.newToday && st.newToday.day === k) st.newToday.n = Math.max(0, st.newToday.n - 1); await Core.Store.set('stats', st); state.stats = st;
+    state.game = await Game.mutate(gs => { gs.xp = Math.max(0, (gs.xp || 0) - L.xp); const d = gs.days[k] || {}; d.xp = Math.max(0, (d.xp || 0) - L.xp); d.reviews = Math.max(0, (d.reviews || 0) - 1); if (L.wasNew) d.newWords = Math.max(0, (d.newWords || 0) - 1); if (gs.total) { gs.total.reviews = Math.max(0, (gs.total.reviews || 0) - 1); if (L.wasNew) gs.total.newWords = Math.max(0, (gs.total.newWords || 0) - 1); } });
+    toast('↶ ' + t('Đã hoàn tác – chấm lại thẻ này'));
+    showCard();
+  }
+
   function showCard() {
     const key = session.queue[0];
     const c = state.cards[key];
@@ -128,6 +139,7 @@
     view.innerHTML = `<div class="study-wrap">
       <div class="study-top">
         <a class="icon-btn" href="#/home" title="${t('Thoát')}">✕</a>
+        ${session.last ? `<button class="icon-btn" id="undoBtn" title="${t('Hoàn tác lần chấm vừa rồi (Z)')}">↶</button>` : ''}
         <div class="progress"><i style="width:${pct}%"></i></div>
         <span class="small muted" style="white-space:nowrap" title="${t('Thẻ đang ở bước học (1–10 phút) sẽ quay lại trong phiên')}">✅ ${session.done} · ${t('<b>{n}</b> thẻ còn lại', { n: new Set(session.queue).size })}</span>
       </div>
@@ -230,7 +242,9 @@
       if (e.code === 'Space' || e.key === 'Enter') { e.preventDefault(); flip(); }
       else if (flipped && /^[1-4]$/.test(e.key)) grade(+e.key - 1, $(`[data-grade="${+e.key - 1}"]`));
       else if (e.key.toLowerCase() === 'p') say();
+      else if (e.key.toLowerCase() === 'z' && session.last) undo();
     };
+    const ub = $('#undoBtn'); if (ub) ub.onclick = () => undo();
     if (!rev && state.settings.autoSpeak) say();
 
     let graded = false;
@@ -238,12 +252,14 @@
       if (graded) return; graded = true;
       document.onkeydown = null;
       const wasNew = c.srs.reps === 0 && !c.srs.last;
+      // Lưu trạng thái trước khi chấm → cho phép hoàn tác khi bấm nhầm (như Anki)
+      const snap = { key, srs: JSON.parse(JSON.stringify(c.srs)), queue: session.queue.slice(), done: session.done, again: session.again, missed: session.missed.slice(), wasNew, g };
       c.srs = SRS.review(c.srs, g);
       state.cards[key] = c;
       await Cards.update(c);
       state.stats = await Stats.logReview(wasNew);
       const xp = g === 0 ? 2 : wasNew ? 8 : 5;
-      session.xp += xp;
+      session.xp += xp; snap.xp = xp; session.last = snap;
       g === 0 ? Sfx.wrong() : Sfx.correct();
       App.reward({ reviews: 1, newWords: wasNew ? 1 : 0, again: g === 0 ? 1 : 0, xp }, el);
       session.queue.shift();
