@@ -44,7 +44,7 @@
   function groupHtml(gr, gi) {
     const head = `<div class="lq-instr">${gr.title ? `<b>${esc(gr.title)}</b><br>` : ''}<i>${esc(gr.instr)}</i></div>`;
     if (gr.type === 'mcq') return `<div class="lq-group">${head}${gr.items.map(it => `<div class="lq-item" data-item="${it.n}"><div><span class="qn">${it.n}</span> ${esc(it.q)}</div>
-      <div class="lq-opts">${it.options.map((o, k) => `<label><input type="radio" name="q${it.n}" value="${k}"> <b>${L[k]}</b> ${esc(o)}</label>`).join('')}</div><div class="lq-fb" hidden></div></div>`).join('')}</div>`;
+      <div class="lq-opts">${it.options.map((o, k) => `<label><input type="radio" name="q${it.n}" value="${k}"> <b>${L[k]}</b>${o === L[k] ? '' : ' ' + esc(o)}</label>`).join('')}</div><div class="lq-fb" hidden></div></div>`).join('')}</div>`;
     if (TF[gr.type]) return `<div class="lq-group">${head}${gr.items.map(it => `<div class="lq-item" data-item="${it.n}"><div><span class="qn">${it.n}</span> ${esc(it.text)}</div>
       <div class="lq-tf">${TF[gr.type].map(v => `<label><input type="radio" name="q${it.n}" value="${v}"> ${v}</label>`).join('')}</div><div class="lq-fb" hidden></div></div>`).join('')}</div>`;
     if (gr.type === 'match') {

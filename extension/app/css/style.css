@@ -782,3 +782,7 @@ mark.cbt-hl { background: #fde047; color: #111; cursor: pointer; }
 .st-row { padding: .35rem 0; border-bottom: 1px dashed var(--line); font-size: .88rem; }
 .st-row:last-child { border-bottom: 0; }
 .ai-ex { margin-top: .6rem; padding: .6rem .7rem; border-radius: 12px; background: rgba(22, 163, 74, .08); border: 1px solid rgba(22, 163, 74, .25); }
+.toeic-u { display: grid; gap: 1rem; grid-template-columns: minmax(0, 1fr); margin-bottom: 1rem; }
+.toeic-u:has(.toeic-pass) { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+@media (max-width: 860px) { .toeic-u:has(.toeic-pass) { grid-template-columns: minmax(0, 1fr); } }
+.toeic-pass { background: var(--surface-2); border-radius: 12px; padding: .9rem 1rem; line-height: 1.7; font-size: .95rem; }

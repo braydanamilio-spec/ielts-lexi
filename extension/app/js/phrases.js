@@ -276,7 +276,7 @@
       $('[data-deep]', pop).onclick = async ev => {
         if (!window.AI) return;
         const out = $('[data-aiout]', pop);
-        if (!(await AI.getKey())) return AI.keyDialog(() => ev.target.click());
+        if (!(await AI.getKey())) { const st = await AI.nanoStatus(); if (st === 'none' || st === 'unavailable') return AI.keyDialog(() => ev.target.click()); }
         ev.target.disabled = true; out.innerHTML = '<div class="small muted">⏳ AI đang phân tích…</div>';
         try { out.innerHTML = AI.renderExplain(await AI.explain(info.text, info.sentence)); } catch (e) { out.innerHTML = `<div class="small">❌ ${esc(AI.errText(e))}</div>`; }
         ev.target.disabled = false; place(pop, info.rect);

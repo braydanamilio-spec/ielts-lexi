@@ -99,22 +99,57 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
 });
 
 // ---------- Giải thích sâu bằng AI (Gemini, khóa của chính người dùng – lưu trong chrome.storage.local 'aiKey') ----------
+async function aiModels(key) {
+  const { aiModels: c } = await chrome.storage.local.get('aiModels');
+  if (c && c.k === key.slice(-6) && Date.now() - c.at < 3 * 864e5 && c.list && c.list.length) return c.list;
+  const base = ['gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-2.0-flash'];
+  try {
+    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?pageSize=200&key=${encodeURIComponent(key)}`);
+    if (!r.ok) return base;
+    const ver = n => parseFloat((n.match(/gemini-(\d+(?:\.\d+)?)/) || [0, 0])[1]);
+    const list = ((await r.json()).models || []).filter(m => (m.supportedGenerationMethods || []).includes('generateContent')).map(m => m.name.replace(/^models\//, ''))
+      .filter(n => /^gemini-[\d.]+-flash/.test(n) && !/image|tts|live|audio|embed|exp|thinking/.test(n))
+      .sort((x, y) => ver(y) - ver(x) || (/preview/.test(x) - /preview/.test(y)) || (/lite/.test(x) - /lite/.test(y)));
+    const out = [...new Set([...list.slice(0, 4), ...base])];
+    await chrome.storage.local.set({ aiModels: { k: key.slice(-6), at: Date.now(), list: out } });
+    return out;
+  } catch (e) { return base; }
+}
+const EX_PROMPT = (text, sentence, lang) => `Explain the English expression for a Vietnamese IELTS/TOEIC learner. Expression: "${text}"${sentence && sentence !== text ? `\nSentence it appears in: "${sentence}"` : ''}
+Return ONLY JSON: {"meaning": string (${lang} meaning in THIS context), "structure": [{"pattern": string, "explain": string (${lang})}] (1-3 items), "grammar": string (${lang}), "collocations": [string] (3-5 natural English collocations), "examples": [{"en": string, "vi": string}] (2 examples), "tip": string (${lang}: how to use it in exams)}`;
 async function aiExplain(text, sentence) {
   const { aiKey, settings } = await chrome.storage.local.get(['aiKey', 'settings']);
-  if (!aiKey) return { error: 'NO_KEY' };
-  const models = [(settings && settings.aiModel) || 'gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-2.0-flash'];
-  const prompt = `Explain the English expression for a Vietnamese IELTS learner. Expression: "${text}"${sentence && sentence !== text ? `\nSentence it appears in: "${sentence}"` : ''}
-Return ONLY JSON: {"meaning": string (Vietnamese meaning in THIS context), "structure": [{"pattern": string (e.g. "the amount of + uncountable N"), "explain": string (Vietnamese)}] (1-3 items), "grammar": string (Vietnamese: key grammar point, e.g. reduced relative clause, tense, voice), "collocations": [string] (3-5 natural English collocations/variants), "examples": [{"en": string, "vi": string}] (2 IELTS-style examples), "tip": string (Vietnamese: when/how to use it in IELTS Writing/Speaking, register)}`;
+  // Không có khóa → AI có sẵn trong Chrome (Gemini Nano, trên máy, miễn phí)
+  const LM = self.LanguageModel;
+  const nano = async () => {
+    const opts = { expectedInputs: [{ type: 'text', languages: ['en'] }], expectedOutputs: [{ type: 'text', languages: ['en'] }] };
+    const av = await LM.availability(opts); if (av === 'unavailable') return null;
+    const s = await LM.create(opts);
+    try {
+      const out = await s.prompt(EX_PROMPT(text, sentence, 'English') + '\nReturn only JSON.');
+      const j = JSON.parse(String(out).replace(/^[^{]*/, '').replace(/[^}]*$/, ''));
+      const slots = [['meaning'], ['grammar'], ['tip']].filter(([k]) => j[k]).map(([k]) => [j, k, j[k]]);
+      (j.structure || []).forEach(x => x.explain && slots.push([x, 'explain', x.explain]));
+      (j.examples || []).forEach(x => x.en && slots.push([x, 'vi', x.en]));
+      const vi = (await Dict.translateVi(slots.map(x => String(x[2]).replace(/\n/g, ' ')).join('\n'))).split('\n');
+      slots.forEach(([o, k], i) => { if (vi[i]) o[k] = vi[i].trim(); });
+      return { result: j };
+    } finally { try { s.destroy(); } catch (e) { /* bỏ qua */ } }
+  };
+  if (!aiKey) { if (LM) { try { const r = await nano(); if (r) return r; } catch (e) { /* không hỗ trợ */ } } return { error: 'NO_KEY' }; }
+  const found = await aiModels(aiKey);
+  const models = settings && settings.aiModel ? [settings.aiModel, ...found.filter(m => m !== settings.aiModel)] : found;
   for (const m of models) {
     try {
-      const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${encodeURIComponent(aiKey)}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: prompt }] }], generationConfig: { responseMimeType: 'application/json', temperature: 0.2 } }) });
-      if (r.status === 404) continue;
+      const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${encodeURIComponent(aiKey)}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: EX_PROMPT(text, sentence, 'Vietnamese') }] }], generationConfig: { responseMimeType: 'application/json', temperature: 0.2 } }) });
+      if (r.status === 404) { await chrome.storage.local.set({ aiModels: null }); continue; }
       const j = await r.json();
-      if (!r.ok) return { error: r.status === 429 ? 'QUOTA' : r.status === 400 ? 'BAD_KEY' : 'FAILED' };
+      if (!r.ok) { if (r.status === 429 && LM) { try { const x = await nano(); if (x) return x; } catch (e) { /* bỏ qua */ } } return { error: r.status === 429 ? 'QUOTA' : r.status === 400 ? 'BAD_KEY' : 'FAILED' }; }
       const t = ((((j.candidates || [])[0] || {}).content || {}).parts || []).map(p => p.text || '').join('');
       return { result: JSON.parse(t.replace(/^```(json)?|```$/g, '').trim()) };
     } catch (e) { /* thử mẫu tiếp theo */ }
   }
+  if (LM) { try { const x = await nano(); if (x) return x; } catch (e) { /* bỏ qua */ } }
   return { error: 'FAILED' };
 }
 

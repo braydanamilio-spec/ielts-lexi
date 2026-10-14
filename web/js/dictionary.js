@@ -106,10 +106,19 @@
   }
 
   // Dịch cả câu (dùng cho câu ngữ cảnh)
+  // Dự phòng: Translator API có sẵn trong Chrome (dịch trên máy, miễn phí, chạy được offline) – chỉ dùng khi mô hình đã sẵn sàng
+  let localTr = null;
+  async function onDeviceVi(text) {
+    try {
+      const TR = g.Translator; if (!TR) return '';
+      if (!localTr) { if ((await TR.availability({ sourceLanguage: 'en', targetLanguage: 'vi' })) !== 'available') return ''; localTr = await TR.create({ sourceLanguage: 'en', targetLanguage: 'vi' }); }
+      return fixVi(await localTr.translate(text));
+    } catch (e) { return ''; }
+  }
   async function translateVi(text) {
     const d = await fetchJSON(`${GTX}&dt=t&q=${encodeURIComponent(text)}`);
     const t = d && fixVi((d.sentences || []).map(s => s.trans || '').join('').trim());
-    return t || myMemory(text);
+    return t || (await onDeviceVi(text)) || myMemory(text);
   }
 
   // Ảnh minh họa từ Openverse (kho ảnh Creative Commons): ưu tiên CC0/phạm vi công cộng, sau đó giấy phép cho phép dùng thương mại.

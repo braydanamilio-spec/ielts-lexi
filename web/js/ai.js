@@ -31,11 +31,64 @@
 }
 Criteria to use: ${kind === 'task1' ? 'Task Achievement, Coherence and Cohesion, Lexical Resource, Grammatical Range and Accuracy' : kind === 'task2' ? 'Task Response, Coherence and Cohesion, Lexical Resource, Grammatical Range and Accuracy' : 'Fluency and Coherence, Lexical Resource, Grammatical Range and Accuracy (Pronunciation cannot be assessed from a transcript: do not include it)'}.`;
 
+  // Tự dò danh sách mô hình Gemini hiện có (Google hay đổi/ngừng mô hình cũ) – lưu 3 ngày
+  async function discover(key) {
+    const c = await Store.get('aiModels', null);
+    if (c && c.k === key.slice(-6) && Date.now() - c.at < 3 * 864e5 && c.list.length) return c.list;
+    try {
+      const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?pageSize=200&key=${encodeURIComponent(key)}`);
+      if (!r.ok) return MODELS;
+      const j = await r.json();
+      const ver = n => parseFloat((n.match(/gemini-(\d+(?:\.\d+)?)/) || [0, 0])[1]);
+      const list = (j.models || []).filter(m => (m.supportedGenerationMethods || []).includes('generateContent'))
+        .map(m => m.name.replace(/^models\//, ''))
+        .filter(n => /^gemini-[\d.]+-flash/.test(n) && !/image|tts|live|audio|embed|exp|thinking/.test(n))
+        .sort((x, y) => ver(y) - ver(x) || (/preview/.test(x) - /preview/.test(y)) || (/lite/.test(x) - /lite/.test(y)));
+      const out = [...new Set([...list.slice(0, 4), ...MODELS])];
+      await Store.set('aiModels', { k: key.slice(-6), at: Date.now(), list: out });
+      return out;
+    } catch (e) { return MODELS; }
+  }
+
+  // AI có sẵn trong Chrome (Gemini Nano, chạy trên máy): miễn phí, không cần khóa, không gửi bài đi đâu
+  const LMapi = () => self.LanguageModel || null;
+  const LMopts = { expectedInputs: [{ type: 'text', languages: ['en'] }], expectedOutputs: [{ type: 'text', languages: ['en'] }] };
+  async function nanoStatus() { try { return LMapi() ? await LMapi().availability(LMopts) : 'none'; } catch (e) { return 'none'; } }
+  let nanoProgress = null;
+  async function callNano(prompt) {
+    const s = await LMapi().create({ ...LMopts, initialPrompts: [{ role: 'system', content: SYS.replace(/Write all comments[^.]*\./, 'Write all comments in clear, simple English.') }],
+      monitor(m) { m.addEventListener('downloadprogress', e => nanoProgress && nanoProgress(e.loaded)); } });
+    try {
+      const out = await s.prompt(prompt.replace(/\(Vietnamese[^)]*\)/g, '(English)').replace(/Vietnamese/g, 'English') + '\nReturn only JSON.');
+      const j = JSON.parse(String(out).replace(/^[^{]*/, '').replace(/[^}]*$/, ''));
+      j._model = 'Gemini Nano (AI trên máy)';
+      return await toVietnamese(j);
+    } finally { try { s.destroy(); } catch (e) { /* bỏ qua */ } }
+  }
+  // Dịch các trường nhận xét sang tiếng Việt (một lần gọi dịch cho cả bài)
+  const VI_KEYS = new Set(['summary', 'strengths', 'improvements', 'comment', 'why', 'note', 'meaning', 'explain', 'grammar', 'tip']);
+  async function toVietnamese(obj) {
+    const slots = [];
+    const walk = (o, inVi) => { if (Array.isArray(o)) o.forEach((x, i) => typeof x === 'string' ? inVi && slots.push([o, i]) : walk(x, inVi)); else if (o && typeof o === 'object') Object.keys(o).forEach(k => typeof o[k] === 'string' ? VI_KEYS.has(k) && slots.push([o, k]) : walk(o[k], VI_KEYS.has(k))); };
+    walk(obj, false);
+    (obj.examples || []).forEach(e => { if (e && e.en) slots.push([e, 'vi', e.en]); });
+    if (!slots.length || !window.Dict) return obj;
+    const src = slots.map(([o, k, en]) => String(en || o[k]).replace(/\n/g, ' '));
+    const vi = (await Dict.translateVi(src.join('\n'))).split('\n');
+    slots.forEach(([o, k], i) => { if (vi[i]) o[k] = vi[i].trim(); });
+    return obj;
+  }
+
   async function call(prompt) {
     const key = await getKey();
-    if (!key) throw new Error('NO_KEY');
+    if (!key) {
+      const st = await nanoStatus();
+      if (st !== 'none' && st !== 'unavailable') return callNano(prompt);
+      throw new Error('NO_KEY');
+    }
     const pref = state.settings.aiModel;
-    const models = pref ? [pref, ...MODELS.filter(m => m !== pref)] : MODELS;
+    const found = await discover(key);
+    const models = pref ? [pref, ...found.filter(m => m !== pref)] : found;
     let lastErr = null;
     for (const m of models) {
       const ctrl = new AbortController(); const t = setTimeout(() => ctrl.abort(), 60000);
@@ -47,14 +100,16 @@ Criteria to use: ${kind === 'task1' ? 'Task Achievement, Coherence and Cohesion,
         }) });
         clearTimeout(t);
         const j = await r.json().catch(() => ({}));
-        if (r.status === 404) { lastErr = new Error('MODEL'); continue; } // mẫu này không còn → thử mẫu khác
+        if (r.status === 404) { lastErr = new Error('MODEL'); await Store.set('aiModels', null); continue; } // mô hình đã bị ngừng → dò lại lần sau
         if (!r.ok) { const msg = (j.error && j.error.message) || r.statusText; throw new Error(r.status === 400 && /API key/i.test(msg) ? 'BAD_KEY' : r.status === 429 ? 'QUOTA' : msg); }
         const text = (((j.candidates || [])[0] || {}).content || { parts: [] }).parts.map(p => p.text || '').join('');
         const out = JSON.parse(text.replace(/^```(json)?|```$/g, '').trim());
         out._model = m;
         return out;
-      } catch (e) { clearTimeout(t); if (['BAD_KEY', 'QUOTA', 'NO_KEY'].includes(e.message)) throw e; lastErr = e; }
+      } catch (e) { clearTimeout(t); if (['BAD_KEY', 'NO_KEY'].includes(e.message)) throw e; if (e.message === 'QUOTA') { const st = await nanoStatus(); if (st !== 'none' && st !== 'unavailable') return callNano(prompt); throw e; } lastErr = e; }
     }
+    // Hết mô hình trên mạng → thử AI trên máy trước khi báo lỗi
+    const st = await nanoStatus(); if (st !== 'none' && st !== 'unavailable') return callNano(prompt);
     throw lastErr || new Error('FAILED');
   }
 
@@ -77,6 +132,7 @@ Criteria to use: ${kind === 'task1' ? 'Task Achievement, Coherence and Cohesion,
   // ---------- Hướng dẫn lấy khóa ----------
   function keyDialog(onSaved) {
     modal(`<h2 style="margin-top:0">🤖 Bật chấm bài bằng AI</h2>
+      <p class="small" style="background:var(--primary-soft);padding:.5rem .7rem;border-radius:10px">💡 Trên <b>Chrome máy tính bản mới</b> (máy đủ mạnh), Vocaband dùng được <b>AI có sẵn trong Chrome</b> – miễn phí, không cần khóa. Trình duyệt này chưa hỗ trợ, nên bạn có thể dùng khóa Gemini miễn phí dưới đây (chất lượng chấm tốt hơn).</p>
       <p class="small">Vocaband dùng <b>Google Gemini</b> để chấm Writing & Speaking chi tiết theo 4 tiêu chí IELTS. Mỗi người dùng tạo <b>khóa miễn phí</b> của riêng mình (gói miễn phí của Google đủ cho hàng chục bài mỗi ngày).</p>
       <ol class="small" style="padding-left:1.1rem;line-height:1.8"><li>Mở <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a> và đăng nhập Google.</li><li>Bấm <b>Create API key</b> → sao chép khóa (bắt đầu bằng “AIza…”).</li><li>Dán vào ô dưới đây.</li></ol>
       <input class="input" id="aiK" placeholder="AIza…" autocomplete="off" spellcheck="false">
@@ -115,9 +171,10 @@ Criteria to use: ${kind === 'task1' ? 'Task Achievement, Coherence and Cohesion,
     box.appendChild(wrap);
     const go = async () => {
       const inp = getInput(); if (!inp || !inp.text || inp.text.split(/\s+/).length < 20) return toast('Bài quá ngắn để chấm (cần ≥ 20 từ)');
-      if (!(await getKey())) return keyDialog(go);
+      if (!(await getKey())) { const st = await nanoStatus(); if (st === 'none' || st === 'unavailable') return keyDialog(go); }
       const out = $('[data-ai-out]', wrap), b = $('[data-ai]', wrap);
       b.disabled = true; out.innerHTML = '<div class="small muted" style="margin-top:.6rem">⏳ AI đang chấm bài (10–30 giây)…</div>';
+      nanoProgress = p => { out.innerHTML = `<div class="small muted" style="margin-top:.6rem">⬇️ Chrome đang tải AI trên máy lần đầu (${Math.round(p * 100)}%) – chỉ tải một lần…</div>`; };
       try { const r = await grade(inp); out.innerHTML = render(r, inp.kind); b.textContent = '↻ Chấm lại'; }
       catch (e) { out.innerHTML = `<div class="small" style="margin-top:.6rem">❌ ${esc(errText(e))} ${e.message === 'BAD_KEY' || e.message === 'NO_KEY' ? '<button class="btn sm" data-k>Nhập khóa</button>' : ''}</div>`; const k = $('[data-k]', out); if (k) k.onclick = () => keyDialog(go); }
       b.disabled = false;
@@ -128,7 +185,9 @@ Criteria to use: ${kind === 'task1' ? 'Task Achievement, Coherence and Cohesion,
   // Phần cài đặt
   async function settingsHtml() {
     const k = await getKey();
-    return `<div class="card"><h2>🤖 Chấm bài bằng AI</h2><p class="small muted">Dùng khóa Google Gemini miễn phí của bạn để chấm Writing & Speaking chi tiết. Khóa chỉ lưu trên máy này.</p>
+    const ns = await nanoStatus();
+    const nano = ns === 'available' ? '✅ Sẵn sàng' : ns === 'downloadable' || ns === 'downloading' ? '⬇️ Sẽ tự tải khi dùng lần đầu' : '— Trình duyệt chưa hỗ trợ';
+    return `<div class="card"><h2>🤖 Chấm bài bằng AI</h2><div class="small" style="margin-bottom:.5rem">AI có sẵn trong Chrome (miễn phí, không cần khóa): <b>${nano}</b></div><p class="small muted">Dùng khóa Google Gemini miễn phí của bạn để chấm Writing & Speaking chi tiết. Khóa chỉ lưu trên máy này.</p>
       <div class="row"><span class="chip ${k ? 'ok' : ''}">${k ? '✓ Đã có khóa ' + esc(k.slice(0, 6)) + '…' : 'Chưa có khóa'}</span><button class="btn sm" id="aiSet">${k ? 'Đổi khóa' : 'Thêm khóa'}</button>${k ? '<button class="btn sm ghost" id="aiDel">Xóa khóa</button>' : ''}</div>
       <label class="field" style="margin-top:.6rem"><span class="small">Mô hình</span><select class="input" id="aiModel">${['', ...MODELS].map(m => `<option value="${m}" ${(state.settings.aiModel || '') === m ? 'selected' : ''}>${m || 'Tự động (khuyên dùng)'}</option>`).join('')}</select></label></div>`;
   }
@@ -159,5 +218,5 @@ Return ONLY JSON: {"meaning": string (Vietnamese meaning in THIS context), "stru
       ${x.tip ? `<div class="small" style="margin-top:.35rem">💡 ${esc(x.tip)}</div>` : ''}</div>`;
   }
 
-  window.AI = { explain, renderExplain, errText: e => errText(e), getKey, grade, attach, keyDialog, settingsHtml, bindSettings };
+  window.AI = { nanoStatus, explain, renderExplain, errText: e => errText(e), getKey, grade, attach, keyDialog, settingsHtml, bindSettings };
 })();

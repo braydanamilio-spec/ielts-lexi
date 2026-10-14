@@ -189,6 +189,7 @@
     { id: 'topics', name: 'IELTS theo chủ đề', emoji: '🗂️', desc: 'Từ vựng theo các chủ đề hay gặp trong Speaking & Writing' },
     { id: 'writing', name: 'Writing', emoji: '✍️', desc: 'Từ mô tả biểu đồ, từ nối, collocation học thuật' },
     { id: 'speaking', name: 'Speaking', emoji: '🗣️', desc: 'Phrasal verb, thành ngữ, cách diễn đạt tự nhiên' },
+    { id: 'toeic', name: 'TOEIC (TSL)', emoji: '💼', desc: '1.250 từ TOEIC công sở – kinh doanh · TSL 1.2 © Browne & Culligan, CC BY-SA 4.0' },
     { id: 'awl', name: 'Academic Word List', emoji: '🎓', desc: '570 họ từ học thuật (Coxhead) – nền tảng cho Reading & Writing band 7+' },
   ];
 

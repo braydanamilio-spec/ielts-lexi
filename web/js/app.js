@@ -52,7 +52,17 @@
   function activeDays() {
     const set = new Set(Object.keys(state.stats.days).filter(k => state.stats.days[k] > 0));
     for (const [k, v] of Object.entries(state.game.days || {})) if (v.xp > 0) set.add(k);
+    Object.keys(state.game.frozen || {}).forEach(k => set.add(k)); // ngày được "đóng băng" vẫn tính vào chuỗi
     return set;
+  }
+  // 🧊 Đóng băng chuỗi: lỡ đúng 1 ngày (hôm qua) mà còn lượt → tự dùng, chuỗi không mất. Mỗi 7 ngày liên tiếp được +1 lượt (tối đa 2)
+  async function applyFreeze() {
+    const g = state.game, days = activeDays(), d = new Date(); d.setDate(d.getDate() - 1);
+    const y = todayKey(d); d.setDate(d.getDate() - 1); const y2 = todayKey(d);
+    if ((g.freezes || 0) > 0 && !days.has(y) && days.has(y2)) {
+      state.game = await Game.mutate(gs => { gs.frozen = { ...(gs.frozen || {}), [y]: 1 }; gs.freezes = (gs.freezes || 0) - 1; const ks = Object.keys(gs.frozen).sort(); while (ks.length > 30) delete gs.frozen[ks.shift()]; });
+      setTimeout(() => toast(`🧊 Hôm qua bạn lỡ học – đã tự dùng 1 lượt đóng băng, chuỗi 🔥${streak()} ngày vẫn được giữ!`, 4500), 1200);
+    }
   }
   function streak() {
     const days = activeDays();
@@ -65,7 +75,7 @@
 
   function updateChrome() {
     const st = streak();
-    $('#streakPill').textContent = `🔥 ${st}`;
+    $('#streakPill').textContent = `🔥 ${st}${state.game.freezes ? ' 🧊' + state.game.freezes : ''}`;
     $('#xpPill').textContent = `⭐ ${state.game.xp.toLocaleString('vi-VN')}`;
     const { total } = Cards.dueCount(state.cards, state.settings, state.stats);
     $$('[data-due]').forEach(b => { b.hidden = !total; b.textContent = total > 99 ? '99+' : total; });
@@ -97,6 +107,11 @@
     const ctx = { cards: Object.keys(state.cards).length, mastered: masteredCount(), streak: streak() + ((state.game.days[todayKey()] || {}).xp ? 0 : 1) };
     const r = await Game.track(delta, ctx);
     state.game = r.state;
+    const st = streak();
+    if (st && st % 7 === 0 && (state.game.freezes || 0) < 2 && state.game.freezeAt !== st) {
+      state.game = await Game.mutate(gs => { gs.freezes = Math.min(2, (gs.freezes || 0) + 1); gs.freezeAt = st; });
+      setTimeout(() => toast(`🧊 Chuỗi ${st} ngày! Bạn nhận 1 lượt đóng băng – lỡ 1 ngày chuỗi vẫn được giữ (đang có ${state.game.freezes})`, 4500), 900);
+    }
     if (delta.xp) xpFloat(delta.xp, el);
     for (const ev of r.events) {
       if (ev.type === 'quest') { Sfx.win(); toast(`🎉 Hoàn thành nhiệm vụ: ${ev.quest.text} (+${ev.quest.xp} XP)`, 3200); }
@@ -165,8 +180,11 @@
     listening: ['js/qengine.js', ...[1, 2, 3, 4, 5].map(n => `js/listen/test${n}.js`), 'js/listening.js'],
     writing: ['js/write/task2-more.js', 'js/write/task1-more.js', 'js/write.js', 'js/task1.js', 'js/models.js'],
     mock: ['js/qengine.js', 'js/readtest/test1.js', 'js/readtest/test2.js', 'js/readtest/test3.js', 'js/mock.js'],
+    tsl: ['js/lib/tsl-a.js', 'js/lib/tsl-b.js'],
+    toeic: ['js/qengine.js', 'js/toeic/reading1.js', 'js/toeic/listening1.js', 'js/toeic.js'],
   };
-  const ROUTE_BUNDLE = { grammar: 'grammar', placement: 'grammar', pron: 'pron', listening: 'listening', listen: 'listening', 'listen-test': 'listening', dictation: 'listening', write: 'writing', task1: 'writing', model: 'writing', phrases: 'writing', mock: ['listening', 'writing', 'mock'] };
+  const ROUTE_BUNDLE = { grammar: 'grammar', placement: 'grammar', pron: 'pron', listening: 'listening', listen: ['listening', 'toeic'], 'listen-test': 'listening', dictation: ['listening', 'toeic'],
+    toeic: ['tsl', 'listening', 'toeic'], 'toeic-r': ['toeic'], 'toeic-test': ['listening', 'toeic'], library: 'tsl', topic: 'tsl', practice: 'tsl', dict: 'tsl', write: 'writing', task1: 'writing', model: 'writing', phrases: 'writing', mock: ['listening', 'writing', 'mock'] };
   const bundleP = {};
   const loadScript = src => new Promise(res => { const s = document.createElement('script'); s.src = src; s.async = false; s.onload = s.onerror = () => res(); document.head.appendChild(s); });
   // Tải song song nhưng chạy đúng thứ tự (async=false); file thiếu được bỏ qua
@@ -183,7 +201,7 @@
     if (b.some(x => !App.loaded(x))) view.innerHTML = '<div class="card empty"><div class="em">⏳</div>Đang tải…</div>';
     if (b.length) { await App.need(...b); if (my !== routeSeq) return; }
     const fn = routes[name] || routes.home;
-    const navKey = name === 'topic' ? 'library' : name === 'practice' && arg === 'speak' ? 'speak' : name === 'read' ? 'reading' : /^(listen|listen-test|dictation)$/.test(name) ? 'listening' : name;
+    const navKey = name === 'topic' ? 'library' : name === 'practice' && arg === 'speak' ? 'speak' : name === 'read' ? 'reading' : /^(listen|listen-test|dictation)$/.test(name) ? 'listening' : /^toeic/.test(name) ? 'toeic' : name;
     $$('#nav a, #bnav a').forEach(a => a.classList.toggle('active', a.dataset.route === navKey));
     UI.stopSpeak(); UI.clearRecs();
     document.onkeydown = null;
@@ -1001,15 +1019,15 @@
     App.cleanup = () => document.body.classList.remove('bare');
     if (step === 'setup') return setup();
     const feats = [
-      ['📚', '1.200+ từ IELTS chọn lọc', '24 chủ đề, 570 từ học thuật AWL, phrasal verb, idiom, collocation band 7+'],
-      ['🧠', 'Flashcard thông minh', 'Thuật toán lặp lại ngắt quãng nhắc bạn ôn đúng lúc sắp quên'],
+      ['📚', '4.600+ từ IELTS & TOEIC', 'NGSL, 570 từ học thuật AWL, 1.250 từ TOEIC, chủ đề IELTS, phrasal verb, collocation band 7+'],
+      ['🧠', 'Flashcard FSRS như Anki', 'Thuật toán ghi nhớ hiện đại nhất nhắc bạn ôn đúng lúc sắp quên'],
       ['📌', 'Từ gắn ngữ cảnh', 'Lưu từ kèm câu gốc từ bài đọc, báo, YouTube… nhớ lâu gấp nhiều lần'],
       ['🎙️', 'Luyện phát âm có chấm điểm', 'Nói vào micro, AI nhận dạng giọng và chấm điểm ngay'],
       ['⚡', 'Trò chơi & bài kiểm tra', 'Ghép thẻ tính giờ, điền từ, nghe chép, test ước tính band'],
       ['🧩', 'Add-on Chrome', 'Bấm đúp tra từ, bôi đen dịch câu, tra từ trong phụ đề YouTube'],
-      ['📐', '34 bài ngữ pháp trực quan', 'Dòng thời gian, công thức tô màu, lỗi người Việt hay mắc'],
+      ['📐', '77 bài ngữ pháp trực quan', 'Học từng bước, 1.700 câu luyện: trắc nghiệm, viết lại câu, tìm lỗi sai'],
       ['🔤', 'Thư viện phát âm 44 âm IPA', 'Khẩu hình, cặp từ dễ nhầm, trọng âm & ngữ điệu'],
-      ['🖥️', 'Thi thử trên máy & Phòng viết', 'Giao diện thi thật, phân tích từ vựng bài viết miễn phí'],
+      ['🏁', 'Thi thử IELTS 4 kỹ năng & TOEIC', 'Bấm giờ như thi thật, quy đổi band/điểm, chấm Writing & Speaking bằng AI'],
     ];
     view.innerHTML = `
       <div style="max-width:980px;margin:0 auto">
@@ -1149,6 +1167,7 @@
       chrome.storage.onChanged.addListener(ch => { if (ch.cards) { state.cards = ch.cards.newValue || {}; updateChrome(); } });
     }
     if (!Store.isExtension && 'serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(() => {});
+    applyFreeze().catch(() => {});
     checkReminder(); setInterval(checkReminder, 60 * 1000);
     netState(); setTimeout(showInstallBtn, 1500);
     document.addEventListener('visibilitychange', async () => { if (!document.hidden) { state.cards = await Cards.all(); state.stats = await Stats.get(); state.game = await Game.get(); updateChrome(); } });

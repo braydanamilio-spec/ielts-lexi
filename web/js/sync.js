@@ -53,6 +53,8 @@
     const nt = (a.newToday && b.newToday && a.newToday.day === b.newToday.day) ? { day: a.newToday.day, n: Math.max(a.newToday.n, b.newToday.n) } : (a.newToday && a.newToday.day > (b.newToday || {}).day ? a.newToday : b.newToday || a.newToday);
     return { days, newToday: nt };
   }
+  // Gộp bảng điểm 2 thiết bị: giữ điểm cao nhất của mỗi bài
+  const maxMerge = (x = {}, y = {}) => { const o = { ...(x || {}) }; for (const [k, v] of Object.entries(y || {})) o[k] = typeof v === 'number' && typeof o[k] === 'number' ? Math.max(o[k], v) : (o[k] != null ? o[k] : v); return o; };
   function mergeGame(a, b) {
     if (!b) return a; if (!a) return b;
     const days = { ...a.days };
@@ -61,7 +63,10 @@
     const best = { ...a.best }; if (b.best && b.best.match) best.match = Math.min(best.match || 1e9, b.best.match);
     const unitDone = { ...(b.unitDone || {}) };
     for (const [k, v] of Object.entries(a.unitDone || {})) unitDone[k] = Math.max(unitDone[k] || 0, v);
-    return { ...a, xp: Math.max(a.xp || 0, b.xp || 0), days, total, best, unitDone, badges: { ...b.badges, ...a.badges }, readDone: { ...(b.readDone || {}), ...(a.readDone || {}) }, questsDone: { ...(b.questsDone || {}), ...(a.questsDone || {}) } };
+    // Lượt đóng băng: lấy theo bản nhiều XP hơn (tiến độ mới hơn); ngày đã đóng băng: hợp 2 bên
+    const lead = (b.xp || 0) > (a.xp || 0) ? b : a;
+    return { ...a, xp: Math.max(a.xp || 0, b.xp || 0), days, total, best, unitDone, freezes: lead.freezes || 0, freezeAt: Math.max(a.freezeAt || 0, b.freezeAt || 0), frozen: { ...(b.frozen || {}), ...(a.frozen || {}) },
+      listenDone: maxMerge(a.listenDone, b.listenDone), grammarDone: maxMerge(a.grammarDone, b.grammarDone), pronDone: maxMerge(a.pronDone, b.pronDone), listenBest: maxMerge(a.listenBest, b.listenBest), badges: { ...b.badges, ...a.badges }, readDone: { ...(b.readDone || {}), ...(a.readDone || {}) }, questsDone: { ...(b.questsDone || {}), ...(a.questsDone || {}) } };
   }
 
   // Dấu “đã xóa” chỉ cần giữ đủ lâu để mọi thiết bị kịp đồng bộ → bỏ mục quá 90 ngày, tránh phình dữ liệu

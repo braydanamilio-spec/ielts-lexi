@@ -12,7 +12,9 @@
     it.options = it.options.slice(r).concat(it.options.slice(0, r)); it.a = (it.a - r + 3) % 3;
   })));
   const ALL = () => window.LISTENING || [];
-  const byId = id => ALL().find(p => p.id === id);
+  const byId = id => ALL().find(p => p.id === id) || ((window.TOEIC || {}).listening || []).find(p => p.id === id);
+  const TOEIC_PART = { 1: 'Mô tả tranh', 2: 'Hỏi – đáp', 3: 'Hội thoại', 4: 'Bài nói ngắn' };
+  const partName = p => p.exam === 'toeic' || /^tl/.test(p.id) ? 'TOEIC · ' + (TOEIC_PART[p.part] || '') : PART[p.part];
   const tests = () => [...new Set(ALL().map(p => p.test))].sort((a, b) => a - b);
   const partsOf = n => ALL().filter(p => p.test === n).sort((a, b) => a.part - b.part);
   const PART = { 1: 'Hội thoại đời sống', 2: 'Độc thoại xã hội', 3: 'Thảo luận học thuật', 4: 'Bài giảng học thuật' };
@@ -153,8 +155,8 @@
     const exam = query && query.get('mode') === 'exam';
     let submitted = false, plays = 0;
     view.innerHTML = `
-      <div class="row between"><a href="#/listening" class="small">← Luyện nghe</a>${exam ? `<a class="btn sm ghost" href="#/listen/${p.id}">🎯 Chế độ luyện tập</a>` : `<a class="btn sm ghost" href="#/listen/${p.id}?mode=exam">⏱ Chế độ thi thật</a>`}</div>
-      <div class="page-head" style="margin-top:.6rem"><div><div class="tiny muted">Test ${p.test} · Part ${p.part} · ${PART[p.part]} · Câu ${qNums(p)[0]}–${qNums(p).slice(-1)[0]}</div><h1 style="margin:.2rem 0">${esc(p.title)}</h1><p class="muted" style="margin:0">${esc(p.context || '')}</p><div class="row" style="margin-top:.4rem">${speakersHtml(p)}</div></div></div>
+      <div class="row between"><a href="${/^tl/.test(p.id) ? '#/toeic' : '#/listening'}" class="small">← ${/^tl/.test(p.id) ? 'TOEIC' : 'Luyện nghe'}</a>${exam ? `<a class="btn sm ghost" href="#/listen/${p.id}">🎯 Chế độ luyện tập</a>` : `<a class="btn sm ghost" href="#/listen/${p.id}?mode=exam">⏱ Chế độ thi thật</a>`}</div>
+      <div class="page-head" style="margin-top:.6rem"><div><div class="tiny muted">Test ${p.test} · Part ${p.part} · ${partName(p)} · Câu ${qNums(p)[0]}–${qNums(p).slice(-1)[0]}</div><h1 style="margin:.2rem 0">${esc(p.title)}</h1><p class="muted" style="margin:0">${esc(p.context || '')}</p><div class="row" style="margin-top:.4rem">${speakersHtml(p)}</div></div></div>
       <div class="card lplayer" id="lPlayer">
         <button class="btn primary lg" id="lPlay">▶ Nghe</button>
         ${exam ? '<span class="small muted" id="lNote">Chế độ thi thật: chỉ nghe được 1 lần, không tua lại.</span>' : `<button class="btn" id="lBack" title="Nghe lại câu trước">⏪ Câu trước</button>${rateSel()}<label class="small row nowrap" style="gap:.3rem"><input type="checkbox" id="lLive"> Hiện lời thoại khi nghe</label>`}
@@ -203,6 +205,7 @@
       const nums = Object.keys(res).map(Number).sort((a, b) => a - b);
       const right = nums.filter(n => res[n].ok).length;
       QE.mark($('#lQs'), res, '🔎 Nghe đoạn có đáp án', n => hear(n));
+      p.groups.forEach(g2 => (g2.items || []).forEach(it => { const el = $(`[data-item="${it.n}"] .lq-fb`, $('#lQs')); if (el && it.explain) el.insertAdjacentHTML('beforeend', `<div class="tiny muted" style="margin-top:.2rem">💡 ${esc(it.explain)}</div>`); }));
       nums.filter(n => !res[n].ok).forEach(n => App.logMistake && App.logMistake({ kind: 'listening', q: `${p.title} – Câu ${n}: ${res[n].q}`, answer: res[n].answer, given: res[n].given || '(bỏ trống)', explain: res[n].cue ? `Nghe: “…${res[n].cue}…”` : '', ref: p.id }));
       state.game = await Game.mutate(gs => { gs.listenDone = { ...(gs.listenDone || {}), [p.id]: Math.max(right, (gs.listenDone || {})[p.id] || 0) }; });
       await App.reward({ quizzes: 1, listens: 1, perfect: right === nums.length ? 1 : 0, xp: 15 + right * 3 }, $('#lRes'));
