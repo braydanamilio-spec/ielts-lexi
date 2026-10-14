@@ -1622,6 +1622,7 @@
 (function (g) { Object.assign(g.I18N_DICT.en, { 'Làm lại {n} lỗi sai': 'Retry {n} mistakes', 'Tự nhớ lại đáp án – sửa lỗi = tăng điểm nhanh nhất': 'Recall the answer yourself – fixing mistakes is the fastest way to score higher' }); })(typeof self !== 'undefined' ? self : this);
 (function (g) { Object.assign(g.I18N_DICT.en, { 'Hoàn tác lần chấm vừa rồi (Z)': 'Undo last grade (Z)', 'Đã hoàn tác – chấm lại thẻ này': 'Undone – grade this card again' }); })(typeof self !== 'undefined' ? self : this);
 (function (g) { Object.assign(g.I18N_DICT.en, { 'hoàn tác': 'undo' }); })(typeof self !== 'undefined' ? self : this);
+(function (g) { Object.assign(g.I18N_DICT.en, { 'Mẹo nhớ': 'Memory tip', 'Lỗi hay gặp': 'Common mistake', 'Cách dùng khi thi': 'Exam usage', 'Họ từ': 'Word family' }); })(typeof self !== 'undefined' ? self : this);
 
 /* English UI strings – web/js/app.js, web/index.html (app shell) */
 (function (g) { const D = g.I18N_DICT = g.I18N_DICT || {}; D.en = Object.assign(D.en || {}, {
