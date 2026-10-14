@@ -1,6 +1,6 @@
 {
-  "name": "IELTS Lexi – Từ vựng IELTS",
-  "short_name": "IELTS Lexi",
+  "name": "Vocaband – Từ vựng IELTS",
+  "short_name": "Vocaband",
   "description": "Từ điển & flashcard IELTS: phiên âm chuẩn Oxford, từ gắn ngữ cảnh, nhắc học hằng ngày.",
   "start_url": "./index.html#/home",
   "scope": "./",

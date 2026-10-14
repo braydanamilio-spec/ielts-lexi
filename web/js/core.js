@@ -31,6 +31,11 @@
     dailyGoal: 20,
     accent: 'en-GB',
     autoSpeak: true,
+    goldenOn: true,       // nhắc "thời điểm vàng" khi có đủ từ sắp quên
+    goldenMin: 10,        // số từ tối thiểu để nhắc
+    quietStart: '22:30',  // giờ yên lặng
+    quietEnd: '07:00',
+    sessionCap: 50,       // tối đa thẻ mỗi phiên ôn (0 = không giới hạn)
   };
 
   // ---------- Ngày tháng ----------
@@ -40,44 +45,71 @@
   const startOfToday = () => { const d = new Date(); d.setHours(0, 0, 0, 0); return d.getTime(); };
   const endOfToday = () => startOfToday() + DAY - 1;
 
-  // ---------- SRS: biến thể SM-2 (kiểu Anki) ----------
+  // ---------- SRS: SM-2 + bước học (learning steps) kiểu Anki + đường cong quên lãng ----------
   // grade: 0 = Quên, 1 = Khó, 2 = Nhớ, 3 = Dễ
+  // Thẻ mới/quên đi qua các bước 1 phút → 10 phút trước khi "tốt nghiệp" sang lịch theo ngày.
+  const MIN = 60 * 1000;
   const SRS = {
-    newState: () => ({ ef: 2.5, interval: 0, reps: 0, lapses: 0, due: Date.now(), last: null }),
+    newState: () => ({ ef: 2.5, interval: 0, reps: 0, lapses: 0, due: Date.now(), last: null, step: 0 }),
 
-    // Trả về trạng thái mới; interval tính theo ngày
+    isLearning: s => s.reps === 0,
+
     review(s, grade, now = Date.now()) {
-      s = { ...s };
-      if (grade === 0) {
-        s.lapses += 1;
-        s.reps = 0;
-        s.interval = 0;
-        s.ef = Math.max(1.3, s.ef - 0.2);
-        s.due = now + 60 * 1000; // ôn lại sau 1 phút trong phiên
-      } else {
-        if (grade === 1) {
-          s.interval = s.reps === 0 ? 1 : Math.max(1, Math.round(s.interval * 1.2));
-          s.ef = Math.max(1.3, s.ef - 0.15);
-        } else if (grade === 2) {
-          s.interval = s.reps === 0 ? 1 : s.reps === 1 ? 3 : Math.round(s.interval * s.ef);
-        } else {
-          s.interval = s.reps === 0 ? 4 : Math.round(s.interval * s.ef * 1.3);
-          s.ef += 0.15;
-        }
-        s.reps += 1;
-        // Đến hạn vào đầu ngày (giờ địa phương) sau `interval` ngày
+      s = { step: 0, ...s };
+      const toDay = days => {
+        // giãn ngẫu nhiên ±5% để các thẻ không dồn cùng một ngày
+        const fuzz = days >= 3 ? Math.round(days * (Math.random() * 0.1 - 0.05)) : 0;
+        s.interval = Math.max(1, days + fuzz);
         const d = new Date(now); d.setHours(4, 0, 0, 0);
         s.due = d.getTime() + s.interval * DAY;
+      };
+      if (s.reps === 0) {
+        // Đang học / học lại
+        if (grade === 0) { s.step = 0; s.due = now + MIN; if (s.last) s.ef = Math.max(1.3, s.ef - 0.05); }
+        else if (grade === 1) { s.due = now + (s.step === 0 ? 6 : 10) * MIN; }
+        else if (grade === 2 && s.step === 0) { s.step = 1; s.due = now + 10 * MIN; }
+        else { s.reps = 1; s.step = 0; toDay(grade === 3 ? 4 : 1); if (grade === 3) s.ef += 0.15; }
+      } else if (grade === 0) {
+        // Quên → về bước học lại, giảm độ dễ
+        s.lapses += 1; s.reps = 0; s.step = 0; s.interval = 0;
+        s.ef = Math.max(1.3, s.ef - 0.2);
+        s.due = now + MIN;
+      } else {
+        const overdue = Math.max(0, (now - s.due) / DAY); // ôn muộn mà vẫn nhớ → thưởng khoảng dài hơn
+        if (grade === 1) { s.ef = Math.max(1.3, s.ef - 0.15); toDay(Math.max(s.interval + 1, Math.round(s.interval * 1.2))); }
+        else if (grade === 2) toDay(s.reps === 1 ? 3 : Math.max(s.interval + 1, Math.round((s.interval + overdue / 2) * s.ef)));
+        else { s.ef += 0.15; toDay(s.reps === 1 ? 5 : Math.max(s.interval + 2, Math.round((s.interval + overdue) * s.ef * 1.3))); }
+        s.reps += 1;
       }
       s.last = now;
       return s;
     },
 
-    // Nhãn dự kiến hiển thị trên nút
     preview(s, grade) {
-      const n = SRS.review(s, grade);
-      if (grade === 0) return '1 phút';
-      return n.interval === 1 ? '1 ngày' : n.interval < 30 ? `${n.interval} ngày` : `${Math.round(n.interval / 30)} tháng`;
+      if (s.reps === 0) {
+        if (grade === 0) return '1 phút';
+        if (grade === 1) return (s.step || 0) === 0 ? '6 phút' : '10 phút';
+        if (grade === 2 && !(s.step > 0)) return '10 phút';
+      } else if (grade === 0) return '1 phút';
+      const n = SRS.review({ ...s }, grade);
+      const d = Math.round((n.due - Date.now()) / DAY);
+      return d <= 1 ? '1 ngày' : d < 30 ? `${d} ngày` : d < 365 ? `${Math.round(d / 30)} tháng` : `${(d / 365).toFixed(1)} năm`;
+    },
+
+    // Xác suất còn nhớ theo đường cong quên lãng Ebbinghaus: R = 0.9^(t / I)
+    // (thiết kế để lúc đến hạn ôn, khả năng nhớ ≈ 90%)
+    retention(s, now = Date.now()) {
+      if (!s || !s.last) return null;
+      if (s.reps === 0) return Math.max(0.3, 0.9 ** ((now - s.last) / (10 * MIN)));
+      const t = (now - s.last) / DAY;
+      return Math.pow(0.9, t / Math.max(1, s.interval));
+    },
+
+    // 5 cấp độ nhớ (kiểu MochiVocab): 1 < 1 ngày · 2 ≤ 3 ngày · 3 ≤ 10 ngày · 4 ≤ 30 ngày · 5 > 30 ngày; 0 = chưa học
+    level5(s) {
+      if (!s || !s.last) return 0;
+      if (s.reps === 0) return 1;
+      return s.interval <= 3 ? 2 : s.interval <= 10 ? 3 : s.interval <= 30 ? 4 : 5;
     },
 
     // Mức thuộc: 0 mới, 1 đang học, 2 quen, 3 thuộc
@@ -164,6 +196,23 @@
     },
   };
 
+  // ---------- Thời điểm vàng ----------
+  const toMin = t => { const [h, m] = String(t || '0:0').split(':').map(Number); return h * 60 + (m || 0); };
+  const Golden = {
+    // Số thẻ đã đến hạn ôn ngay lúc này (kể cả thẻ đang ở bước học)
+    dueNow(map, now = Date.now()) { return Object.values(map).filter(c => (c.srs.reps > 0 || c.srs.last) && c.srs.due <= now).length; },
+    // Mốc thời gian gần nhất có thẻ đến hạn trong tương lai
+    next(map, now = Date.now()) {
+      const t = Object.values(map).filter(c => (c.srs.reps > 0 || c.srs.last) && c.srs.due > now).map(c => c.srs.due).sort((a, b) => a - b);
+      if (!t.length) return null;
+      return { at: t[0], count: t.filter(x => x <= t[0] + 3600 * 1000).length };
+    },
+    quiet(settings, d = new Date()) {
+      const n = d.getHours() * 60 + d.getMinutes(), a = toMin(settings.quietStart), b = toMin(settings.quietEnd);
+      return a <= b ? n >= a && n < b : n >= a || n < b;
+    },
+  };
+
   // ---------- Thống kê & chuỗi ngày ----------
   const Stats = {
     async get() { return Store.get('stats', { days: {}, newToday: { day: '', n: 0 } }); },
@@ -187,5 +236,5 @@
     },
   };
 
-  g.Core = { Store, SRS, Cards, Stats, DEFAULT_SETTINGS, todayKey, startOfToday, endOfToday, DAY };
+  g.Core = { Golden, Store, SRS, Cards, Stats, DEFAULT_SETTINGS, todayKey, startOfToday, endOfToday, DAY };
 })(typeof self !== 'undefined' ? self : this);

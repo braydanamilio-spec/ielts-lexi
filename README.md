@@ -1,4 +1,4 @@
-# IELTS Lexi – Từ điển & Flashcard luyện từ vựng IELTS
+# Vocaband – Từ điển & Flashcard luyện từ vựng IELTS
 
 Gồm 2 phần dùng **chung một mã nguồn** (`web/`):
 
@@ -27,7 +27,7 @@ Mở http://localhost:5173 . Để đưa lên mạng, deploy thư mục `web/` l
 ./scripts/build-extension.sh
 ```
 Sau đó mở `chrome://extensions` → bật **Developer mode** → **Load unpacked** → chọn thư mục `extension/`.
-- Bấm đúp vào một từ → hiện bảng tra; **bôi đen cụm từ + giữ Alt** khi thả chuột để tra cụm (vd. *life expectancy*); hoặc chuột phải → *Tra “…” với IELTS Lexi*.
+- Bấm đúp vào một từ → hiện bảng tra; **bôi đen cụm từ + giữ Alt** khi thả chuột để tra cụm (vd. *life expectancy*); hoặc chuột phải → *Tra “…” với Vocaband*.
 - `Alt+L` mở popup tra nhanh.
 - `./scripts/build-extension.sh --zip` tạo file zip để đăng lên Chrome Web Store.
 

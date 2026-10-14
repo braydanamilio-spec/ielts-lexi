@@ -5,3 +5,6 @@ body.popup { width: 360px; padding: 14px; margin: 0; }
 .popup #res .card { margin-top: 10px; }
 .popup .entry-word { font-size: 1.4rem; }
 .popup .pic { width: 64px; font-size: 2rem; flex: none; }
+.popup .streak { display: inline-flex; align-items: center; gap: .35rem; padding: .35rem .75rem; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); font-weight: 700; color: #ea580c; }
+.popup .brand { padding: 0; }
+.popup .hero-main { padding: 14px; }

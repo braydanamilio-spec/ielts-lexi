@@ -1,10 +1,48 @@
 {
-  "hosting": {
-    "public": "web",
-    "ignore": ["**/.*"],
-    "headers": [
-      { "source": "**/*.@(js|css|html|webmanifest)", "headers": [{ "key": "Cache-Control", "value": "no-cache" }] },
-      { "source": "sw.js", "headers": [{ "key": "Cache-Control", "value": "no-store" }] }
-    ]
+  "hosting": [
+    {
+      "public": "web",
+      "ignore": [
+        "**/.*"
+      ],
+      "headers": [
+        {
+          "source": "**/*.@(js|css|html|webmanifest)",
+          "headers": [
+            {
+              "key": "Cache-Control",
+              "value": "no-cache"
+            }
+          ]
+        },
+        {
+          "source": "sw.js",
+          "headers": [
+            {
+              "key": "Cache-Control",
+              "value": "no-store"
+            }
+          ]
+        }
+      ],
+      "site": "vocaband"
+    },
+    {
+      "site": "ielts-lexi-2026",
+      "public": "web",
+      "ignore": [
+        "**/.*"
+      ],
+      "redirects": [
+        {
+          "source": "**",
+          "destination": "https://vocaband.web.app",
+          "type": 301
+        }
+      ]
+    }
+  ],
+  "firestore": {
+    "rules": "firestore.rules"
   }
 }

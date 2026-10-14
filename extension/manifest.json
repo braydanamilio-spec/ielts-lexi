@@ -1,29 +1,76 @@
 {
   "manifest_version": 3,
-  "name": "IELTS Lexi – Từ điển & Flashcard IELTS",
-  "short_name": "IELTS Lexi",
-  "version": "1.1.0",
-  "description": "Bấm đúp vào từ bất kỳ để xem phiên âm, nghĩa tiếng Việt, hình ảnh; lưu vào flashcard kèm câu ngữ cảnh; nhắc ôn tập mỗi ngày.",
-  "icons": { "16": "icons/icon-16.png", "32": "icons/icon-32.png", "48": "icons/icon-48.png", "128": "icons/icon-128.png" },
-  "action": { "default_popup": "popup.html", "default_title": "IELTS Lexi", "default_icon": { "16": "icons/icon-16.png", "32": "icons/icon-32.png" } },
-  "background": { "service_worker": "background.js" },
-  "permissions": ["storage", "alarms", "notifications", "contextMenus"],
+  "name": "Vocaband – Từ điển & Flashcard IELTS",
+  "short_name": "Vocaband",
+  "version": "2.0.0",
+  "description": "Bấm đúp tra từ, bôi đen dịch câu, tra từ trong phụ đề YouTube; lưu kèm ngữ cảnh và ôn flashcard đúng thời điểm vàng.",
+  "icons": {
+    "16": "icons/icon-16.png",
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Vocaband",
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "32": "icons/icon-32.png"
+    }
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "permissions": [
+    "storage",
+    "alarms",
+    "notifications",
+    "contextMenus",
+    "scripting"
+  ],
   "host_permissions": [
+    "http://*/*",
+    "https://*/*",
     "https://api.dictionaryapi.dev/*",
     "https://translate.googleapis.com/*",
     "https://api.tatoeba.org/*",
     "https://api.mymemory.translated.net/*",
     "https://en.wikipedia.org/*",
-    "https://en.wiktionary.org/*"
+    "https://en.wiktionary.org/*",
+    "https://api.datamuse.com/*"
   ],
-  "content_scripts": [{
-    "matches": ["http://*/*", "https://*/*"],
-    "js": ["content.js"],
-    "run_at": "document_idle",
-    "all_frames": false
-  }],
-  "web_accessible_resources": [{ "resources": ["icons/*"], "matches": ["http://*/*", "https://*/*"] }],
+  "content_scripts": [
+    {
+      "matches": [
+        "http://*/*",
+        "https://*/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_idle",
+      "all_frames": false
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "icons/*"
+      ],
+      "matches": [
+        "http://*/*",
+        "https://*/*"
+      ]
+    }
+  ],
   "commands": {
-    "_execute_action": { "suggested_key": { "default": "Alt+L", "mac": "Alt+L" }, "description": "Mở IELTS Lexi" }
-  }
+    "_execute_action": {
+      "suggested_key": {
+        "default": "Alt+L",
+        "mac": "Alt+L"
+      },
+      "description": "Mở Vocaband"
+    }
+  },
+  "homepage_url": "https://vocaband.web.app"
 }

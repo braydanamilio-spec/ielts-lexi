@@ -1,6 +1,6 @@
 /* Background service worker: tra từ, lưu thẻ, nhắc học hằng ngày, badge số thẻ cần ôn. */
 importScripts('app/js/data.js', 'app/js/core.js', 'app/js/dictionary.js');
-const { Store, Cards, Stats, DEFAULT_SETTINGS, todayKey } = Core;
+const { Store, Cards, Stats, Golden, DEFAULT_SETTINGS, todayKey } = Core;
 
 const APP_URL = chrome.runtime.getURL('app/index.html');
 const getSettings = async () => ({ ...DEFAULT_SETTINGS, ...(await Store.get('settings', {})) });
@@ -25,10 +25,26 @@ async function sendReminder(force = false) {
   chrome.notifications.create('reminder-' + Date.now(), {
     type: 'basic',
     iconUrl: 'icons/icon-128.png',
-    title: 'IELTS Lexi – đến giờ học rồi! 📚',
+    title: 'Vocaband – đến giờ học rồi! 📚',
     message: total ? `Bạn có ${total} thẻ cần ôn hôm nay.${streak ? ` Giữ chuỗi ${streak} ngày 🔥` : ''}` : 'Thêm vài từ mới để giữ chuỗi ngày học nhé 🔥',
     buttons: [{ title: 'Ôn ngay' }],
     priority: 2,
+  });
+}
+
+// Thời điểm vàng: kiểm tra mỗi 15 phút, báo khi đủ số từ sắp quên (tối đa 1 lần / 3 giờ, tôn trọng giờ yên lặng)
+async function checkGolden() {
+  const [s, cards] = await Promise.all([getSettings(), Cards.all()]);
+  if (!s.goldenOn || Golden.quiet(s)) return;
+  const n = Golden.dueNow(cards);
+  const last = await Store.get('lastGolden', 0);
+  if (n < s.goldenMin || Date.now() - last < 3 * 3600 * 1000) return;
+  await Store.set('lastGolden', Date.now());
+  chrome.notifications.create('golden-' + Date.now(), {
+    type: 'basic', iconUrl: 'icons/icon-128.png', priority: 2,
+    title: '⏰ Thời điểm vàng!',
+    message: `${n} từ đang ở thời điểm sắp quên – ôn 3 phút để nhớ lâu hơn.`,
+    buttons: [{ title: 'Ôn ngay' }],
   });
 }
 
@@ -41,9 +57,18 @@ async function updateBadge() {
 
 const openApp = (hash = '#/review') => chrome.tabs.create({ url: APP_URL + hash });
 
+// Chạy content script ngay trên các tab đang mở (không cần tải lại trang sau khi cài/cập nhật)
+async function injectIntoOpenTabs() {
+  const tabs = await chrome.tabs.query({ url: ['http://*/*', 'https://*/*'] });
+  await Promise.all(tabs.map(t => chrome.scripting.executeScript({ target: { tabId: t.id }, files: ['content.js'] }).catch(() => {})));
+}
+
 chrome.runtime.onInstalled.addListener(async ({ reason }) => {
-  chrome.contextMenus.create({ id: 'lexi-lookup', title: 'Tra “%s” với IELTS Lexi', contexts: ['selection'] });
-  chrome.alarms.create('badge', { periodInMinutes: 30 });
+  chrome.contextMenus.removeAll();
+  chrome.contextMenus.create({ id: 'lexi-lookup', title: 'Tra từ “%s” với Vocaband', contexts: ['selection'] });
+  chrome.contextMenus.create({ id: 'lexi-translate', title: 'Dịch đoạn đã chọn sang tiếng Việt', contexts: ['selection'] });
+  injectIntoOpenTabs();
+  chrome.alarms.create('badge', { periodInMinutes: 15 });
   await scheduleReminder();
   updateBadge();
   if (reason === 'install') openApp('#/home');
@@ -52,6 +77,7 @@ chrome.runtime.onStartup.addListener(() => { scheduleReminder(); updateBadge(); 
 
 chrome.alarms.onAlarm.addListener(a => {
   if (a.name === 'daily-reminder') sendReminder();
+  if (a.name === 'badge') checkGolden();
   updateBadge();
 });
 chrome.notifications.onClicked.addListener(id => { chrome.notifications.clear(id); openApp(); });
@@ -63,6 +89,10 @@ chrome.storage.onChanged.addListener(ch => {
 });
 
 chrome.contextMenus.onClicked.addListener((info, tab) => {
+  if (info.menuItemId === 'lexi-translate' && tab && tab.id) {
+    chrome.tabs.sendMessage(tab.id, { type: 'translateSelection' }).catch(() => {});
+    return;
+  }
   if (info.menuItemId === 'lexi-lookup' && tab && tab.id) {
     chrome.tabs.sendMessage(tab.id, { type: 'showLookup', word: info.selectionText }).catch(() => openApp('#/dict/' + encodeURIComponent(info.selectionText)));
   }

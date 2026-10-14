@@ -3,12 +3,12 @@
  * Mỗi từ: [word, ipa, pos, nghĩa VI, definition, example, collocations, synonyms, level, emoji]
  */
 (function (g) {
-  const T = (id, name, emoji, desc, rows) => ({
-    id, name, emoji, desc,
+  const T = (id, name, emoji, desc, rows, group = 'topics') => ({
+    id, name, emoji, desc, group,
     words: rows.map(r => ({
-      word: r[0], ipa: r[1], pos: r[2], vi: r[3], def: r[4], ex: r[5],
+      word: r[0], ipa: r[1] || '', pos: r[2] || '', vi: r[3] || '', def: r[4] || '', ex: r[5] || '',
       col: r[6] ? r[6].split('|') : [], syn: r[7] ? r[7].split('|') : [],
-      level: r[8], emoji: r[9], topic: id
+      level: r[8] || '', emoji: r[9] || '', topic: id
     }))
   });
 
@@ -183,8 +183,25 @@
     ]),
   ];
 
-  const INDEX = {};
-  TOPICS.forEach(t => t.words.forEach(w => { INDEX[w.word.toLowerCase()] = w; }));
+  // Nhóm thư viện – các file js/lib/*.js đăng ký thêm bộ từ qua IELTS_DATA.add(...)
+  const GROUPS = [
+    { id: 'topics', name: 'IELTS theo chủ đề', emoji: '🗂️', desc: 'Từ vựng theo các chủ đề hay gặp trong Speaking & Writing' },
+    { id: 'writing', name: 'Writing', emoji: '✍️', desc: 'Từ mô tả biểu đồ, từ nối, collocation học thuật' },
+    { id: 'speaking', name: 'Speaking', emoji: '🗣️', desc: 'Phrasal verb, thành ngữ, cách diễn đạt tự nhiên' },
+    { id: 'awl', name: 'Academic Word List', emoji: '🎓', desc: '570 họ từ học thuật (Coxhead) – nền tảng cho Reading & Writing band 7+' },
+  ];
 
-  g.IELTS_DATA = { TOPICS, INDEX };
+  const INDEX = {};
+  const indexTopic = t => t.words.forEach(w => { const k = w.word.toLowerCase(); if (!INDEX[k]) INDEX[k] = w; });
+  TOPICS.forEach(t => { if (t.id === 'task1' || t.id === 'task2') t.group = 'writing'; indexTopic(t); });
+
+  // add(id, name, emoji, desc, rows, group)
+  function add(id, name, emoji, desc, rows, group) {
+    if (TOPICS.some(t => t.id === id)) return;
+    const t = T(id, name, emoji, desc, rows, group);
+    TOPICS.push(t);
+    indexTopic(t);
+  }
+
+  g.IELTS_DATA = { TOPICS, INDEX, GROUPS, add };
 })(typeof self !== 'undefined' ? self : this);
