@@ -86,7 +86,7 @@
     .def { margin: 4px 0; }
     .ex { color: #6b6f85; font-style: italic; font-size: 13px; }
     .pg { margin: 8px 0; padding-left: 8px; border-left: 3px solid #e4e6f2; } .pg .chip { margin: 0 6px 0 0; } .pvi { font-weight: 600; }
-    .pdef { margin: 3px 0 0; font-size: 13.5px; } .pex { display: block; color: #6b6f85; font-size: 13px; }
+    .pdef { margin: 3px 0 0; font-size: 13.5px; } .wn-x { margin: 8px 0 2px; padding: 7px 9px; border-radius: 10px; background: #f4f2ff; font-size: 12.5px; line-height: 1.5; } .wn-x div + div { margin-top: 3px; } .pex { display: block; color: #6b6f85; font-size: 13px; }
     .ctx { margin-top: 8px; padding: 8px 10px; background: #fff8e6; border-radius: 10px; font-size: 13px; }
     .ctx b { font-style: normal; }
     mark { background: #fde68a; color: inherit; border-radius: 3px; padding: 0 2px; }
@@ -122,7 +122,7 @@
     .tr { font-size: 15.5px; line-height: 1.55; color: inherit; font-weight: 500; }
     @media (prefers-color-scheme: dark) {
       .box { background: #1b1c26; color: #ecedf5; border-color: #2e3040; }
-      .pg { border-color: #2e3040; } .pic, .spk, .chip { background: #242533; } .foot { background: #171821; border-color: #2e3040; }
+      .pg { border-color: #2e3040; } .wn-x { background: #24233a; } .pic, .spk, .chip { background: #242533; } .foot { background: #171821; border-color: #2e3040; }
       .btn { background: #242533; border-color: #2e3040; color: #ecedf5; } .ctx { background: #2b2618; }
       .vi { color: #2dd4bf; } .lv { background: #2a2850; color: #8b85ff; }
     }`;
@@ -341,7 +341,7 @@
     current = word;
     const st = (await chrome.storage.local.get('settings')).settings || {};
     const accent = st.accent || 'en-GB';
-    let e = null, saved = false, ctxVi = '', didSave = false, spoke = false;
+    let e = null, saved = false, ctxVi = '', didSave = false, spoke = false, note = null;
 
     const audioFor = acc => !e ? '' : acc === 'en-US' ? (e.audioUS || e.audio) : (e.audio && !/-us\.mp3$/.test(e.audio) ? e.audio : '');
     const sayWord = (acc, rate) => speak(e ? e.word : word, rate ? '' : audioFor(acc), acc, rate);
@@ -372,6 +372,7 @@
         </div>
         <div class="body">
           ${defs || (e.def ? `<div class="def">${linkify(e.def)}</div>` : '')}
+          ${note && UI_LANG === 'vi' ? `<div class="wn-x"><div>💡 ${esc(note.m)}</div><div>⚠️ ${esc(note.e)}</div></div>` : ''}
           ${e.ex && !hasEx ? `<div class="ex">“${linkify(e.ex, e.word)}” <button class="spk mini" data-text="${esc(e.ex)}" title="${tx('Nghe câu ví dụ')}">🔊</button></div>` : ''}
           ${ctxHtml ? `<div class="ctx"><b>${tx('📌 Ngữ cảnh sẽ lưu')}</b> <button class="spk mini" data-text="${esc(context)}" title="${tx('Nghe cả câu')}">🔊</button><button class="spk mini" data-text="${esc(context)}" data-rate="0.65" title="${tx('Nghe chậm')}">🐢</button><br>${ctxHtml}<div class="ctxvi ex" style="margin-top:4px">${ctxVi ? '🇻🇳 ' + esc(ctxVi) : tx('⏳ Đang dịch câu…')}</div></div>` : ''}
           ${e.partial ? '<div class="sk" style="width:50%;margin-top:8px"></div>' : ''}
@@ -448,6 +449,7 @@
     try { q = await chrome.runtime.sendMessage({ type: 'quick', word }); }
     catch (err) { b.innerHTML = H(`<div class="muted">${tx('Add-on vừa được cập nhật – hãy tải lại trang.')}</div>`); return; }
     if (current !== word) return;
+    chrome.runtime.sendMessage({ type: 'notes', word }).then(r => { note = r && r.note; if (note && e && current === word) render(); }).catch(() => {});
     if (q && q.entry && q.entry.found) { e = q.entry; saved = q.saved; render(); }
     full.then(r => {
       if (current !== word || !r) return;

@@ -194,6 +194,12 @@ chrome.runtime.onMessage.addListener((msg, sender, reply) => {
         return reply({ ok: true, card });
       }
       case 'translate': return reply({ vi: await Dict.translateVi(msg.text) });
+      case 'notes': { // ghi chú học từ soạn sẵn (nằm trong gói add-on, theo chữ cái đầu)
+        const w = String(msg.word || '').toLowerCase(), c = /^[a-z]/.test(w) ? w[0] : '_';
+        self.__notes = self.__notes || {};
+        if (!self.__notes[c]) self.__notes[c] = await fetch(chrome.runtime.getURL(`app/js/notes/${c}.json`)).then(r => r.ok ? r.json() : {}).catch(() => ({}));
+        return reply({ note: self.__notes[c][w] || null });
+      }
       case 'explain': return reply(await aiExplain(msg.text, msg.sentence));
       case 'testNotify': await sendReminder(true); return reply({ ok: true });
       case 'logErr': logErr(msg.where || 'cs', msg.m); return reply({ ok: true });
