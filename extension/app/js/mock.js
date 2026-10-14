@@ -195,12 +195,14 @@
 
     // ---------- WRITING ----------
     function writing() {
+      // IELTS General (đề Reading GT): Task 1 là viết thư thay vì mô tả biểu đồ
+      const tsr = RT().find(x => x.test === M.rt), gl = tsr && tsr.gt && (window.GT_LETTERS || []).length ? pick(window.GT_LETTERS) : null;
       const d = pick(App.task1.SETS), p = pick(window.WRITE_PROMPTS || []);
       intro('writing', `<p class="muted">${t('<b>60 phút</b> cho cả 2 task. Task 1 ≥150 từ (nên dành 20 phút), Task 2 ≥250 từ (40 phút). Task 2 chiếm 2/3 điểm Writing.')}</p>`, start);
       function start() {
         view.innerHTML = `${bar('Writing', `<span class="mk-clock" id="mkClock">60:00</span>`)}
           <div class="tabs" style="display:inline-flex;margin-bottom:.8rem" id="mkTabs"><button class="on" data-t="1">Task 1 · ${t('{n} từ', { n: '<span id="w1">0</span>' })}</button><button data-t="2">Task 2 · ${t('{n} từ', { n: '<span id="w2">0</span>' })}</button></div>
-          <div class="mk-write" data-task="1"><div class="card"><b>Writing Task 1</b><p class="small">${esc(d.title)} Summarise the information by selecting and reporting the main features, and make comparisons where relevant.</p><div class="t1chart">${App.task1.draw(d)}</div></div>
+          <div class="mk-write" data-task="1"><div class="card"><b>Writing Task 1${gl ? ' · General' : ''}</b>${gl ? `<p>${esc(gl.situation)}</p><p class="small" style="margin:.2rem 0">Write a letter to ${esc(gl.to || 'the person')}. In your letter:</p><ul style="margin:.2rem 0;padding-left:1.2rem">${gl.bullets.map(x => `<li>${esc(x)}</li>`).join('')}</ul><p class="small muted">Write at least 150 words. You do NOT need to write any addresses. Begin your letter as follows: <b>${esc(gl.open)}</b></p>` : `<p class="small">${esc(d.title)} Summarise the information by selecting and reporting the main features, and make comparisons where relevant.</p><div class="t1chart">${App.task1.draw(d)}</div>`}</div>
             <div class="card"><textarea class="input mk-ta" id="t1" placeholder="${t('Viết ít nhất 150 từ…')}" spellcheck="false"></textarea></div></div>
           <div class="mk-write" data-task="2" hidden><div class="card"><b>Writing Task 2</b><p>${esc(p.text)}</p><p class="small muted">Give reasons for your answer and include any relevant examples from your own knowledge or experience. Write at least 250 words.</p></div>
             <div class="card"><textarea class="input mk-ta" id="t2" placeholder="${t('Viết ít nhất 250 từ…')}" spellcheck="false"></textarea></div></div>
@@ -210,12 +212,13 @@
         $('#t1').oninput = e => { $('#w1').textContent = wc(e.target.value); };
         $('#t2').oninput = e => { $('#w2').textContent = wc(e.target.value); };
         $$('#mkTabs button').forEach(b => b.onclick = () => { $$('#mkTabs button').forEach(x => x.classList.toggle('on', x === b)); $$('.mk-write').forEach(w => w.hidden = w.dataset.task !== b.dataset.t); });
-        const submit = () => {
+        const submit = async () => {
           const a = $('#t1').value.trim(), b = $('#t2').value.trim();
-          const s1 = wc(a) >= 20 ? App.task1.score(a, d) : { band: 0, words: wc(a), notes: [t('Chưa viết Task 1.')] };
+          let s1 = { band: 0, words: wc(a), notes: [t('Chưa viết Task 1.')] };
+          if (wc(a) >= 20) s1 = gl && window.AI ? await AI.localGrade({ kind: 'letter', task: gl.situation, text: a }).then(r => ({ band: r.overall, words: wc(a), notes: r.improvements || [] })).catch(() => s1) : App.task1.score(a, d);
           const s2 = wc(b) >= 20 ? scoreTask2(b, p) : { band: 0, words: wc(b), notes: [t('Chưa viết Task 2.')], crit: {} };
           M.bands.writing = round5((s1.band + 2 * s2.band) / 3);
-          M.detail.writing = { s1, s2, d: d.id, p: p.id, t1: a, t2: b };
+          M.detail.writing = { s1, s2, d: gl ? null : d.id, gl: gl ? gl.id : null, p: p.id, t1: a, t2: b };
           Store.get('essays', []).then(es => { if (wc(b) >= 50) { es.unshift({ prompt: p.id, text: b, words: s2.words, band: s2.band, at: Date.now() }); Store.set('essays', es.slice(0, 20)); } });
           next();
         };
@@ -315,7 +318,8 @@
       if (window.AI) {
         const box = $('#mkAI');
         if (W && W.t2) AI.attach(box, () => ({ kind: 'task2', task: ((window.WRITE_PROMPTS || []).find(x => x.id === W.p) || {}).text || '', text: W.t2 }));
-        if (W && W.t1) { const d = App.task1.SETS.find(x => x.id === W.d) || {}; const { overview, ...data } = d; AI.attach(box, () => ({ kind: 'task1', task: d.title || '', text: W.t1, extra: JSON.stringify(data) })); }
+        if (W && W.t1 && W.gl) { const g2 = (window.GT_LETTERS || []).find(x => x.id === W.gl) || {}; AI.attach(box, () => ({ kind: 'task1', task: `IELTS General Training Task 1 letter (${g2.tone}). ${g2.situation} Bullet points: ${(g2.bullets || []).join('; ')}`, text: W.t1 })); }
+        else if (W && W.t1) { const d = App.task1.SETS.find(x => x.id === W.d) || {}; const { overview, ...data } = d; AI.attach(box, () => ({ kind: 'task1', task: d.title || '', text: W.t1, extra: JSON.stringify(data) })); }
         if (S && S.answers.some(a => a.text)) AI.attach(box, () => ({ kind: 'speaking', task: 'IELTS Speaking test', text: S.answers.map(a => `Q (Part ${a.part}): ${a.q}\nA (${Math.round(a.secs)}s): ${a.text || '(no answer)'}`).join('\n\n') }));
       }
     }

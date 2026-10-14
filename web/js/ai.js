@@ -150,7 +150,7 @@ Criteria to use: ${kind === 'task1' ? 'Task Achievement, Coherence and Cohesion,
     const complex = sents.filter(x => x.match(COMPLEX)).length / Math.max(1, sents.length), avgLen = n / Math.max(1, sents.length);
     let errs = []; try { if (window.Assist && Assist.check) errs = (await Assist.check(text)).filter(m => m.type !== 'style').slice(0, 12); } catch (e) { /* không có mạng → bỏ qua */ }
     const errRate = errs.length / Math.max(1, n) * 100;
-    const min = kind === 'task1' ? 150 : kind === 'speaking' ? 0 : 250;
+    const min = kind === 'task1' || kind === 'letter' ? 150 : kind === 'speaking' ? 0 : 250;
     const t1 = kind === 'task1', sp = kind === 'speaking';
     const hasOverview = /\b(overall|in general|it is clear|it is evident|generally)\b/i.test(text), nums = (text.match(/\d+(\.\d+)?\s?%?/g) || []).length;
     const hasPosition = /\b(i (strongly )?(believe|think|agree|disagree)|in my (opinion|view)|this essay (will )?(argue|discuss))/i.test(text), hasConcl = /\b(in conclusion|to (sum up|conclude)|overall,)/i.test(text);
