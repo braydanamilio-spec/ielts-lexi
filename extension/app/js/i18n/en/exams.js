@@ -302,3 +302,12 @@
   'Làm đề khác': 'Try another test',
   'Học từ vựng bài “{title}”': 'Learn vocabulary from “{title}”',
 }); })(typeof self !== 'undefined' ? self : this);
+(function (g) { Object.assign(g.I18N_DICT.en, {
+  'Cao nhất': 'Best', 'Phần': 'Section', 'Số câu': 'Questions', 'Thời gian': 'Time', 'nghe 1 lần': 'played once', '{m} phút cho cả Reading': '{m} min for all of Reading',
+  'Trước khi bắt đầu': 'Before you start', 'Đeo tai nghe, chọn nơi yên tĩnh – audio chỉ phát 1 lần như thi thật.': 'Use headphones in a quiet place – audio plays only once, as in the real test.',
+  'Reading có đồng hồ đếm ngược, hết giờ tự nộp.': 'Reading is timed and submits automatically when time runs out.', 'Câu sai tự vào Sổ lỗi sai kèm giải thích.': 'Wrong answers go to your Mistake log with explanations.',
+  'Thử loa': 'Test sound', 'Các lần trước': 'Previous attempts', 'Bắt đầu làm bài': 'Start the test', 'Bảng câu hỏi': 'Question map',
+  'Ô tô màu = đã trả lời · bấm số để nhảy tới câu': 'Filled = answered · tap a number to jump', '{a}/{b} câu đã làm': '{a}/{b} answered',
+  'Còn {n} câu chưa làm. Vẫn nộp bài?': '{n} questions unanswered. Submit anyway?', 'Kết quả theo từng Part': 'Results by part',
+  'Nên luyện thêm: <b>{p}</b> – phần có tỉ lệ đúng thấp nhất.': 'Practise more: <b>{p}</b> – your lowest-scoring part.', 'Luyện theo Part →': 'Practise by part →', 'Xem lại {n} câu sai': 'Review {n} wrong answers',
+}); })(typeof self !== 'undefined' ? self : this);

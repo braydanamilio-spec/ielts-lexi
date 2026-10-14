@@ -857,3 +857,16 @@ kbd { font-family: ui-monospace, Menlo, monospace; font-size: .75em; padding: .0
   .wi { padding: 1.1rem; } .wi-top { grid-template-columns: 1fr; text-align: center; justify-items: center; }
   .wi-pron { justify-content: center; } .wi-word { font-size: 2rem; } .wi-pic { width: 96px !important; height: 96px; }
 }
+/* TOEIC thi thử */
+.tx-table { width: 100%; border-collapse: collapse; margin: .8rem 0; font-size: .92rem; }
+.tx-table th, .tx-table td { text-align: left; padding: .45rem .5rem; border-bottom: 1px solid var(--line); } .tx-table th { font-size: .75rem; text-transform: uppercase; color: var(--muted); letter-spacing: .05em; }
+.tx-check { background: var(--surface-2, color-mix(in srgb, var(--primary) 6%, transparent)); border-radius: 14px; padding: .8rem 1rem; } .tx-check ul { margin: .4rem 0 .6rem 1.1rem; padding: 0; line-height: 1.7; }
+.tx-wrap { display: grid; grid-template-columns: minmax(0, 1fr) 220px; gap: 1rem; margin-top: 1rem; align-items: start; }
+.tx-nav { position: sticky; top: 70px; padding: .8rem; }
+.tx-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: .3rem; margin-top: .5rem; }
+.tx-grid button { padding: .35rem 0; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); color: var(--text); font-size: .8rem; cursor: pointer; }
+.tx-grid button.on { background: var(--primary); border-color: var(--primary); color: #fff; }
+.tx-flash { animation: txFlash 1.2s; } @keyframes txFlash { 0%, 60% { box-shadow: 0 0 0 3px var(--primary); border-radius: 10px; } }
+.tx-pbar { display: grid; grid-template-columns: 130px 1fr 52px; gap: .6rem; align-items: center; margin-top: .5rem; font-size: .88rem; } .tx-pbar b { text-align: right; }
+.tx-rev { padding: .6rem 0; border-bottom: 1px dashed var(--line); line-height: 1.55; }
+@media (max-width: 900px) { .tx-wrap { grid-template-columns: 1fr; } .tx-nav { position: static; order: -1; } .tx-grid { grid-template-columns: repeat(10, 1fr); } }

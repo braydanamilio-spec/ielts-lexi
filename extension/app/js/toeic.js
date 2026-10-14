@@ -105,17 +105,24 @@
       player = App.listening.Player(p, { onEnd: () => { const s = $('#tState'); if (s) s.textContent = '✓ ' + t('Hết phần nghe'); const b = $('#tNext'); if (b) b.disabled = false; } });
       player.play(0);
       setTimeout(() => { const b = $('#tNext'); if (b) b.disabled = false; }, 30000);
-      $('#tNext').onclick = () => { player.stop(); Object.assign(res.L, QE.collect(p, $('#lQs'))); if (k < LP.length - 1) lPart(k + 1); else reading(); window.scrollTo({ top: 0 }); };
+      $('#tNext').onclick = () => { player.stop(); const r = QE.collect(p, $('#lQs')); Object.keys(r).forEach(q => { r[q].part = p.part; r[q].explain = (p.groups.flatMap(g => g.items || []).find(i => i.n === +q) || {}).explain || ''; }); Object.assign(res.L, r); if (k < LP.length - 1) lPart(k + 1); else reading(); window.scrollTo({ top: 0 }); };
     };
     const reading = () => {
       const units = RT.parts.flatMap(pt => unitsOf(pt).map(u => ({ ...u, part: pt.part })));
       const mins = Math.max(20, Math.round(units.reduce((a, u) => a + u.groups.reduce((b, g) => b + g.items.length, 0), 0) * 0.75));
-      view.innerHTML = `${bar('Reading', `<span class="mk-clock" id="tClock"></span>`)}<div id="tq" style="margin-top:1rem">${units.map(unitHtml).join('')}</div><div class="row" style="margin-top:1rem"><button class="btn primary" id="tSub">${t('Nộp bài')}</button></div>`;
+      const nums = units.flatMap(u => QE.numsOf({ groups: u.groups }));
+      view.innerHTML = `${bar('Reading', `<span class="small muted" id="tCnt"></span><span class="mk-clock" id="tClock"></span>`)}<div class="tx-wrap"><div id="tq">${units.map(unitHtml).join('')}<div class="row" style="margin-top:1rem"><button class="btn primary" id="tSub">${t('Nộp bài')}</button></div></div>
+        <aside class="tx-nav card"><b class="small">${t('Bảng câu hỏi')}</b><div class="tx-grid">${nums.map(q => `<button data-go="${q}">${q}</button>`).join('')}</div><div class="tiny muted" style="margin-top:.5rem">${t('Ô tô màu = đã trả lời · bấm số để nhảy tới câu')}</div></aside></div>`;
       QE.bind($('#tq'));
+      // Bảng câu hỏi: đánh dấu câu đã làm, bấm để nhảy tới
+      const answered = q => { const el = $(`#tq [data-item="${q}"]`) || $$('#tq [data-item]').find(x => x.dataset.item.split(',').includes(String(q))); if (!el) return false; return [...el.querySelectorAll('input, select')].some(i => i.type === 'radio' || i.type === 'checkbox' ? i.checked : i.value.trim()); };
+      const paint = () => { let k = 0; $$('.tx-grid [data-go]').forEach(b => { const a = answered(+b.dataset.go); b.classList.toggle('on', a); if (a) k++; }); $('#tCnt').textContent = t('{a}/{b} câu đã làm', { a: k, b: nums.length }); };
+      $('#tq').addEventListener('change', paint); $('#tq').addEventListener('input', paint); paint();
+      $$('.tx-grid [data-go]').forEach(b => b.onclick = () => { const q = b.dataset.go, el = $(`#tq [data-item="${q}"]`) || $$('#tq [data-item]').find(x => x.dataset.item.split(',').includes(q)); if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); el.classList.add('tx-flash'); setTimeout(() => el.classList.remove('tx-flash'), 1200); } });
       let left = mins * 60; const tick = () => { left--; const c = $('#tClock'); if (c) { c.textContent = `${String(Math.floor(left / 60)).padStart(2, '0')}:${String(left % 60).padStart(2, '0')}`; c.classList.toggle('warn', left < 300); } if (left <= 0) submit(); };
       tick(); timer = setInterval(tick, 1000);
-      const submit = () => { clearInterval(timer); units.forEach((u, k) => Object.assign(res.R, QE.collect({ groups: u.groups }, $(`.toeic-u[data-u="${k}"]`)))); finish(); };
-      $('#tSub').onclick = () => { if (confirm(t('Nộp bài Reading?'))) submit(); };
+      const submit = () => { clearInterval(timer); units.forEach((u, k) => { const r = QE.collect({ groups: u.groups }, $(`.toeic-u[data-u="${k}"]`)); Object.values(r).forEach(x => { x.part = u.part; }); Object.keys(r).forEach(q => { r[q].explain = (u.groups.flatMap(g => g.items || []).find(i => i.n === +q) || {}).explain || ''; }); Object.assign(res.R, r); }); finish(); };
+      $('#tSub').onclick = () => { const miss = nums.filter(q => !answered(q)).length; if (confirm(miss ? t('Còn {n} câu chưa làm. Vẫn nộp bài?', { n: miss }) : t('Nộp bài Reading?'))) submit(); };
     };
     const finish = async () => {
       App.cleanup(); App.cleanup = null;
@@ -124,16 +131,38 @@
       const ls = scaled(lr / Math.max(1, lt)), rs = scaled(rr / Math.max(1, rt)), total = ls + rs;
       state.game = await Game.mutate(gs => { gs.toeicBest = { total: Math.max(total, (gs.toeicBest || {}).total || 0), at: Date.now() }; gs.toeicTests = [...(gs.toeicTests || []), { n, ls, rs, total, at: Date.now() }].slice(-20); });
       await App.reward({ quizzes: 2, listens: LP.length, readings: 1, xp: 40 + lr + rr });
+      if (App.logMistake) [...Object.entries(res.L).map(x => ['listening', ...x]), ...Object.entries(res.R).map(x => ['reading', ...x])].filter(([, , r]) => !r.ok).forEach(([kind, q, r]) => App.logMistake({ kind, q: `TOEIC Test ${n} · ${q}: ${r.q || ''}`, answer: r.answer, given: r.given || t('(bỏ trống)'), explain: r.explain || '', ref: '' }));
       if (total >= 700) { Sfx.win(); confetti(140); }
       const sheet = o => `<div class="lsheet">${Object.keys(o).map(Number).sort((a, b) => a - b).map(q => `<div class="${o[q].ok ? 'ok' : 'no'}"><b>${q}</b> ${o[q].ok ? '✓' : '✗'} <span>${esc(o[q].answer)}</span></div>`).join('')}</div>`;
       view.innerHTML = `<div class="study-wrap" style="max-width:860px"><div class="card celebrate"><div class="em">💼</div><h2>${t('{n}/990 điểm (ước tính)', { n: total })}</h2>
         <div class="mk-bands" style="grid-template-columns:repeat(2,minmax(0,1fr))"><div><span>🎧</span><b>${ls}</b><small>Listening · ${lr}/${lt}</small></div><div><span>📖</span><b>${rs}</b><small>Reading · ${rr}/${rt}</small></div></div>
         <p class="small muted" style="margin-top:.8rem">${t('Quy đổi tuyến tính trên đề rút gọn tự biên soạn – chỉ để tham khảo, không phải thang điểm chính thức của ETS.')}</p></div>
+        ${(() => { // Tỉ lệ đúng theo từng Part → chỉ ra Part yếu nhất để luyện
+          const by = {}; [...Object.values(res.L).map(r => ['L', r]), ...Object.values(res.R).map(r => ['R', r])].forEach(([k, r]) => { const key = (k === 'L' ? '🎧 ' : '📖 ') + 'Part ' + r.part; (by[key] = by[key] || [0, 0])[1]++; if (r.ok) by[key][0]++; });
+          const rows = Object.entries(by), weak = rows.slice().sort((a, b) => a[1][0] / a[1][1] - b[1][0] / b[1][1])[0];
+          return `<div class="card"><b>📊 ${t('Kết quả theo từng Part')}</b>${rows.map(([k, [a, b]]) => { const p = Math.round(a / b * 100); return `<div class="tx-pbar"><span>${k}</span><div class="progress"><i style="width:${p}%;${p >= 70 ? 'background:var(--good)' : p < 50 ? 'background:var(--again)' : ''}"></i></div><b>${a}/${b}</b></div>`; }).join('')}
+            ${weak ? `<div class="tip small" style="margin-top:.6rem">🎯 ${t('Nên luyện thêm: <b>{p}</b> – phần có tỉ lệ đúng thấp nhất.', { p: weak[0] })} <a href="#/toeic">${t('Luyện theo Part →')}</a></div>` : ''}</div>`;
+        })()}
+        ${(() => { const wrong = [...Object.entries(res.L), ...Object.entries(res.R)].filter(([, r]) => !r.ok); return wrong.length ? `<div class="card"><details open><summary><b>🔍 ${t('Xem lại {n} câu sai', { n: wrong.length })}</b></summary>${wrong.map(([q, r]) => `<div class="tx-rev"><div><span class="qn">${q}</span> ${esc(r.q || '')}</div><div class="small">❌ ${esc(r.given || t('(bỏ trống)'))} · ✅ <b>${esc(r.answer)}</b></div>${r.explain ? `<div class="tiny muted">💡 ${esc(r.explain)}</div>` : ''}</div>`).join('')}</details></div>` : ''; })()}
         <div class="card"><details><summary><b>🎧 ${t('Đáp án Listening')}</b></summary>${sheet(res.L)}</details></div>
         <div class="card"><details><summary><b>📖 ${t('Đáp án Reading')}</b></summary>${sheet(res.R)}</details></div>
         <div class="row center"><a class="btn primary" href="#/toeic">${t('Về TOEIC')}</a><a class="btn" href="#/mistakes">📕 ${t('Sổ lỗi sai')}</a></div></div>`;
     };
-    view.innerHTML = `<div class="study-wrap"><div class="card celebrate empty"><div class="em">💼</div><h2>TOEIC Mock Test ${n}</h2><p class="muted">${t('Listening ({parts}) nghe 1 lần → Reading (Part 5–7) có bấm giờ. Đeo tai nghe và chọn nơi yên tĩnh.', { parts: LP.map(p => 'Part ' + p.part).join(', ') })}</p><button class="btn primary lg" id="tGo">${t('Bắt đầu')}</button></div></div>`;
+    // Màn hình bắt đầu kiểu phòng thi: cấu trúc đề, kiểm tra loa, lịch sử điểm
+    const lq = LP.map(p => QE.numsOf(p).length), rParts = RT.parts.map(pt => ({ part: pt.part, q: unitsOf(pt).reduce((a, u) => a + QE.numsOf({ groups: u.groups }).length, 0) }));
+    const rMins = Math.max(20, Math.round(rParts.reduce((a, x) => a + x.q, 0) * 0.75));
+    const hist = (state.game.toeicTests || []).filter(x => x.n === n).slice(-5).reverse();
+    view.innerHTML = `<div class="study-wrap" style="max-width:820px"><div class="card tx-start">
+      <div class="row between"><div><div class="tiny muted">💼 TOEIC Listening & Reading</div><h2 style="margin:.2rem 0">Mock Test ${n}</h2></div>${(state.game.toeicBest || {}).total ? `<span class="chip ok">🏆 ${t('Cao nhất')}: ${state.game.toeicBest.total}</span>` : ''}</div>
+      <table class="tx-table"><thead><tr><th>${t('Phần')}</th><th>${t('Số câu')}</th><th>${t('Thời gian')}</th></tr></thead><tbody>
+        ${LP.map((p, i) => `<tr><td>🎧 Listening · Part ${p.part}</td><td>${lq[i]}</td><td class="muted">${t('nghe 1 lần')}</td></tr>`).join('')}
+        ${rParts.map((x, i) => `<tr><td>📖 Reading · Part ${x.part}</td><td>${x.q}</td><td class="muted">${i === 0 ? t('{m} phút cho cả Reading', { m: rMins }) : ''}</td></tr>`).join('')}
+      </tbody></table>
+      <div class="tx-check"><b>✅ ${t('Trước khi bắt đầu')}</b><ul class="small"><li>${t('Đeo tai nghe, chọn nơi yên tĩnh – audio chỉ phát 1 lần như thi thật.')}</li><li>${t('Reading có đồng hồ đếm ngược, hết giờ tự nộp.')}</li><li>${t('Câu sai tự vào Sổ lỗi sai kèm giải thích.')}</li></ul>
+        <button class="btn sm" id="tTest">🔊 ${t('Thử loa')}</button></div>
+      ${hist.length ? `<div class="small" style="margin-top:.8rem"><b>📈 ${t('Các lần trước')}</b><div class="row" style="gap:.35rem;margin-top:.3rem">${hist.map(h => `<span class="chip">${h.total} <span class="muted">(L ${h.ls} · R ${h.rs})</span></span>`).join('')}</div></div>` : ''}
+      <button class="btn primary lg block" id="tGo" style="margin-top:1.1rem">${t('Bắt đầu làm bài')} →</button></div></div>`;
+    $('#tTest').onclick = () => UI.tts('This is a sound check. If you can hear this clearly, you are ready.', 'en-US');
     $('#tGo').onclick = () => lPart(0);
   };
 })();
