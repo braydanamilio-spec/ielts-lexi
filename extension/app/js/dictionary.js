@@ -257,5 +257,26 @@
     return entry;
   }
 
-  g.Dict = { lookup, quick, translateVi, wikiImage, freeImage, sentences, normWord, fixVi, fixDeep };
+  // Phiên âm dự phòng cho từ ghép không có trong từ điển (vd. fairtrade = fair + trade):
+  // tách tại mọi vị trí, tra IPA 2 phần, ghép lại với trọng âm chính ở phần đầu, trọng âm phụ ở phần sau
+  async function ipaGuess(word) {
+    word = String(word || '').toLowerCase().trim();
+    const full = await lookup(word, { image: false, examples: false }).catch(() => null);
+    if (full && full.ipa) return { ipa: full.ipa, ipaUS: full.ipaUS || '', guess: false };
+    if (!/^[a-z]{6,}$/.test(word)) return null;
+    const strip = x => String(x || '').replace(/^\/|\/$/g, '').trim();
+    // Ưu tiên cách tách cân đối (note|book trước not|ebook)
+    const cuts = []; for (let i = 3; i <= word.length - 3; i++) cuts.push(i);
+    cuts.sort((x, y) => Math.min(y, word.length - y) - Math.min(x, word.length - x));
+    for (const i of cuts.slice(0, 4)) {
+      const a = word.slice(0, i), b = word.slice(i);
+      const [ia, ib] = await Promise.all([wiktIPA(a), wiktIPA(b)]);
+      if (ia && ia.ipa && ib && ib.ipa) {
+        const join = (x, y) => { x = strip(x); y = strip(y).replace(/^ˈ/, '').replace(/ˈ/g, 'ˌ'); return '/' + (x.startsWith('ˈ') ? x : 'ˈ' + x) + 'ˌ' + y.replace(/^ˌ/, '') + '/'; };
+        return { ipa: join(ia.ipa, ib.ipa), ipaUS: join(ia.ipaUS || ia.ipa, ib.ipaUS || ib.ipa), guess: true, parts: [a, b] };
+      }
+    }
+    return null;
+  }
+  g.Dict = { ipaGuess, lookup, quick, translateVi, wikiImage, freeImage, sentences, normWord, fixVi, fixDeep };
 })(typeof self !== 'undefined' ? self : this);

@@ -520,7 +520,15 @@
         const ip = $('#ipaW'); if (ip) ip.innerHTML = w.ipaUS && w.ipaUS !== w.ipa ? `🇬🇧 ${esc(w.ipa)} · 🇺🇸 ${esc(w.ipaUS)}` : esc(w.ipa || '');
         const vi = $('#viW'); if (vi) vi.textContent = w.vi;
         if (App.inDeck(w.word)) Cards.patch(w.word, c => { if (!c.ipa && w.ipa) c.ipa = w.ipa; if (!c.ipaUS && w.ipaUS) c.ipaUS = w.ipaUS; if (!c.vi && w.vi) c.vi = w.vi; });
-      }).catch(() => { const ip = $('#ipaW'); if (ip && !w.ipa) ip.textContent = ''; });
+      }).catch(() => {}).then(async () => {
+        if (w.ipa || items[i] !== w) return;
+        const gs = await Dict.ipaGuess(w.word).catch(() => null);
+        const ip = $('#ipaW'); if (!ip || items[i] !== w) return;
+        if (!gs) { ip.innerHTML = '<span class="muted small">Chưa có phiên âm – nghe mẫu 🔊 rồi bắt chước</span>'; return; }
+        w.ipa = gs.ipa; w.ipaUS = gs.ipaUS;
+        ip.innerHTML = `${gs.ipaUS && gs.ipaUS !== gs.ipa ? `🇬🇧 ${esc(gs.ipa)} · 🇺🇸 ${esc(gs.ipaUS)}` : esc(gs.ipa)}${gs.guess ? ` <span class="chip" title="Ghép từ ${esc(gs.parts.join(' + '))}" style="font-size:.7rem">ước tính · ${esc(gs.parts.join(' + '))}</span>` : ''}`;
+        if (App.inDeck(w.word)) Cards.patch(w.word, c => { if (!c.ipa) c.ipa = gs.ipa; if (!c.ipaUS) c.ipaUS = gs.ipaUS; });
+      });
       $('#skipW').onclick = () => { i++; show(); };
       $('#nextW').onclick = () => { i++; show(); };
       setTimeout(() => speak(w.word, accent(), w.audio), 300);
