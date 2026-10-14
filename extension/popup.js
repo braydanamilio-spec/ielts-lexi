@@ -12,7 +12,7 @@
   $('#streak').textContent = `🔥 ${Stats.streak(stats)}`;
   $('#goalTxt').textContent = `${done}/${settings.dailyGoal}`;
   $('#goalBar').style.width = Math.min(100, done / settings.dailyGoal * 100) + '%';
-  $('#review').onclick = () => open(total ? '#/review' : '#/topics');
+  $('#review').onclick = () => open(total ? '#/review' : '#/library');
   $('#open').onclick = e => { e.preventDefault(); open('#/home'); };
 
   $('#dbl').checked = settings.dblclickOn !== false;

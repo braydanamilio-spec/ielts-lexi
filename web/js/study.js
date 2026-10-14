@@ -184,6 +184,7 @@
       // Thẻ còn ở bước học (1–10 phút) quay lại trong cùng phiên
       if (c.srs.reps === 0) session.queue.splice(Math.min(session.queue.length, g === 0 ? 3 : 6), 0, key);
       if (g === 0) session.again += 1;
+      if (!/^#\/review/.test(location.hash)) return; // đã rời trang ôn tập
       session.queue.length ? showCard() : reviewDone(false);
     }
   }

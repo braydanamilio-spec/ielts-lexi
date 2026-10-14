@@ -98,11 +98,12 @@
 
   // Ghi nhận hoàn thành bài (gọi từ bài kiểm tra)
   App.completeUnit = async (id, pct) => {
-    const g = await Game.get();
-    const prev = (g.unitDone || {})[id] || 0;
+    let prev = 0;
+    state.game = await Game.mutate(g => {
+      prev = (g.unitDone || {})[id] || 0;
+      if (pct >= 80 || prev) g.unitDone = { ...(g.unitDone || {}), [id]: Math.max(prev, pct) };
+    });
     if (pct < 80 && !prev) return false;
-    g.unitDone = { ...(g.unitDone || {}), [id]: Math.max(prev, pct) };
-    await Core.Store.set('game', g); state.game = g;
     if (!prev && pct >= 80) {
       // Thêm từ của bài vào flashcard để hệ thống nhắc ôn đúng thời điểm vàng
       const t = App.topicOf(id);

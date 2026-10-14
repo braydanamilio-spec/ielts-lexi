@@ -87,8 +87,9 @@
       pop.style.top = (er.bottom - pr.top + 8) + 'px';
       pop.innerHTML = `<div class="muted">⏳ Đang tra “${esc(word)}”…</div>`;
       paper.appendChild(pop);
+      const mine = pop;
       const e = await Dict.lookup(word, { examples: false });
-      if (!pop) return;
+      if (pop !== mine) return;
       if (!e || !e.found) { pop.innerHTML = `<div class="muted">Không tìm thấy “${esc(word)}”.${e && e.vi ? ` Dịch: <b>${esc(e.vi)}</b>` : ''}</div>`; return; }
       const saved = App.inDeck(e.word);
       pop.innerHTML = `
@@ -173,9 +174,8 @@
       $('#check').disabled = true;
       const pct = Math.round(score / r.questions.length * 100);
       const first = !(state.game.readDone || {})[r.id];
-      const g = await App.reward({ readings: first ? 1 : 0, quizzes: 1, perfect: pct === 100 ? 1 : 0, xp: 10 + score * 4 }, $('#check'));
-      g.state.readDone = { ...(g.state.readDone || {}), [r.id]: `${score}/${r.questions.length}` };
-      await Core.Store.set('game', g.state); state.game = g.state;
+      await App.reward({ readings: first ? 1 : 0, quizzes: 1, perfect: pct === 100 ? 1 : 0, xp: 10 + score * 4 }, $('#check'));
+      state.game = await Game.mutate(gs => { gs.readDone = { ...(gs.readDone || {}), [r.id]: `${score}/${r.questions.length}` }; });
       if (pct >= 80) { Sfx.win(); confetti(); }
       $('#qResult').innerHTML = `<div class="feedback ${pct >= 60 ? 'ok' : 'no'}" style="position:static"><b>Kết quả: ${score}/${r.questions.length} (${pct}%)</b> · +${10 + score * 4} XP
         <div class="row" style="margin-top:.6rem"><a class="btn sm" href="#/reading">Bài đọc khác</a><a class="btn sm primary" href="#/practice/learn?src=deck">🧠 Học các từ vừa lưu</a></div></div>`;

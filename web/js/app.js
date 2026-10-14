@@ -116,9 +116,11 @@
       if (!c || !navigator.onLine) continue;
       const e = await Dict.lookup(w, { image: c.pos === 'n' && !c.image, examples: !(c.sentences || []).length });
       if (e && e.found) {
-        for (const k of ['ipa', 'ipaUS', 'audio', 'def', 'ex', 'vi', 'image']) if (!c[k] && e[k]) c[k] = e[k];
-        if (!(c.sentences || []).length && e.sentences) c.sentences = e.sentences.slice(0, 2);
-        await Cards.update(c);
+        const cur = await Cards.patch(w, x => {
+          for (const k of ['ipa', 'ipaUS', 'audio', 'def', 'ex', 'vi', 'image']) if (!x[k] && e[k]) x[k] = e[k];
+          if (!(x.sentences || []).length && e.sentences) x.sentences = e.sentences.slice(0, 2);
+        });
+        if (cur) state.cards[w] = cur;
       }
     }
     enriching = false;
@@ -173,11 +175,11 @@
       box.hidden = !items.length;
       box.innerHTML = items.map((it, i) => `<a href="#/dict/${encodeURIComponent(it.word)}" class="${i === idx ? 'on' : ''}">${it.local ? '📗' : '🔎'} <b>${esc(it.word)}</b><span class="vi">${esc(it.vi || '')}</span></a>`).join('');
     };
-    const go = w => { box.hidden = true; input.value = ''; input.blur(); location.hash = `#/dict/${encodeURIComponent(w)}`; };
+    const go = w => { ++seq; items = []; box.hidden = true; input.value = ''; input.blur(); location.hash = `#/dict/${encodeURIComponent(w)}`; };
     input.addEventListener('input', () => {
       const q = input.value.trim().toLowerCase();
       clearTimeout(timer); idx = -1;
-      if (!q) { items = []; return render(); }
+      if (!q) { items = []; ++seq; return render(); }
       const local = Object.keys(INDEX).filter(k => k.startsWith(q)).slice(0, 6).map(k => ({ word: INDEX[k].word, vi: INDEX[k].vi, local: true }));
       items = local; render();
       const my = ++seq;
@@ -472,12 +474,13 @@
   };
 
   // ================= TỪ ĐIỂN =================
+  const lookedUp = new Set();
   routes.dict = async function (q) {
     const recent = await Store.get('recent', []);
     view.innerHTML = `
       <div class="page-head"><div><h1>Từ điển Anh – Việt</h1><p class="muted">Định nghĩa Oxford Languages · phiên âm UK/US · câu song ngữ · collocation · từ liên quan</p></div></div>
       <form class="search" id="searchForm" autocomplete="off">
-        <input class="input" id="q" placeholder="Nhập từ tiếng Anh, ví dụ: sustainable" value="${esc(q)}" spellcheck="false">
+        <input class="input" id="q" placeholder="Nhập từ tiếng Anh, ví dụ: sustainable" value="${esc(q)}" spellcheck="false" autocapitalize="off" autocorrect="off">
         <button class="btn primary lg">Tra từ</button>
       </form>
       ${recent.length ? `<div class="row small" style="margin-top:.7rem"><span class="muted">Gần đây:</span>${recent.map(r => `<a class="chip" href="#/dict/${encodeURIComponent(r)}">${esc(r)}</a>`).join('')}</div>` : ''}
@@ -494,17 +497,19 @@
     $('#result').innerHTML = `<div class="card empty"><div class="em">⏳</div>Đang tra “${esc(q)}”…</div>`;
     // Hiện kết quả nhanh trước (nghĩa, phiên âm), rồi bổ sung âm thanh, hình, câu ví dụ
     let spoke = false;
+    const same = () => Dict.normWord(parseHash().arg) === Dict.normWord(q);
     const fast = await Dict.quick(q);
-    if (parseHash().arg !== q) return;
+    if (!same()) return;
     if (fast) paint(fast, false);
     const full = await Dict.lookup(q);
-    if (parseHash().arg !== q) return;
+    if (!same()) return;
     if (!full || !full.found) {
       if (!fast) $('#result').innerHTML = `<div class="card empty"><div class="em">🤔</div><p>Không tìm thấy “${esc(q)}”.${full && full.vi ? ` Gợi ý dịch: <b>${esc(full.vi)}</b>` : ''}</p><p class="small">Kiểm tra chính tả hoặc kết nối mạng.</p></div>`;
       return;
     }
     Store.set('recent', [full.word, ...recent.filter(r => r !== full.word)].slice(0, 8));
-    reward({ lookups: 1 });
+    const lk = todayKey() + ':' + full.word;
+    if (!lookedUp.has(lk)) { lookedUp.add(lk); reward({ lookups: 1 }); }
     paint(full, true);
 
     function paint(e, final) {
@@ -587,7 +592,7 @@
       if (text && !ctxVi) await trCtx();
       await addWord(e, text ? { text, vi: ctxVi, source: '', title: 'Ghi chú của bạn' } : null);
       toast(card ? 'Đã cập nhật thẻ' : `Đã lưu “${e.word}” vào flashcard`);
-      routes.dict(e.word);
+      location.hash === `#/dict/${encodeURIComponent(e.word)}` ? routes.dict(e.word) : (location.hash = `#/dict/${encodeURIComponent(e.word)}`);
     };
     $('#saveWord').onclick = save;
     const qs = $('#quickSave'); if (qs) qs.onclick = save;
@@ -690,12 +695,12 @@
       </div>`);
     $('#eSave').onclick = async () => {
       Object.assign(c, { vi: $('#eVi').value.trim(), ipa: $('#eIpa').value.trim(), ex: $('#eEx').value.trim(), note: $('#eNote').value.trim(), image: $('#eImg').value.trim() });
-      await Cards.update(c); closeModal(); toast('Đã lưu'); after && after();
+      await Cards.update(c); closeModal(); toast('Đã lưu'); if (window.Sync) Sync.schedule(); after && after();
     };
     $('#eReset').onclick = async () => { c.srs = SRS.newState(); await Cards.update(c); closeModal(); updateChrome(); toast('Thẻ sẽ được học lại như từ mới'); after && after(); };
     $('#eDel').onclick = async () => {
       if (!confirm(`Xóa “${c.word}” khỏi sổ từ?`)) return;
-      await Cards.remove(c.word); delete state.cards[c.word.toLowerCase()]; closeModal(); updateChrome(); routes.deck();
+      await Cards.remove(c.word); delete state.cards[c.word.toLowerCase()]; closeModal(); updateChrome(); if (window.Sync) Sync.schedule(); routes.deck(new URLSearchParams());
     };
   }
 

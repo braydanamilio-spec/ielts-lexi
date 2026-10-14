@@ -11,6 +11,9 @@
   chrome.storage.local.get('settings').then(r => applySettings(r.settings));
   chrome.storage.onChanged.addListener(ch => { if (ch.settings) applySettings(ch.settings.newValue); });
 
+  // Trusted Types: YouTube và một số trang bắt buộc dùng TrustedHTML cho innerHTML
+  const ttPolicy = (() => { try { return window.trustedTypes && trustedTypes.createPolicy ? trustedTypes.createPolicy('vocaband#lexi', { createHTML: x => x }) : null; } catch (e) { return null; } })();
+  const H = html => (ttPolicy ? ttPolicy.createHTML(html) : html);
   const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
   const CSS = `
@@ -67,7 +70,7 @@
     if (host) { parent.appendChild(host); return; }
     host = document.createElement('ielts-lexi-popup');
     root = host.attachShadow({ mode: 'closed' });
-    root.innerHTML = `<style>${CSS}</style><div class="box" hidden></div><button class="fab" hidden title="Dịch với Vocaband">🌐</button>`;
+    root.innerHTML = H(`<style>${CSS}</style><div class="box" hidden></div><button class="fab" hidden title="Dịch với Vocaband">🌐</button>`);
     parent.appendChild(host);
     root.addEventListener('mousedown', e => e.stopPropagation());
   }
@@ -156,7 +159,7 @@
     hideFab();
     const b = box();
     b.hidden = false;
-    b.innerHTML = `<div class="head"><div class="pic">📘</div><div style="flex:1"><div class="w">${esc(word)}</div><div class="sk" style="width:60%"></div><div class="sk" style="width:40%"></div></div></div><div class="body"><div class="sk"></div><div class="sk" style="width:80%"></div></div>`;
+    b.innerHTML = H(`<div class="head"><div class="pic">📘</div><div style="flex:1"><div class="w">${esc(word)}</div><div class="sk" style="width:60%"></div><div class="sk" style="width:40%"></div></div></div><div class="body"><div class="sk"></div><div class="sk" style="width:80%"></div></div>`);
     position(rect);
     current = word;
     const st = (await chrome.storage.local.get('settings')).settings || {};
@@ -170,7 +173,7 @@
     function render() {
       const defs = (e.oxford && e.oxford.length ? e.oxford : e.meanings || []).slice(0, 2).map(m => `<div class="def"><span class="chip">${esc(m.pos)}</span> ${esc(m.defs[0] && m.defs[0].def)}</div>`).join('');
       const ctxHtml = context ? esc(context).replace(wordRegex(word), '<mark>$1</mark>') : '';
-      b.innerHTML = `
+      b.innerHTML = H(`
         <div class="head">
           <div class="pic">${e.image ? `<img src="${esc(e.image)}" alt="" referrerpolicy="no-referrer">` : esc(e.emoji || '📘')}</div>
           <div style="min-width:0">
@@ -191,7 +194,7 @@
           <button class="btn p" id="save" ${didSave || (saved && !context) ? 'disabled' : ''}>${didSave ? '✓ Đã lưu vào flashcard' : saved ? (context ? '+ Thêm ngữ cảnh' : '✓ Đã lưu') : '+ Lưu flashcard'}</button>
           <button class="btn" id="more">Chi tiết</button>
           <button class="x" id="close" title="Đóng (Esc)">×</button>
-        </div>`;
+        </div>`);
       const img = b.querySelector('.pic img');
       if (img) img.onerror = () => { img.parentElement.textContent = e.emoji || '📘'; };
       b.querySelectorAll('.spk[data-acc]').forEach(x => x.onclick = () => sayWord(x.dataset.acc));
@@ -203,9 +206,12 @@
         const btn = ev.currentTarget;
         btn.disabled = true;
         const { meanings, oxford, senses, found, audioUS, partial, ...entry } = e;
-        await chrome.runtime.sendMessage({ type: 'save', entry: { ...entry, audio: audioFor(accent) }, context: context ? { text: context, vi: ctxVi, source: meta.source, title: meta.title } : null });
-        didSave = true;
-        btn.textContent = '✓ Đã lưu vào flashcard';
+        try {
+          const r = await chrome.runtime.sendMessage({ type: 'save', entry: { ...entry, audio: audioFor(accent) }, context: context ? { text: context, vi: ctxVi, source: meta.source, title: meta.title } : null });
+          if (!r || r.error) throw new Error(r && r.error);
+          didSave = true;
+          btn.textContent = '✓ Đã lưu vào flashcard';
+        } catch (err) { btn.disabled = false; btn.textContent = '⚠️ Thử lưu lại'; }
       };
       position(rect);
       if (!spoke && st.autoSpeak !== false) { spoke = true; sayWord(accent); }
@@ -215,13 +221,13 @@
     const full = chrome.runtime.sendMessage({ type: 'lookup', word });
     let q;
     try { q = await chrome.runtime.sendMessage({ type: 'quick', word }); }
-    catch (err) { b.innerHTML = '<div class="muted">Add-on vừa được cập nhật – hãy tải lại trang.</div>'; return; }
+    catch (err) { b.innerHTML = H('<div class="muted">Add-on vừa được cập nhật – hãy tải lại trang.</div>'); return; }
     if (current !== word) return;
     if (q && q.entry && q.entry.found) { e = q.entry; saved = q.saved; render(); }
     full.then(r => {
       if (current !== word || !r) return;
       if (r.entry && r.entry.found) { e = r.entry; saved = r.saved || saved; render(); }
-      else if (!e) b.innerHTML = `<div class="muted">Không tìm thấy “${esc(word)}”.${r.entry && r.entry.vi ? `<br>Dịch: <b>${esc(r.entry.vi)}</b>` : ''}</div>`;
+      else if (!e) b.innerHTML = H(`<div class="muted">Không tìm thấy “${esc(word)}”.${r.entry && r.entry.vi ? `<br>Dịch: <b>${esc(r.entry.vi)}</b>` : ''}</div>`);
     }).catch(() => {});
   }
 
@@ -236,7 +242,7 @@
 
   // ---------- Dịch câu / đoạn văn: bôi đen → nút 🌐 (hoặc tự dịch) ----------
   const isWordish = t => t.length <= 40 && /^[A-Za-z][A-Za-z'\- ]*[A-Za-z]$/.test(t) && t.split(/\s+/).length <= 3;
-  const inEditable = el => el && el.closest && el.closest('input, textarea, [contenteditable="true"], [contenteditable=""]');
+  const inEditable = el => el && el.closest && el.closest('input, textarea, select, [contenteditable]:not([contenteditable="false"]), [role="textbox"]');
 
   function selectionInfo() {
     const sel = window.getSelection();
@@ -268,16 +274,16 @@
     const b = box();
     b.hidden = false;
     current = info.text;
-    b.innerHTML = '<div class="muted">⏳ Đang dịch…</div>';
+    b.innerHTML = H('<div class="muted">⏳ Đang dịch…</div>');
     position(info.rect);
     let r;
     try { r = await chrome.runtime.sendMessage({ type: 'translate', text: info.text }); }
-    catch (e) { b.innerHTML = '<div class="muted">Add-on vừa được cập nhật – hãy tải lại trang.</div>'; return; }
+    catch (e) { b.innerHTML = H('<div class="muted">Add-on vừa được cập nhật – hãy tải lại trang.</div>'); return; }
     if (current !== info.text) return;
     const vi = (r && r.vi) || '';
     const st = (await chrome.storage.local.get('settings')).settings || {};
     const accent = st.accent || 'en-GB';
-    b.innerHTML = `
+    b.innerHTML = H(`
       <div class="tr-head"><b>🌐 Dịch đoạn đã chọn</b><span class="chip">Anh → Việt</span><button class="x" id="close" title="Đóng (Esc)">×</button></div>
       <div class="body">
         <div class="src">${esc(info.text)}</div>
@@ -287,7 +293,7 @@
         <button class="btn p" id="listen">🔊 Nghe</button>
         <button class="btn" id="slow">🐢 Chậm</button>
         <button class="btn" id="copy">📋 Sao chép</button>
-      </div>`;
+      </div>`);
     const say = rate => { const u = new SpeechSynthesisUtterance(info.text); u.lang = accent; u.rate = rate; speechSynthesis.cancel(); speechSynthesis.speak(u); };
     b.querySelector('#close').onclick = () => { speechSynthesis.cancel(); hide(); };
     b.querySelector('#listen').onclick = () => say(.95);
@@ -429,12 +435,12 @@
     const wrap = seg => {
       const t = seg.textContent;
       if (!t || seg.dataset.vb === t) return;
-      seg.innerHTML = t.split(/(\s+)/).map(tok => {
+      seg.innerHTML = H(t.split(/(\s+)/).map(tok => {
         if (!/[A-Za-z]/.test(tok)) return esc(tok);
         const w = tok.toLowerCase().replace(/[^a-z'-]/g, '');
         const k = known.get(w) || known.get(w.replace(/(s|es|ed|d|ing)$/, ''));
         return `<span class="vbw${k ? ' known' : ''}"${k ? ` title="${esc(k.vi)}"` : ''}>${esc(tok)}</span>`;
-      }).join('');
+      }).join(''));
       seg.dataset.vb = seg.textContent;
     };
     const scan = () => document.querySelectorAll('.ytp-caption-segment').forEach(wrap);

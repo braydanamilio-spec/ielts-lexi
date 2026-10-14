@@ -6,7 +6,7 @@
   const { $, esc, toast } = UI;
   const App = window.App;
   const SDK = 'https://www.gstatic.com/firebasejs/10.12.2/';
-  const CHUNK = 250;
+  const CHUNK = 150; // giữ mỗi tài liệu < 1 MiB kể cả khi thẻ có nhiều ngữ cảnh
 
   const Sync = { user: null, status: 'idle', lastSync: 0 };
   window.Sync = Sync;
@@ -32,16 +32,19 @@
 
   // ---------- Gộp dữ liệu ----------
   const activity = c => Math.max(c.srs && c.srs.last || 0, c.added || 0, c.mod || 0);
-  function mergeCards(a, b) {
+  function mergeCards(a, b, deleted = {}) {
     const out = { ...a };
     for (const [k, c] of Object.entries(b)) {
       const mine = out[k];
       if (!mine) { out[k] = c; continue; }
-      const win = activity(c) > activity(mine) ? { ...c } : { ...mine };
-      const lose = win === c ? mine : c;
+      const remoteWins = activity(c) > activity(mine);
+      const win = { ...(remoteWins ? c : mine) };
+      const lose = remoteWins ? mine : c;
       win.contexts = [...(win.contexts || []), ...(lose.contexts || []).filter(x => !(win.contexts || []).some(y => y.text === x.text))].slice(0, 5);
       out[k] = win;
     }
+    // Thẻ đã xóa (ở bất kỳ thiết bị nào) sau lần hoạt động cuối → bỏ
+    for (const [k, t] of Object.entries(deleted)) if (out[k] && activity(out[k]) < t) delete out[k];
     return out;
   }
   function mergeStats(a, b) {
@@ -56,7 +59,9 @@
     for (const [k, v] of Object.entries(b.days || {})) { days[k] = { ...(days[k] || {}) }; for (const [m, n] of Object.entries(v)) days[k][m] = Math.max(days[k][m] || 0, n); }
     const total = { ...a.total }; for (const [m, n] of Object.entries(b.total || {})) total[m] = Math.max(total[m] || 0, n);
     const best = { ...a.best }; if (b.best && b.best.match) best.match = Math.min(best.match || 1e9, b.best.match);
-    return { ...a, xp: Math.max(a.xp || 0, b.xp || 0), days, total, best, badges: { ...b.badges, ...a.badges }, readDone: { ...(b.readDone || {}), ...(a.readDone || {}) }, questsDone: { ...(b.questsDone || {}), ...(a.questsDone || {}) } };
+    const unitDone = { ...(b.unitDone || {}) };
+    for (const [k, v] of Object.entries(a.unitDone || {})) unitDone[k] = Math.max(unitDone[k] || 0, v);
+    return { ...a, xp: Math.max(a.xp || 0, b.xp || 0), days, total, best, unitDone, badges: { ...b.badges, ...a.badges }, readDone: { ...(b.readDone || {}), ...(a.readDone || {}) }, questsDone: { ...(b.questsDone || {}), ...(a.questsDone || {}) } };
   }
 
   const ref = () => db.collection('users').doc(Sync.user.uid).collection('data');
@@ -92,7 +97,14 @@
     try {
       const snap = await ref().get();
       const docs = {}; snap.forEach(d => { docs[d.id] = d.data(); });
-      const local = { cards: await Cards.all(), stats: await Core.Stats.get(), game: await Game.get(), settings: await Store.get('settings', {}) };
+      // Đăng nhập tài khoản khác với lần trước → hỏi trước khi gộp dữ liệu trên máy vào
+      const lastUid = await Store.get('lastUid', '');
+      if (lastUid && lastUid !== Sync.user.uid && Object.keys(await Cards.all()).length) {
+        const keep = confirm('Máy này đang có dữ liệu học của tài khoản khác.\n\nOK = gộp dữ liệu trên máy vào tài khoản này\nHủy = chỉ dùng dữ liệu của tài khoản này');
+        if (!keep) { await Store.set('cards', {}); await Store.set('stats', { days: {}, newToday: { day: '', n: 0 } }); await Store.set('game', null); await Store.set('deleted', {}); }
+      }
+      await Store.set('lastUid', Sync.user.uid);
+      const local = { cards: await Cards.all(), stats: await Core.Stats.get(), game: await Game.get(), settings: await Store.get('settings', {}), deleted: await Store.get('deleted', {}) };
       if (docs.meta) {
         let remoteCards = {};
         for (let i = 0; i < (docs.meta.chunks || 0); i++) if (docs['cards_' + i]) {
@@ -101,13 +113,17 @@
           sentHashes['cards_' + i] = hash(docs['cards_' + i].json || '');
         }
         const remote = JSON.parse(docs.meta.json || '{}');
-        await Cards.save(mergeCards(local.cards, remoteCards));
+        const deleted = { ...(remote.deleted || {}) };
+        for (const [k, t] of Object.entries(local.deleted)) deleted[k] = Math.max(deleted[k] || 0, t);
+        await Store.set('deleted', deleted);
+        await Cards.save(mergeCards(local.cards, remoteCards, deleted));
         await Store.set('stats', mergeStats(local.stats, remote.stats || { days: {} }));
         await Store.set('game', mergeGame(local.game, remote.game));
         // Cài đặt: ưu tiên bản mới sửa gần nhất
-        if (remote.settings && (remote.settingsAt || 0) > (await Store.get('settingsAt', 0))) await Store.set('settings', remote.settings);
+        if (remote.settings && (remote.settingsAt || 0) > (await Store.get('settingsAt', 0))) { await Store.set('settings', remote.settings); await Store.set('settingsAt', remote.settingsAt); }
         await App.load();
-        App.route();
+        // Chỉ vẽ lại các trang tổng quan – không làm gián đoạn bài ôn/luyện đang làm
+        if (/^#\/(home|deck|library|stats|settings|path)?(\?|$)/.test(location.hash || '#/')) App.route();
       }
       await push();
       toast(docs.meta ? '☁️ Đã đồng bộ dữ liệu học' : '☁️ Đã sao lưu dữ liệu lên tài khoản');
@@ -122,18 +138,21 @@
       const keys = Object.keys(cards).sort();
       const chunks = Math.ceil(keys.length / CHUNK);
       const batch = db.batch();
+      const pending = {};
       let writes = 0;
       for (let i = 0; i < chunks; i++) {
         const part = {}; keys.slice(i * CHUNK, (i + 1) * CHUNK).forEach(k => { part[k] = slim(cards[k]); });
         const json = JSON.stringify(part), h = hash(json);
         if (sentHashes['cards_' + i] === h) continue;
-        batch.set(ref().doc('cards_' + i), { json }); sentHashes['cards_' + i] = h; writes++;
+        if (json.length > 900000) console.warn('chunk lớn', i, json.length);
+        batch.set(ref().doc('cards_' + i), { json }); pending['cards_' + i] = h; writes++;
       }
       const game = await Game.get();
-      const meta = JSON.stringify({ stats: await Core.Stats.get(), game: { ...game, questsDone: {} }, settings: await Store.get('settings', {}), settingsAt: await Store.get('settingsAt', 0) });
+      const meta = JSON.stringify({ stats: await Core.Stats.get(), game: { ...game, questsDone: {} }, settings: await Store.get('settings', {}), settingsAt: await Store.get('settingsAt', 0), deleted: await Store.get('deleted', {}) });
       const mh = hash(meta + chunks);
-      if (sentHashes.meta !== mh) { batch.set(ref().doc('meta'), { chunks, updated: Date.now(), json: meta }); sentHashes.meta = mh; writes++; }
+      if (sentHashes.meta !== mh) { batch.set(ref().doc('meta'), { chunks, updated: Date.now(), json: meta }); pending.meta = mh; writes++; }
       if (writes) await batch.commit();
+      Object.assign(sentHashes, pending); // chỉ ghi nhận "đã gửi" khi commit thành công
       dirty = false;
       Sync.lastSync = Date.now();
       setStatus('ok');

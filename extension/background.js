@@ -100,7 +100,7 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
 
 // ---------- Tin nhắn từ content script / popup / app ----------
 chrome.runtime.onMessage.addListener((msg, sender, reply) => {
-  (async () => {
+  (async () => { try {
     switch (msg.type) {
       case 'lookup': {
         const e = await Dict.lookup(msg.word);
@@ -121,6 +121,6 @@ chrome.runtime.onMessage.addListener((msg, sender, reply) => {
       case 'openApp': await openApp(msg.hash); return reply({ ok: true });
       default: reply({});
     }
-  })();
+  } catch (e) { reply({ error: String(e && e.message || e) }); } })();
   return true; // trả lời bất đồng bộ
 });

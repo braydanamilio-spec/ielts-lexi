@@ -56,12 +56,16 @@
 
   const EMPTY = () => ({ xp: 0, days: {}, total: { reviews: 0, newWords: 0, quizzes: 0, perfect: 0, matches: 0, spoken: 0, readings: 0, lookups: 0 }, best: {}, badges: {}, questsDone: {} });
 
+  let gameLock = Promise.resolve();
   const Game = {
     LEVEL_TITLES, BADGES, levelOf, questsFor,
     async get() { const s = await Store.get('game', null); return s ? { ...EMPTY(), ...s, total: { ...EMPTY().total, ...s.total } } : EMPTY(); },
 
     // Ghi nhận hoạt động: Game.track({ reviews: 1, xp: 10 })
-    async track(delta, ctx) {
+    // Mọi thay đổi trạng thái game đi qua một hàng đợi → không mất XP khi gọi đồng thời
+    track(delta, ctx) { return (gameLock = gameLock.then(() => Game._track(delta, ctx), () => Game._track(delta, ctx))); },
+    mutate(fn) { return (gameLock = gameLock.then(async () => { const s = await Game.get(); await fn(s); await Store.set('game', s); return s; })); },
+    async _track(delta, ctx) {
       const s = await Game.get();
       const k = todayKey();
       const d = s.days[k] = s.days[k] || {};

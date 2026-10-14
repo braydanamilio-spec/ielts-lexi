@@ -23,7 +23,12 @@
     },
     async set(key, value) {
       if (hasChrome) return chrome.storage.local.set({ [key]: value });
-      localStorage.setItem(PREFIX + key, JSON.stringify(value));
+      try { localStorage.setItem(PREFIX + key, JSON.stringify(value)); }
+      catch (e) {
+        // Hết dung lượng: xóa bộ nhớ đệm từ điển (có thể tra lại) rồi thử lần nữa
+        Object.keys(localStorage).filter(k => k.startsWith(PREFIX + 'dc')).forEach(k => localStorage.removeItem(k));
+        localStorage.setItem(PREFIX + key, JSON.stringify(value));
+      }
     },
     isExtension: !!hasChrome,
   };
@@ -126,9 +131,24 @@
   };
 
   // ---------- Thẻ ----------
+  // Ghi tuần tự để các thao tác đọc-sửa-ghi không đè nhau
+  let cardLock = Promise.resolve();
+  const serial = fn => (cardLock = cardLock.then(fn, fn));
+  function normalize(map) {
+    for (const [k, c] of Object.entries(map || {})) {
+      if (!c || !c.word) { delete map[k]; continue; }
+      c.contexts = Array.isArray(c.contexts) ? c.contexts : [];
+      c.col = Array.isArray(c.col) ? c.col : [];
+      c.syn = Array.isArray(c.syn) ? c.syn : [];
+      c.sentences = Array.isArray(c.sentences) ? c.sentences : [];
+      c.srs = { ...SRS.newState(), ...(c.srs || {}) };
+      if (!c.added) c.added = Date.now();
+    }
+    return map || {};
+  }
   const Cards = {
-    async all() { return Store.get('cards', {}); },
-    async save(map) { return Store.set('cards', map); },
+    async all() { return normalize(await Store.get('cards', {})); },
+    async save(map) { return serial(() => Store.set('cards', normalize(map))); },
 
     make(entry, extra = {}) {
       return {
@@ -156,7 +176,8 @@
     },
 
     // Thêm/gộp một thẻ. context = {text, source, title}
-    async add(entry, context) {
+    add(entry, context) { return serial(() => Cards._add(entry, context)); },
+    async _add(entry, context) {
       const map = await Cards.all();
       const key = entry.word.toLowerCase();
       let card = map[key];
@@ -172,22 +193,44 @@
         card.contexts.unshift({ ...context, at: Date.now() });
         card.contexts = card.contexts.slice(0, 5);
       }
+      card.mod = Date.now();
       map[key] = card;
-      await Cards.save(map);
+      await Store.set('cards', map);
+      const del = await Store.get('deleted', {});
+      if (del[key]) { delete del[key]; await Store.set('deleted', del); }
       return card;
     },
 
-    async remove(word) {
-      const map = await Cards.all();
-      delete map[word.toLowerCase()];
-      await Cards.save(map);
+    remove(word) {
+      return serial(async () => {
+        const map = await Cards.all();
+        delete map[word.toLowerCase()];
+        await Store.set('cards', map);
+        // dấu xóa để đồng bộ không khôi phục lại thẻ đã xóa
+        const del = await Store.get('deleted', {}); del[word.toLowerCase()] = Date.now(); await Store.set('deleted', del);
+      });
     },
 
-    async update(card) {
-      const map = await Cards.all();
-      map[card.word.toLowerCase()] = card;
-      await Cards.save(map);
+    update(card) {
+      return serial(async () => {
+        const map = await Cards.all();
+        card.mod = Date.now();
+        map[card.word.toLowerCase()] = card;
+        await Store.set('cards', map);
+      });
     },
+    // Sửa một phần thẻ theo dữ liệu mới nhất (tránh ghi đè bằng bản cũ)
+    patch(word, fn) {
+      return serial(async () => {
+        const map = await Cards.all();
+        const c = map[word.toLowerCase()];
+        if (!c) return null;
+        fn(c); c.mod = Date.now();
+        await Store.set('cards', map);
+        return c;
+      });
+    },
+
 
     dueCount(map, settings, stats) {
       const list = Object.values(map);

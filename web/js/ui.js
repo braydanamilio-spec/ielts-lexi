@@ -18,8 +18,15 @@
     const stem = w.length > 4 ? w.replace(/(e|y|s)$/, '') : w;
     return new RegExp(`\\b(${reEsc(stem)}[a-z]*)\\b`, 'gi');
   }
-  const highlight = (text, word) => esc(text).replace(wordRegex(word), '<mark>$1</mark>');
-  const cloze = (text, word) => esc(text).replace(wordRegex(word), '<span class="blank"></span>');
+  // So khớp trên văn bản gốc rồi mới mã hóa từng đoạn (tránh khớp nhầm vào &quot; / &#39;)
+  function wrapMatches(text, word, fn) {
+    const t = String(text || '');
+    let out = '', i = 0;
+    for (const m of t.matchAll(wordRegex(word))) { out += esc(t.slice(i, m.index)) + fn(esc(m[0])); i = m.index + m[0].length; }
+    return out + esc(t.slice(i));
+  }
+  const highlight = (text, word) => wrapMatches(text, word, s => `<mark>${s}</mark>`);
+  const cloze = (text, word) => wrapMatches(text, word, () => '<span class="blank"></span>');
   const clozeAnswer = (text, word) => ((text || '').match(wordRegex(word)) || [word])[0];
 
   // Độ giống nhau 0..1 (Levenshtein)
@@ -39,12 +46,18 @@
     clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('show'), ms);
   }
 
+  let lastFocus = null;
   function modal(html) {
-    $('#modalBox').innerHTML = html;
+    lastFocus = document.activeElement;
+    const box = $('#modalBox');
+    box.innerHTML = html;
+    box.setAttribute('role', 'dialog'); box.setAttribute('aria-modal', 'true'); box.tabIndex = -1;
     $('#modal').hidden = false;
-    return $('#modalBox');
+    (box.querySelector('input, textarea, button.primary, button, a') || box).focus();
+    return box;
   }
-  const closeModal = () => { $('#modal').hidden = true; };
+  const closeModal = () => { if ($('#modal').hidden) return; $('#modal').hidden = true; if (lastFocus && lastFocus.focus) lastFocus.focus(); };
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#modal').hidden) closeModal(); });
   document.addEventListener('click', e => {
     if (e.target.id === 'modal' || (e.target.closest && e.target.closest('[data-close]'))) closeModal();
   });
