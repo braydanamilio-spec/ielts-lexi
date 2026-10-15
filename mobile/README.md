@@ -15,6 +15,12 @@ Một bộ mã duy nhất cho web, add-on và app, nên sửa một chỗ là c�
 | Cập nhật: `./scripts/build-mobile.sh` build lại web rồi đồng bộ vào android/ios | ✅ |
 | Đăng nhập Google trong app | ⏳ cần anh tạo cấu hình Firebase (bước 4) |
 
+## Cài thử app Android ngay (không cần cài gì trên máy tính)
+Mỗi lần cập nhật, GitHub tự build file cài đặt (`.github/workflows/android.yml`, miễn phí):
+1. Trên điện thoại Android mở: https://github.com/braydanamilio-spec/ielts-lexi/releases/tag/android-latest
+2. Tải **vocaband.apk** → mở file → cho phép "Cài ứng dụng không rõ nguồn gốc" cho trình duyệt → **Cài đặt**.
+(Bản thử nghiệm ký bằng khóa debug; khi lên Google Play cần khóa phát hành – bước 2 bên dưới.)
+
 ## Việc anh cần làm (em không làm thay được vì cần tài khoản/cài phần mềm của anh)
 
 ### 1. Thử app trên điện thoại Android (miễn phí)

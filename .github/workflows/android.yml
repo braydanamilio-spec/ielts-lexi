@@ -23,7 +23,7 @@ jobs:
         with:
           distribution: temurin
           java-version: 21
-      - uses: android-actions/setup-android@v3
+      # Máy chủ ubuntu-latest đã cài sẵn Android SDK (ANDROID_HOME) → không cần bước cài riêng
       - name: Build web → mobile/www → cap sync
         run: |
           npm ci --prefix mobile --no-audit --no-fund
