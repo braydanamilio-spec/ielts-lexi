@@ -1,9 +1,9 @@
 {
   "manifest_version": 3,
-  "name": "Vocaband – Từ điển & Flashcard IELTS",
+  "name": "__MSG_appName__",
   "short_name": "Vocaband",
-  "version": "2.6.90",
-  "description": "Bấm đúp tra từ, bôi đen dịch câu, tra từ trong phụ đề YouTube; lưu kèm ngữ cảnh và ôn flashcard đúng thời điểm vàng.",
+  "version": "2.6.91",
+  "description": "__MSG_appDesc__",
   "icons": {
     "16": "icons/icon-16.png",
     "32": "icons/icon-32.png",
@@ -73,8 +73,9 @@
         "default": "Alt+L",
         "mac": "Alt+L"
       },
-      "description": "Mở Vocaband"
+      "description": "__MSG_openApp__"
     }
   },
-  "homepage_url": "https://vocaband.web.app"
+  "homepage_url": "https://vocaband.web.app",
+  "default_locale": "en"
 }
