@@ -1,6 +1,6 @@
-# Vocaband – Từ vựng IELTS thông minh
+# Lexkite – Từ vựng IELTS thông minh
 
-**Vocaband** (Vocabulary + Band) là bộ công cụ học từ vựng cho người luyện thi IELTS, gồm 2 phần dùng **chung một mã nguồn**:
+**Lexkite** (Vocabulary + Band) là bộ công cụ học từ vựng cho người luyện thi IELTS, gồm 2 phần dùng **chung một mã nguồn**:
 
 | Phần | Thư mục | Địa chỉ |
 |---|---|---|
@@ -69,4 +69,4 @@ firestore.rules          mỗi người chỉ đọc/ghi dữ liệu của mình
 Toàn bộ là HTML/CSS/JS thuần, local-first, nên có thể đóng gói thành app iOS/Android bằng **Capacitor** mà gần như không phải viết lại. Khi đó thêm thông báo đẩy native cho "thời điểm vàng" và widget từ của ngày.
 
 ---
-“IELTS” là nhãn hiệu của British Council, IDP: IELTS Australia và Cambridge University Press & Assessment. Vocaband là sản phẩm độc lập, không liên kết với các tổ chức này.
+“IELTS” là nhãn hiệu của British Council, IDP: IELTS Australia và Cambridge University Press & Assessment. Lexkite là sản phẩm độc lập, không liên kết với các tổ chức này.

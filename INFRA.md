@@ -1,4 +1,4 @@
-# Vocaband – Hạ tầng toàn cầu (miễn phí, mở rộng theo nhu cầu)
+# Lexkite – Hạ tầng toàn cầu (miễn phí, mở rộng theo nhu cầu)
 
 ## Nguyên tắc
 1. **Máy người dùng làm phần nặng.** Tra từ, dịch, AI, âm thanh và lịch ôn FSRS đều chạy trên trình duyệt hoặc app, gọi thẳng các dịch vụ công khai miễn phí. Máy chủ của mình không xử lý gì, nên thêm người dùng không làm tăng chi phí.

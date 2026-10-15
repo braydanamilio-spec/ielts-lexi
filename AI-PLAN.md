@@ -1,4 +1,4 @@
-# Vocaband – Kế hoạch AI miễn phí 100%, chất lượng cao
+# Lexkite – Kế hoạch AI miễn phí 100%, chất lượng cao
 
 ## 1. Hiện trạng
 | Tính năng AI | Đang dùng | Vấn đề |
@@ -19,7 +19,7 @@
 | **T0 – AI soạn sẵn** | Claude biên soạn trước khi build: giải thích, mẹo nhớ, collocation, lỗi hay gặp, bài mẫu, rubric | 0 khi chạy | **100% người dùng**, tức thì, offline | Giải thích từ, mẹo nhớ, chữa đề, gợi ý ý tưởng |
 | **T1 – Phân tích quy tắc** | Bộ chấm chạy trên máy: đếm từ, độ đa dạng từ vựng, từ nối, câu phức, từ học thuật (AWL), độ dài câu, lỗi LanguageTool → ước lượng band theo 4 tiêu chí | 0 | 100%, tức thì | Chấm Writing sơ bộ, gợi ý cụ thể |
 | **T2 – AI trên máy** | Chrome Built-in AI (Prompt, Proofreader, Rewriter, Writer, Summarizer) · WebLLM (Qwen/Llama nhỏ, WebGPU) cho máy không có Chrome AI · Whisper (transformers.js) nhận dạng giọng nói offline | 0, riêng tư | Máy tính/điện thoại có WebGPU; tải mô hình 1 lần (người dùng chủ động bật) | Chữa câu, viết lại, giải thích theo ngữ cảnh, chấm phát âm offline |
-| **T3 – AI đám mây của người dùng** | Gemini API bằng khóa người dùng (gói miễn phí của Google) – **chất lượng cao nhất** | 0 cho Vocaband | Người dùng tạo khóa (1 phút, có hướng dẫn) | Chấm Writing/Speaking chi tiết theo band |
+| **T3 – AI đám mây của người dùng** | Gemini API bằng khóa người dùng (gói miễn phí của Google) – **chất lượng cao nhất** | 0 cho Lexkite | Người dùng tạo khóa (1 phút, có hướng dẫn) | Chấm Writing/Speaking chi tiết theo band |
 | **T4 – AI dùng chung (khi scale)** | Cloudflare Workers AI (gói miễn phí) hoặc khóa Gemini của dự án qua Worker, có giới hạn lượt/người/ngày + bộ nhớ đệm | 0 trong hạn mức | Mọi người dùng, vài lượt/ngày | "Thử chấm AI" cho người chưa có khóa |
 
 Mọi kết quả AI được **lưu đệm** theo nội dung (IndexedDB). Cùng một câu hỏi thì không gọi lại, nên tiết kiệm hạn mức và trả lời tức thì.
