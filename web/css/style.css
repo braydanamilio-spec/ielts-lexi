@@ -945,3 +945,7 @@ a, button, label, .option, .card.hover, [role="button"] { touch-action: manipula
 .skel-h { height: 2.1rem; width: 55%; } .skel-l { height: 1rem; width: 85%; }
 .skel-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: .9rem; } .skel-card { height: 130px; }
 @keyframes skel { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+/* Nút trong thẻ chào (trang chủ) trên điện thoại: chia đều, chữ dài tự xuống dòng thay vì tràn ra ngoài */
+@media (max-width: 560px) {
+  .hero-main .row .btn.lg { flex: 1 1 0; min-width: 0; white-space: normal; text-align: center; line-height: 1.25; padding: .75rem .7rem; }
+}
