@@ -27,7 +27,7 @@
   const { Store, Cards, Stats, DEFAULT_SETTINGS, todayKey } = Core;
   const $ = s => document.querySelector(s);
   const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  // Mở ứng dụng: dùng lại tab Vocaband đang mở (không mở thêm tab), chờ Chrome mở xong rồi mới đóng popup
+  // Mở ứng dụng: dùng lại tab Lexkite đang mở (không mở thêm tab), chờ Chrome mở xong rồi mới đóng popup
   const open = async hash => {
     const base = chrome.runtime.getURL('app/index.html');
     try {
@@ -67,7 +67,7 @@
   $('#syncNow').onclick = async e => {
     e.preventDefault();
     if (!linked || !linked.email) { chrome.tabs.create({ url: 'https://vocaband.web.app/#/settings' }); return window.close(); }
-    // Đã liên kết: mở Vocaband ở tab nền để gộp dữ liệu với tài khoản, xong tự đóng – không làm phiền
+    // Đã liên kết: mở Lexkite ở tab nền để gộp dữ liệu với tài khoản, xong tự đóng – không làm phiền
     const a = $('#syncNow'); a.textContent = tx('⏳ Đang đồng bộ…'); a.style.pointerEvents = 'none';
     const r = await chrome.runtime.sendMessage({ type: 'syncNow' }).catch(() => null);
     a.textContent = r && r.ok ? tx('✓ Đã đồng bộ') : tx('Thử lại'); a.style.pointerEvents = '';

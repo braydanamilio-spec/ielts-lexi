@@ -1,5 +1,5 @@
 /* Background service worker: tra từ, lưu thẻ, nhắc học hằng ngày, badge số thẻ cần ôn. */
-// Ghi lại lỗi (tối đa 20) để chẩn đoán từ xa qua trang Vocaband – không gửi đi đâu
+// Ghi lại lỗi (tối đa 20) để chẩn đoán từ xa qua trang Lexkite – không gửi đi đâu
 const logErr = (where, e) => { try { const m = String((e && (e.stack || e.message)) || e).slice(0, 600); chrome.storage.local.get('errLog').then(({ errLog }) => chrome.storage.local.set({ errLog: [...(errLog || []), { at: Date.now(), v: chrome.runtime.getManifest().version, where, m }].slice(-20) })); } catch (x) { /* bỏ qua */ } };
 self.addEventListener('error', e => logErr('bg', e.error || e.message));
 self.addEventListener('unhandledrejection', e => logErr('bg-promise', e.reason));
@@ -23,14 +23,14 @@ const setLang = l => { if (!l) return; UI_LANG = l; uiDict(l).then(d => { XD = d
 chrome.storage.local.get('uiLang').then(r => setLang(pickLang(r.uiLang) || UI_LANG)).catch(() => {});
 chrome.storage.onChanged.addListener(ch => { if (ch.uiLang) setLang(pickLang(ch.uiLang.newValue)); });
 const EN = {
-  'Vocaband – đến giờ học rồi! 📚': 'Vocaband – time to study! 📚',
+  'Lexkite – đến giờ học rồi! 📚': 'Lexkite – time to study! 📚',
   'Bạn có {n} thẻ cần ôn hôm nay.': 'You have {n} cards to review today.',
   ' Giữ chuỗi {n} ngày 🔥': ' Keep your {n}-day streak 🔥',
   'Thêm vài từ mới để giữ chuỗi ngày học nhé 🔥': 'Add a few new words to keep your streak going 🔥',
   'Ôn ngay': 'Review now',
   '⏰ Thời điểm vàng!': '⏰ Golden moment!',
   '{n} từ đang ở thời điểm sắp quên – ôn 3 phút để nhớ lâu hơn.': '{n} words are about to be forgotten – review for 3 minutes to remember them longer.',
-  'Tra từ “%s” với Vocaband': 'Look up “%s” with Vocaband',
+  'Tra từ “%s” với Lexkite': 'Look up “%s” with Lexkite',
   'Dịch đoạn đã chọn sang tiếng Việt': 'Translate selection to Vietnamese',
 };
 const tx = (src, vars) => { let s = UI_LANG === 'vi' ? src : (XD[src] || EN[src] || src); if (vars) s = s.replace(/\{(\w+)\}/g, (m, k) => (vars[k] != null ? vars[k] : m)); return s; };
@@ -58,7 +58,7 @@ async function sendReminder(force = false) {
   chrome.notifications.create('reminder-' + Date.now(), {
     type: 'basic',
     iconUrl: 'icons/icon-128.png',
-    title: tx('Vocaband – đến giờ học rồi! 📚'),
+    title: tx('Lexkite – đến giờ học rồi! 📚'),
     message: total ? tx('Bạn có {n} thẻ cần ôn hôm nay.', { n: total }) + (streak ? tx(' Giữ chuỗi {n} ngày 🔥', { n: streak }) : '') : tx('Thêm vài từ mới để giữ chuỗi ngày học nhé 🔥'),
     buttons: [{ title: tx('Ôn ngay') }],
     priority: 2,
@@ -98,7 +98,7 @@ async function injectIntoOpenTabs() {
 
 chrome.runtime.onInstalled.addListener(async ({ reason }) => {
   await chrome.contextMenus.removeAll(); // chờ xóa xong rồi mới tạo – tránh lỗi "duplicate id" sau mỗi lần cập nhật
-  chrome.contextMenus.create({ id: 'lexi-lookup', title: tx('Tra từ “%s” với Vocaband'), contexts: ['selection'] });
+  chrome.contextMenus.create({ id: 'lexi-lookup', title: tx('Tra từ “%s” với Lexkite'), contexts: ['selection'] });
   chrome.contextMenus.create({ id: 'lexi-translate', title: tx('Dịch đoạn đã chọn sang tiếng Việt'), contexts: ['selection'] });
   injectIntoOpenTabs();
   chrome.alarms.create('badge', { periodInMinutes: 15 });
@@ -218,7 +218,7 @@ chrome.runtime.onMessage.addListener((msg, sender, reply) => {
       case 'logErr': logErr(msg.where || 'cs', msg.m); return reply({ ok: true });
       case 'openApp': await openApp(msg.hash); return reply({ ok: true });
       case 'syncNow': {
-        // Trang Vocaband (đã đăng nhập) tự gộp dữ liệu qua cầu nối rồi gửi 'linked' → chờ tín hiệu đó, tối đa 25 giây
+        // Trang Lexkite (đã đăng nhập) tự gộp dữ liệu qua cầu nối rồi gửi 'linked' → chờ tín hiệu đó, tối đa 25 giây
         const before = ((await chrome.storage.local.get('linked')).linked || {}).at || 0;
         const tab = await chrome.tabs.create({ url: 'https://vocaband.web.app/#/home', active: false });
         let ok = false;

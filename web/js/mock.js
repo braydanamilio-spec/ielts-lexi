@@ -112,7 +112,7 @@
     document.body.classList.add('bare');
     window.onbeforeunload = () => t('Bạn đang làm bài thi – rời trang sẽ mất kết quả.');
     App.cleanup = () => { clearAll(); document.body.classList.remove('bare'); window.onbeforeunload = null; };
-    const bar = (title, right = '') => `<div class="mk-bar"><div class="row nowrap"><img src="icons/icon.svg" alt="" style="width:26px;height:26px;border-radius:7px"><b>Vocaband · IELTS Mock</b><span class="chip">${esc(title)}</span></div><div class="row nowrap">${right}<button class="btn sm ghost" id="mkQuit">${t('Thoát')}</button></div></div>
+    const bar = (title, right = '') => `<div class="mk-bar"><div class="row nowrap"><img src="icons/icon.svg" alt="" style="width:26px;height:26px;border-radius:7px"><b>Lexkite · IELTS Mock</b><span class="chip">${esc(title)}</span></div><div class="row nowrap">${right}<button class="btn sm ghost" id="mkQuit">${t('Thoát')}</button></div></div>
       <div class="mk-steps">${M.order.map((k, j) => { const s = SKILLS.find(x => x[0] === k); return `<span class="${j < M.i ? 'done' : j === M.i ? 'on' : ''}">${s[1]} ${s[2]}</span>`; }).join('')}</div>`;
     const bindQuit = () => { $('#mkQuit').onclick = () => { if (confirm(t('Thoát bài thi? Kết quả sẽ không được lưu.'))) { App.cleanup(); App.cleanup = null; location.hash = '#/mock'; } }; };
     const countdown = (secs, el, onEnd) => { let left = secs; const t = setInterval(() => { left--; const e = $(el); if (e) { e.textContent = clock(left); e.classList.toggle('warn', left <= 300); } if (left <= 0) { clearInterval(t); onEnd(); } }, 1000); M.timers.push(t); const e = $(el); if (e) e.textContent = clock(left); return () => left; };

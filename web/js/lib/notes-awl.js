@@ -1,4 +1,4 @@
-/* Ghi chú học từ AWL (tự biên soạn) – Vocaband, CC BY-SA 4.0 */
+/* Ghi chú học từ AWL (tự biên soạn) – Lexkite, CC BY-SA 4.0 */
 (function (g) { const N = g.WORD_NOTES = g.WORD_NOTES || {}; Object.assign(N, {
   "analyse": { m: "ana- (tách ra) + lyse (tháo, gỡ) → tháo rời từng phần để xem xét kỹ.", e: "Sai: analyse about the data → Đúng: analyse the data (không dùng about). Chính tả: analyse (Anh) / analyze (Mỹ).", u: "Rất hay dùng trong IELTS Writing Task 1: analyse data/results/trends; carefully analyse. Trang trọng hơn 'look at'.", f: "analysis (n), analyst (n), analytical (adj), analytically (adv)" },
   "approach": { m: "ap- (hướng tới) + proach (gần, như 'proximity') → tiến lại gần một vấn đề → cách tiếp cận.", e: "Sai: approach to the problem (khi là động từ) → Đúng: approach the problem. Danh từ mới đi với to: an approach to learning.", u: "Collocations: take/adopt an approach, a new/different approach to sth, a practical approach. Dùng khi bàn giải pháp trong IELTS Task 2.", f: "approach (v), approachable (adj), unapproachable (adj)" },

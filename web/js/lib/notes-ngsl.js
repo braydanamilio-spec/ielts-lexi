@@ -1,4 +1,4 @@
-/* Ghi chú học từ NGSL (tự biên soạn) – Vocaband, CC BY-SA 4.0 */
+/* Ghi chú học từ NGSL (tự biên soạn) – Lexkite, CC BY-SA 4.0 */
 (function (g) { const N = g.WORD_NOTES = g.WORD_NOTES || {}; Object.assign(N, {
 "the": { m: "Dùng 'the' khi cả người nói và người nghe đều biết đang nói vật nào: the sun, the book I bought.", e: "Sai: I like the music (nói chung) → Đúng: I like music. Danh từ chung chung không cần 'the'.", u: "Cụm cố định: the same, the first, the best, play the piano, in the morning, at the end of. Phát âm /ði/ trước nguyên âm.", f: "the (det); a/an (mạo từ không xác định)" },
 "be": { m: "Nhớ bộ chia: I am, you/we/they are, he/she/it is; quá khứ was/were; phân từ been.", e: "Sai: She very beautiful → Đúng: She is very beautiful. Tiếng Anh cần động từ 'be' trước tính từ.", u: "Dùng tạo câu bị động (be + V3) và tiếp diễn (be + V-ing). Cụm: be able to, be going to, be about to.", f: "am, is, are, was, were, been, being; being (n, sinh vật)" },

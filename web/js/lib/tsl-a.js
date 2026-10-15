@@ -1,4 +1,4 @@
-/* TSL 1.2 – TOEIC Service List © Browne & Culligan, CC BY-SA 4.0 (newgeneralservicelist.com). Bản dịch & ví dụ: Vocaband, CC BY-SA 4.0. */
+/* TSL 1.2 – TOEIC Service List © Browne & Culligan, CC BY-SA 4.0 (newgeneralservicelist.com). Bản dịch & ví dụ: Lexkite, CC BY-SA 4.0. */
 (function (g) {
   const add = g.IELTS_DATA.add;
   add('toeic1', 'TOEIC 1–125', '💼', 'Văn phòng, khách hàng, đặt chỗ, sân bay, hóa đơn…', [

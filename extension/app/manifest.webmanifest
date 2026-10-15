@@ -1,12 +1,12 @@
 {
-  "name": "Vocaband – Từ vựng IELTS",
-  "short_name": "Vocaband",
+  "name": "Lexkite – Từ vựng IELTS",
+  "short_name": "Lexkite",
   "description": "Từ vựng IELTS thông minh: lộ trình theo band, flashcard thời điểm vàng, từ điển Oxford Languages, luyện Speaking & Writing.",
   "start_url": "./index.html#/home",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#f6f7fb",
-  "theme_color": "#4f46e5",
+  "background_color": "#F4FBF8",
+  "theme_color": "#0F3D3E",
   "lang": "vi",
   "icons": [
     {
@@ -97,7 +97,7 @@
       "sizes": "1280x800",
       "type": "image/png",
       "form_factor": "wide",
-      "label": "Vocaband trên máy tính"
+      "label": "Lexkite trên máy tính"
     }
   ]
 }

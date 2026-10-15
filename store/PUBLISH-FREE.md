@@ -1,4 +1,4 @@
-# Đưa tiện ích Vocaband lên kho miễn phí
+# Đưa tiện ích Lexkite lên kho miễn phí
 
 Bản Chrome (`store/vocaband-extension.zip`) chạy được trên **Microsoft Edge**. Bản Firefox là `store/vocaband-firefox.zip`. Cả hai kho dưới đây **không thu phí đăng ký**. Anh cần tự tạo tài khoản: đây là bước danh tính cá nhân, em không làm thay được.
 
@@ -6,7 +6,7 @@ Nội dung mô tả, lý do xin quyền và ảnh chụp màn hình dùng lại 
 
 ## 1. Microsoft Edge Add-ons (miễn phí)
 1. Vào https://partner.microsoft.com/dashboard/microsoftedge/overview và đăng nhập bằng tài khoản Microsoft (Outlook/Hotmail; nếu chưa có thì tạo miễn phí).
-2. Đăng ký **Edge program** cho cá nhân: điền tên hiển thị "Vocaband", email liên hệ. Không mất phí.
+2. Đăng ký **Edge program** cho cá nhân: điền tên hiển thị "Lexkite", email liên hệ. Không mất phí.
 3. Bấm **Create new extension** → tải lên `store/vocaband-extension.zip`.
 4. **Properties**:
    - Category: Education.

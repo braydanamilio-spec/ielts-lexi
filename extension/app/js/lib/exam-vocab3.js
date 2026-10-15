@@ -1,4 +1,4 @@
-/* Từ vựng theo kỳ thi – phần 3: IELTS General Training (tự biên soạn) – Vocaband, CC BY-SA 4.0 */
+/* Từ vựng theo kỳ thi – phần 3: IELTS General Training (tự biên soạn) – Lexkite, CC BY-SA 4.0 */
 (function (g) {
   const add = g.IELTS_DATA.add;
   add('ex-ielts-gt-life', 'IELTS General – đời sống, nhà ở, dịch vụ, công việc', '🏠', 'Thuê nhà, hóa đơn tiện ích, đổi trả & hoàn tiền, bảo hành, trung tâm thể thao, tin tuyển dụng, nội quy nơi làm việc, an toàn lao động – từ vựng Reading GT Section 1–2', [

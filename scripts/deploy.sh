@@ -7,7 +7,7 @@ sed -i '' "s/const CACHE = '[^']*';/const CACHE = 'vocaband-$(date +%Y%m%d%H%M%S
 ./scripts/build-extension.sh
 # Chỉ commit mã nguồn & tài nguyên của dự án (không đưa tài liệu cá nhân lên GitHub)
 git add web extension scripts store brand README.md ROADMAP.md firebase.json firestore.rules .firebaserc .gitignore .github
-git diff --cached --quiet || git commit -q -m "${1:-Cập nhật Vocaband}
+git diff --cached --quiet || git commit -q -m "${1:-Cập nhật Lexkite}
 
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 git push -q

@@ -343,7 +343,7 @@
   App.savePhraseDialog = savePhraseDialog;
 
   // ---------- Bôi đen bất kỳ đoạn nào trong app: 🔎 tra nghĩa · 🌐 dịch · 🧩 lưu cụm ----------
-  // (Trên trang Vocaband, tiện ích Chrome nhường phần này cho app để không hiện 2 bảng tra)
+  // (Trên trang Lexkite, tiện ích Chrome nhường phần này cho app để không hiện 2 bảng tra)
   const bar = document.createElement('div');
   bar.className = 'sel-bar'; bar.hidden = true;
   document.body.appendChild(bar);
@@ -389,7 +389,7 @@
     const info = selInfo, k = act.dataset.act;
     if (k === 'say') return UI.speak(info.text, state.settings.accent);
     bar.hidden = true;
-    if (k === 'save') { getSelection().removeAllRanges(); return savePhraseDialog({ phrase: info.text, sentence: info.sentence, title: t('Lưu từ Vocaband') }); }
+    if (k === 'save') { getSelection().removeAllRanges(); return savePhraseDialog({ phrase: info.text, sentence: info.sentence, title: t('Lưu từ Lexkite') }); }
     pop.hidden = false; pop.innerHTML = `<div class="muted small">⏳ ${k === 'look' ? t('Đang tra “{text}”…', { text: esc(info.text.slice(0, 60)) }) : t('Đang dịch “{text}”…', { text: esc(info.text.slice(0, 60)) })}</div>`; place(pop, info.rect);
     if (k === 'tr') {
       const vi = await Dict.translateVi(info.text);
@@ -448,12 +448,12 @@
         $('[data-save]', pop).onclick = async ev => {
           const b = ev.currentTarget; b.disabled = true;
           const vi = info.sentence ? await Dict.translateVi(info.sentence) : '';
-          await App.addWord(d, info.sentence ? { text: info.sentence, vi, title: document.title.replace(/ – Vocaband$/, '') || 'Vocaband' } : null);
+          await App.addWord(d, info.sentence ? { text: info.sentence, vi, title: document.title.replace(/ – Lexkite$/, '') || 'Lexkite' } : null);
           b.textContent = `✓ ${t('Đã lưu')}`;
         };
         if (state.settings.autoSpeak) UI.speak(d.word, state.settings.accent, d.audio);
       }
-      const ph = $('[data-ph]', pop); if (ph) ph.onclick = () => { pop.hidden = true; savePhraseDialog({ phrase: info.text, sentence: info.sentence, title: t('Lưu từ Vocaband') }); };
+      const ph = $('[data-ph]', pop); if (ph) ph.onclick = () => { pop.hidden = true; savePhraseDialog({ phrase: info.text, sentence: info.sentence, title: t('Lưu từ Lexkite') }); };
     }
     place(pop, info.rect);
     $('[data-x]', pop).onclick = () => { pop.hidden = true; };

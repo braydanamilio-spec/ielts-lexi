@@ -36,7 +36,7 @@
     view.innerHTML = `
       <div class="cbt">
         <header class="cbt-top">
-          <div class="row nowrap"><img src="icons/icon.svg" alt="" style="width:28px;height:28px;border-radius:8px"><b>Vocaband</b><span class="tiny muted">IELTS Reading · ${t('Mô phỏng thi trên máy')}</span></div>
+          <div class="row nowrap"><img src="icons/icon.svg" alt="" style="width:28px;height:28px;border-radius:8px"><b>Lexkite</b><span class="tiny muted">IELTS Reading · ${t('Mô phỏng thi trên máy')}</span></div>
           <div class="row nowrap"><span class="cbt-clock" id="clock"></span><button class="btn sm" id="hideC">${t('Ẩn giờ')}</button><button class="btn sm" id="fsDown" title="${t('Giảm cỡ chữ')}">A−</button><button class="btn sm" id="fsUp" title="${t('Tăng cỡ chữ')}">A+</button><button class="btn sm primary" id="submit">${t('Nộp bài')}</button></div>
         </header>
         <div class="cbt-body">

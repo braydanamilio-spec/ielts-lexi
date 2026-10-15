@@ -1,4 +1,4 @@
-# Vocaband: lộ trình để thương mại hóa và cạnh tranh top đầu
+# Lexkite: lộ trình để thương mại hóa và cạnh tranh top đầu
 
 ## Hiện trạng (14/10/2026)
 

@@ -1,4 +1,4 @@
-/* Ghi chú học từ – IELTS General Training: đời sống, công việc & cụm từ viết thư (tự biên soạn) – Vocaband, CC BY-SA 4.0 */
+/* Ghi chú học từ – IELTS General Training: đời sống, công việc & cụm từ viết thư (tự biên soạn) – Lexkite, CC BY-SA 4.0 */
 (function (g) { const N = g.WORD_NOTES = g.WORD_NOTES || {}; Object.assign(N, {
   // Thuê nhà, nhà ở
   "tenancy agreement": { m: "tenant (người thuê) → tenancy (việc thuê) + agreement (thỏa thuận) → giấy thỏa thuận thuê nhà.", e: "Sai: tenantcy / tenancy contract agreement → Đúng: tenancy agreement. Trọng âm TEN-an-cy.", u: "Reading GT Section 1 (quảng cáo/thông báo nhà cho thuê); thư cho chủ nhà: Under the tenancy agreement, repairs are your responsibility.", f: "tenant (n), tenancy (n), landlord (n), lease (n/v), rental agreement (n, Anh-Mỹ)" },

@@ -1,4 +1,4 @@
-/* NGSL 1.2 – New General Service List © Browne, Culligan & Phillips, CC BY-SA 4.0 (newgeneralservicelist.com). Bản dịch tiếng Việt: Vocaband, CC BY-SA 4.0. */
+/* NGSL 1.2 – New General Service List © Browne, Culligan & Phillips, CC BY-SA 4.0 (newgeneralservicelist.com). Bản dịch tiếng Việt: Lexkite, CC BY-SA 4.0. */
 (function (g) {
   const add = g.IELTS_DATA.add;
   add('ngsl1', 'Từ cốt lõi 1–281', '🧱', 'Nhóm từ thông dụng nhất – nền móng cho mọi kỹ năng', [

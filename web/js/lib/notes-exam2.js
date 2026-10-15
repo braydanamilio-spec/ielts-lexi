@@ -1,4 +1,4 @@
-/* Ghi chú học từ – Từ vựng theo kỳ thi phần 2 (tự biên soạn) – Vocaband, CC BY-SA 4.0 */
+/* Ghi chú học từ – Từ vựng theo kỳ thi phần 2 (tự biên soạn) – Lexkite, CC BY-SA 4.0 */
 (function (g) { const N = g.WORD_NOTES = g.WORD_NOTES || {}; Object.assign(N, {
   // TOEFL – hội thoại trong campus
   "tuition fees": { m: "tuition gốc Latin 'tueri' (trông nom, dạy dỗ) → tiền trả cho việc được dạy.", e: "Sai: tuition fee is very expensive (thiếu mạo từ) → Đúng: Tuition fees are high. Phát âm /tjuˈɪʃn/, không đọc 'tu-i-tân'.", u: "TOEFL Listening hội thoại ở phòng tài chính: pay tuition fees, tuition fees are due, a tuition increase.", f: "tuition (n), tuition fees (n), tutor (n, cùng gốc)" },

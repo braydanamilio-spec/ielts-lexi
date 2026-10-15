@@ -1,4 +1,4 @@
-/* Từ vựng chuyên ngành (tự biên soạn) – Vocaband, CC BY-SA 4.0 */
+/* Từ vựng chuyên ngành (tự biên soạn) – Lexkite, CC BY-SA 4.0 */
 (function (g) {
   const add = g.IELTS_DATA.add;
   add('dom-it', 'Công nghệ thông tin', '💻', 'Lập trình, phần mềm, mạng, dữ liệu, bảo mật, điện toán đám mây…', [

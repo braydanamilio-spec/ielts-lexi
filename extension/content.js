@@ -1,6 +1,6 @@
 /* Content script: bấm đúp vào từ (hoặc bôi đen + Alt) để tra nhanh, lưu vào flashcard kèm câu ngữ cảnh. */
 (() => {
-  // Cầu nối đồng bộ: trên trang Vocaband (đã đăng nhập Google) web app đọc/ghi dữ liệu add-on để gộp chung theo tài khoản
+  // Cầu nối đồng bộ: trên trang Lexkite (đã đăng nhập Google) web app đọc/ghi dữ liệu add-on để gộp chung theo tài khoản
   if (window.top === window && /^(vocaband|ielts-lexi-2026)\.web\.app$/.test(location.hostname)) {
     const KEYS = ['cards', 'stats', 'deleted'];
     window.addEventListener('message', async e => {
@@ -25,7 +25,7 @@
   window.addEventListener('error', e => { if (e.filename && e.filename.startsWith('chrome-extension://')) report('cs', e.error || e.message); });
   window.addEventListener('unhandledrejection', e => report('cs-promise', e.reason));
   // Ngôn ngữ giao diện: chỉ en / vi như web app, ngôn ngữ khác → English. Nội dung học (nghĩa Việt, câu dịch) giữ nguyên
-  // Ngôn ngữ giao diện: theo lựa chọn trên web Vocaband (đồng bộ qua cầu nối), mặc định theo ngôn ngữ Chrome
+  // Ngôn ngữ giao diện: theo lựa chọn trên web Lexkite (đồng bộ qua cầu nối), mặc định theo ngôn ngữ Chrome
   const XLANGS = ['vi', 'en', 'es', 'pt', 'fr', 'de', 'id', 'th', 'zh', 'ja', 'ko', 'hi', 'ar', 'ru', 'tr'];
   const pickLang = l => { l = String(l || '').toLowerCase().split('-')[0]; return XLANGS.includes(l) ? l : null; };
   let UI_LANG = pickLang(chrome.i18n && chrome.i18n.getUILanguage ? chrome.i18n.getUILanguage() : navigator.language) || 'en', XD = {};
@@ -34,7 +34,7 @@
   const ML = () => { if (UI_LANG === 'vi') return 'vi'; if (UI_LANG !== 'en') return UI_LANG === 'zh' ? 'zh-CN' : UI_LANG; const l = (navigator.language || 'en').toLowerCase(); return l.startsWith('vi') ? 'en' : l.startsWith('zh') ? (/tw|hk|hant/.test(l) ? 'zh-TW' : 'zh-CN') : l.split('-')[0]; };
   const FLAG = l => ({ vi: '🇻🇳', es: '🇪🇸', pt: '🇧🇷', fr: '🇫🇷', de: '🇩🇪', id: '🇮🇩', th: '🇹🇭', 'zh-CN': '🇨🇳', 'zh-TW': '🇹🇼', ja: '🇯🇵', ko: '🇰🇷', hi: '🇮🇳', ar: '🇸🇦', ru: '🇷🇺', tr: '🇹🇷' })[l] || '🌐';
   const EN = {
-    'Dịch với Vocaband': 'Translate with Vocaband', 'Nghe câu ví dụ': 'Play example', 'Quay lại từ trước': 'Back to previous word', 'Quay lại': 'Back',
+    'Dịch với Lexkite': 'Translate with Lexkite', 'Nghe câu ví dụ': 'Play example', 'Quay lại từ trước': 'Back to previous word', 'Quay lại': 'Back',
     'Anh–Mỹ': 'US English', 'Nghe giọng Anh–Anh (phím P)': 'British pronunciation (P key)', 'Nghe giọng Anh–Mỹ': 'American pronunciation', 'Nghe chậm': 'Play slowly',
     '📌 Ngữ cảnh sẽ lưu': '📌 Context to save', '📌 Ngữ cảnh': '📌 Context', 'Nghe cả câu': 'Play sentence', '⏳ Đang dịch câu…': '⏳ Translating sentence…',
     '✓ Đã lưu vào flashcard': '✓ Saved to flashcards', '+ Thêm ngữ cảnh': '+ Add context', '✓ Đã lưu': '✓ Saved', '+ Lưu flashcard': '+ Save flashcard',
@@ -46,11 +46,11 @@
     '🧩 Cấu trúc trong đoạn': '🧩 Structures in this text', '📐 Học bài ngữ pháp này →': '📐 Learn this grammar lesson →', '🐢 Chậm': '🐢 Slow',
     'Giải thích nghĩa trong ngữ cảnh, cấu trúc, collocation, ví dụ': 'Explain meaning in context, structure, collocations, examples', '🤖 Giải thích sâu': '🤖 Deep explanation',
     '⏳ AI đang phân tích…': '⏳ AI is analyzing…',
-    'Chưa bật AI. Mở Vocaband → Cài đặt → “Chấm bài bằng AI” để thêm khóa Gemini miễn phí của bạn.': 'AI is not enabled. Open Vocaband → Settings → “AI grading” to add your free Gemini key.',
+    'Chưa bật AI. Mở Lexkite → Cài đặt → “Chấm bài bằng AI” để thêm khóa Gemini miễn phí của bạn.': 'AI is not enabled. Open Lexkite → Settings → “AI grading” to add your free Gemini key.',
     'Khóa AI tạm hết lượt miễn phí – thử lại sau ít phút.': 'Your AI key is out of free quota for now – try again in a few minutes.',
     'Khóa AI không hợp lệ – kiểm tra lại trong Cài đặt.': 'Invalid AI key – check it in Settings.', 'Không phân tích được lúc này.': 'Could not analyze right now.',
     '⚙️ Mở Cài đặt': '⚙️ Open Settings', 'Nghĩa trong ngữ cảnh:': 'Meaning in context:', 'Ngữ pháp:': 'Grammar:', 'Cụm hay đi kèm:': 'Common collocations:',
-    '✓ Đã chép': '✓ Copied', 'Vocaband cấp {lv}': 'Vocaband level {lv}', 'mới': 'new', '📒 {n} từ bạn đã học xuất hiện trên trang này': '📒 {n} words you have learned appear on this page',
+    '✓ Đã chép': '✓ Copied', 'Lexkite cấp {lv}': 'Lexkite level {lv}', 'mới': 'new', '📒 {n} từ bạn đã học xuất hiện trên trang này': '📒 {n} words you have learned appear on this page',
   };
   const tx = (src, vars) => { let s = UI_LANG === 'vi' ? src : (XD[src] || EN[src] || src); if (vars) s = s.replace(/\{(\w+)\}/g, (m, k) => (vars[k] != null ? vars[k] : m)); return s; };
   let dead = false;
@@ -138,7 +138,7 @@
     if (host) { parent.appendChild(host); return; }
     host = document.createElement('ielts-lexi-popup');
     root = host.attachShadow({ mode: 'closed' });
-    root.innerHTML = H(`<style>${CSS}</style><div class="box" hidden></div><button class="fab" hidden title="${tx('Dịch với Vocaband')}">🌐</button>`);
+    root.innerHTML = H(`<style>${CSS}</style><div class="box" hidden></div><button class="fab" hidden title="${tx('Dịch với Lexkite')}">🌐</button>`);
     parent.appendChild(host);
     root.addEventListener('mousedown', e => e.stopPropagation());
   }
@@ -570,7 +570,7 @@
       let r; try { r = await chrome.runtime.sendMessage({ type: 'explain', text: info.text, sentence }); } catch (e) { r = { error: 'FAILED' }; }
       btn.disabled = false;
       if (!r || r.error) {
-        const msg = tx({ NO_KEY: 'Chưa bật AI. Mở Vocaband → Cài đặt → “Chấm bài bằng AI” để thêm khóa Gemini miễn phí của bạn.', QUOTA: 'Khóa AI tạm hết lượt miễn phí – thử lại sau ít phút.', BAD_KEY: 'Khóa AI không hợp lệ – kiểm tra lại trong Cài đặt.' }[r && r.error] || 'Không phân tích được lúc này.');
+        const msg = tx({ NO_KEY: 'Chưa bật AI. Mở Lexkite → Cài đặt → “Chấm bài bằng AI” để thêm khóa Gemini miễn phí của bạn.', QUOTA: 'Khóa AI tạm hết lượt miễn phí – thử lại sau ít phút.', BAD_KEY: 'Khóa AI không hợp lệ – kiểm tra lại trong Cài đặt.' }[r && r.error] || 'Không phân tích được lúc này.');
         out.innerHTML = H(`<div class="def" style="margin-top:8px">${esc(msg)} ${r && (r.error === 'NO_KEY' || r.error === 'BAD_KEY') ? `<button class="st-l" id="openSet">${tx('⚙️ Mở Cài đặt')}</button>` : ''}</div>`);
         const os = out.querySelector('#openSet'); if (os) os.onclick = () => chrome.runtime.sendMessage({ type: 'openApp', hash: '#/settings' }).catch(() => {});
         return position(info.rect);
@@ -598,7 +598,7 @@
   }
 
   const fromHost = e => host && e.composedPath && e.composedPath().includes(host);
-  // Trên chính web app Vocaband: từ đã có bảng tra riêng (.tw) và nút lưu cụm riêng → tiện ích nhường, tránh hiện 2 bảng
+  // Trên chính web app Lexkite: từ đã có bảng tra riêng (.tw) và nút lưu cụm riêng → tiện ích nhường, tránh hiện 2 bảng
   const OWN_APP = /^(vocaband|ielts-lexi-2026)\.web\.app$|^localhost$/.test(location.hostname);
   const appHandles = (el, sel) => OWN_APP && el && el.closest && !!(el.closest('.tw, .pop, .sel-fab, .sel-bar, .sel-pop, [data-own-lookup]') || (sel && el.closest('#view')));
 
@@ -677,7 +677,7 @@
         frag.appendChild(document.createTextNode(text.slice(last, m.index)));
         const el = document.createElement('vb-mark');
         el.textContent = m[0]; el.dataset.w = m[1].toLowerCase(); el.dataset.l = k.lv;
-        el.title = `${k.vi}${k.ipa ? '  ' + k.ipa : ''} · ${tx('Vocaband cấp {lv}', { lv: k.lv || tx('mới') })}`;
+        el.title = `${k.vi}${k.ipa ? '  ' + k.ipa : ''} · ${tx('Lexkite cấp {lv}', { lv: k.lv || tx('mới') })}`;
         frag.appendChild(el); last = m.index + m[0].length; marked++;
       }
       frag.appendChild(document.createTextNode(text.slice(last)));

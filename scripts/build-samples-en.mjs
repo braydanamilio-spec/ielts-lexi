@@ -6,7 +6,7 @@ const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(
 const load = (files, extra = {}) => { const c = { self: {}, window: {}, t: s => s, localStorage: { getItem() {}, setItem() {} }, ...extra }; c.self = c.window = c; vm.createContext(c); for (const f of files) vm.runInContext(fs.readFileSync(`web/js/${f}.js`, 'utf8'), c); return c; };
 const css = fs.readFileSync('scripts/build-samples.mjs', 'utf8').match(/const css = `([^`]*)`/)[1];
 const sm = 'dist/sitemap.xml', urls = [];
-const page = (title, desc, path, viPath, body, nav) => `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title><meta name="description" content="${esc(desc)}"><link rel="canonical" href="${SITE}${path}"><link rel="alternate" hreflang="en" href="${SITE}${path}"><link rel="alternate" hreflang="vi" href="${SITE}${viPath}"><meta property="og:title" content="${esc(title)}"><meta property="og:description" content="${esc(desc)}"><meta property="og:image" content="${SITE}icons/icon-512.png"><link rel="icon" href="/icons/icon.svg"><style>${css}</style></head><body><main><div class="top"><a href="/?hl=en" style="text-decoration:none">Vocaband</a>${nav}</div>${body}<p style="color:#888;font-size:13px">© Vocaband – original learning content, free for learners.</p></main></body></html>`;
+const page = (title, desc, path, viPath, body, nav) => `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title><meta name="description" content="${esc(desc)}"><link rel="canonical" href="${SITE}${path}"><link rel="alternate" hreflang="en" href="${SITE}${path}"><link rel="alternate" hreflang="vi" href="${SITE}${viPath}"><meta property="og:title" content="${esc(title)}"><meta property="og:description" content="${esc(desc)}"><meta property="og:image" content="${SITE}icons/icon-512.png"><link rel="icon" href="/icons/icon.svg"><style>${css}</style></head><body><main><div class="top"><a href="/?hl=en" style="text-decoration:none">Lexkite</a>${nav}</div>${body}<p style="color:#888;font-size:13px">© Lexkite – original learning content, free for learners.</p></main></body></html>`;
 const out = (path, viPath, html) => { fs.mkdirSync('dist/' + path.replace(/[^/]*$/, ''), { recursive: true }); fs.writeFileSync('dist/' + path.replace(/\/$/, '/index.html'), html); urls.push(path);
   // thêm hreflang vào bản tiếng Việt tương ứng
   const vf = 'dist/' + viPath.replace(/\/$/, '/index.html'); if (fs.existsSync(vf)) { const v = fs.readFileSync(vf, 'utf8'); if (!v.includes('hreflang="en"')) fs.writeFileSync(vf, v.replace('<meta property="og:title"', `<link rel="alternate" hreflang="vi" href="${SITE}${viPath}"><link rel="alternate" hreflang="en" href="${SITE}${path}"><meta property="og:title"`)); } };
@@ -25,12 +25,12 @@ const NAV = '<span><a href="/en/samples/">Writing</a> · <a href="/en/speaking/"
     const gl = [...m.text.matchAll(/\[\[([^|\]]*)\|/g)].map(x => x[1]);
     const short = p.text.length > 70 ? p.text.slice(0, 67).replace(/\s+\S*$/, '') + '…' : p.text;
     out(`en/samples/${p.id}.html`, `samples/${p.id}.html`, page(`IELTS Writing Task 2 Band ${m.band} Sample: ${short}`, `Band ${m.band} IELTS Writing Task 2 model answer (${p.type}, ${m.words} words) with ${gl.length} highlighted high-scoring phrases and linking words.`, `en/samples/${p.id}.html`, `samples/${p.id}.html`,
-      `<h1 style="font-size:24px;line-height:1.3">IELTS Writing Task 2 – Band ${esc(m.band)} Sample</h1><p>Question type: <b>${esc(p.type)}</b> · ${m.words} words</p><div class="q">${esc(p.text)}</div><a class="cta" href="/?hl=en#/model/t2-${p.id}">✍️ Practise this question free on Vocaband →</a>
+      `<h1 style="font-size:24px;line-height:1.3">IELTS Writing Task 2 – Band ${esc(m.band)} Sample</h1><p>Question type: <b>${esc(p.type)}</b> · ${m.words} words</p><div class="q">${esc(p.text)}</div><a class="cta" href="/?hl=en#/model/t2-${p.id}">✍️ Practise this question free on Lexkite →</a>
 <h2>Model answer</h2><div class="ess">${rich(m.text).split(/\n\s*\n/).map(x => `<p>${x.trim()}</p>`).join('')}</div><h2>Useful phrases (${gl.length})</h2><ul class="l">${gl.map(e => `<li>${esc(e)}</li>`).join('')}</ul><a class="cta" href="/?hl=en#/write/${p.id}">📝 Write your own answer and get instant feedback →</a>`, NAV));
     done.push([p, m]);
   }
   const by = {}; for (const [p] of done) (by[p.type] = by[p.type] || []).push(p);
-  out('en/samples/', 'samples/', page(`${done.length} IELTS Writing Task 2 Band 8 Sample Essays – Vocaband`, `${done.length} band 8 IELTS Writing Task 2 model essays by question type, with highlighted phrases. Practise and get feedback free.`, 'en/samples/', 'samples/',
+  out('en/samples/', 'samples/', page(`${done.length} IELTS Writing Task 2 Band 8 Sample Essays – Lexkite`, `${done.length} band 8 IELTS Writing Task 2 model essays by question type, with highlighted phrases. Practise and get feedback free.`, 'en/samples/', 'samples/',
     `<h1>${done.length} IELTS Writing Task 2 sample essays (band 8)</h1>${Object.entries(by).map(([ty, xs]) => `<h2>${esc(ty)}</h2><ul class="l">${xs.map(p => `<li><a href="/en/samples/${p.id}.html">${esc(p.text)}</a></li>`).join('')}</ul>`).join('')}`, NAV));
 }
 
@@ -52,7 +52,7 @@ const NAV = '<span><a href="/en/samples/">Writing</a> · <a href="/en/speaking/"
 <h2>Part 1</h2>${b.p1.map(qa).join('')}<h2>Part 2 – Cue card</h2><div class="q">${esc(b.p2.q)}<ul class="l">${b.p2.points.map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>${qa(b.p2.q).replace(/^<h3>[^<]*<\/h3>/, '')}<h2>Part 3</h2>${b.p3.map(qa).join('')}`, NAV));
     made.push([id, b]);
   });
-  out('en/speaking/', 'speaking/', page(`${made.length} IELTS Speaking Topics with Sample Answers – Vocaband`, `${made.length} IELTS Speaking topics: Part 1–3 questions, Part 2 cue cards and band 8 sample answers. Practise free.`, 'en/speaking/', 'speaking/',
+  out('en/speaking/', 'speaking/', page(`${made.length} IELTS Speaking Topics with Sample Answers – Lexkite`, `${made.length} IELTS Speaking topics: Part 1–3 questions, Part 2 cue cards and band 8 sample answers. Practise free.`, 'en/speaking/', 'speaking/',
     `<h1>${made.length} IELTS Speaking topics</h1><ul class="l">${made.map(([id, b]) => `<li><a href="/en/speaking/${id}.html">${esc(b.p2.q)}</a></li>`).join('')}</ul>`, NAV));
 }
 
@@ -70,7 +70,7 @@ const NAV = '<span><a href="/en/samples/">Writing</a> · <a href="/en/speaking/"
 <table>${x.words.map(w => `<tr><td><b>${esc(w.word)}</b><br><span style="color:#888;font-size:14px">${esc(w.ipa || '')} ${esc(w.pos || '')}</span></td><td>${esc(w.def || '')}${w.ex ? `<br><i style="font-size:14px;color:#666">${esc(w.ex)}</i>` : ''}</td></tr>`).join('')}</table>`, NAV));
   }
   const by = {}; for (const x of TP) (by[x.group] = by[x.group] || []).push(x);
-  out('en/vocabulary/', 'tu-vung/', page(`IELTS, TOEIC & TOEFL Vocabulary Lists – ${TP.length} Sets – Vocaband`, `${TP.length} vocabulary lists for IELTS, TOEIC and TOEFL with IPA, definitions and examples. Learn with free flashcards.`, 'en/vocabulary/', 'tu-vung/',
+  out('en/vocabulary/', 'tu-vung/', page(`IELTS, TOEIC & TOEFL Vocabulary Lists – ${TP.length} Sets – Lexkite`, `${TP.length} vocabulary lists for IELTS, TOEIC and TOEFL with IPA, definitions and examples. Learn with free flashcards.`, 'en/vocabulary/', 'tu-vung/',
     `<h1>Vocabulary lists (${TP.length} sets)</h1>${Object.entries(by).map(([k, xs]) => `<h2>${esc(G[k] || k)}</h2><ul class="l">${xs.map(x => `<li><a href="/en/vocabulary/${x.id}.html">${esc(enName(x))}</a> – ${x.words.length} words</li>`).join('')}</ul>`).join('')}`, NAV));
 }
 fs.writeFileSync(sm, fs.readFileSync(sm, 'utf8').replace('</urlset>', urls.map(u => `  <url><loc>${SITE}${u}</loc><changefreq>monthly</changefreq></url>`).join('\n') + '\n</urlset>'));

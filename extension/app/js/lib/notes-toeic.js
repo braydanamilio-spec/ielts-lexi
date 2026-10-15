@@ -1,4 +1,4 @@
-/* Ghi chú học từ TOEIC (tự biên soạn) – Vocaband, CC BY-SA 4.0 */
+/* Ghi chú học từ TOEIC (tự biên soạn) – Lexkite, CC BY-SA 4.0 */
 (function (g) { const N = g.WORD_NOTES = g.WORD_NOTES || {}; Object.assign(N, {
   "mister": { m: "Biến thể của 'master' (ông chủ); viết tắt Mr. luôn đứng trước họ: Mr. Kim.", e: "Sai: Mr. John (gọi tên riêng thân mật) → Đúng: Mr. Smith (Mr. + họ). Không viết 'Mister' trong email trang trọng, dùng 'Mr.'.", u: "Part 3/4 hay nói 'Mr. Tanaka will call you back'. Thư từ Part 7: Dear Mr. Lee. Chỉ người nam, nữ dùng Ms.", f: "Mr. (viết tắt), Ms., Mrs., Messrs. (số nhiều, trang trọng)" },
   "vacation": { m: "vac- (trống, như 'vacant') → lịch làm việc để trống → kỳ nghỉ.", e: "Sai: go to vacation → Đúng: go on vacation. Sai: take a vacations → Đúng: take a vacation.", u: "Email Part 7: 'I will be on vacation until Monday', vacation request, paid vacation days. Part 3: hỏi về kế hoạch nghỉ phép.", f: "vacation (n/v), vacationer (n), vacant (adj, cùng gốc)" },

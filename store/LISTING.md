@@ -1,4 +1,4 @@
-# Hồ sơ đăng Chrome Web Store – Vocaband
+# Hồ sơ đăng Chrome Web Store – Lexkite
 
 Mọi thứ cần dán vào Chrome Web Store Developer Dashboard. Ảnh nằm trong `store/` và gói tải lên là `vocaband-extension.zip`.
 
@@ -6,7 +6,7 @@ Mọi thứ cần dán vào Chrome Web Store Developer Dashboard. Ảnh nằm tr
 
 ## 1. Thông tin cơ bản (tab **Store listing**)
 
-**Tên (Name):** `Vocaband – Từ điển & Flashcard IELTS`  *(lấy từ manifest)*
+**Tên (Name):** `Lexkite – Từ điển & Flashcard IELTS`  *(lấy từ manifest)*
 
 **Mô tả ngắn (Summary, ≤132 ký tự):**
 > Bấm đúp tra từ, bôi đen dịch câu, tra từ trong phụ đề YouTube; lưu kèm ngữ cảnh và ôn flashcard đúng thời điểm vàng.
@@ -17,7 +17,7 @@ Mọi thứ cần dán vào Chrome Web Store Developer Dashboard. Ảnh nằm tr
 ### Mô tả chi tiết – Tiếng Việt
 
 ```
-Vocaband giúp bạn học từ vựng IELTS ngay khi đang đọc báo, xem YouTube hay làm bài – rồi nhắc bạn ôn đúng “thời điểm vàng” trước khi quên.
+Lexkite giúp bạn học từ vựng IELTS ngay khi đang đọc báo, xem YouTube hay làm bài – rồi nhắc bạn ôn đúng “thời điểm vàng” trước khi quên.
 
 🔎 TRA TỪ TỨC THÌ TRÊN MỌI TRANG WEB
 • Bấm đúp vào bất kỳ từ tiếng Anh nào: phiên âm IPA Anh–Anh & Anh–Mỹ, phát âm, nghĩa tiếng Việt theo từ loại, định nghĩa, hình minh họa.
@@ -46,13 +46,13 @@ Vocaband giúp bạn học từ vựng IELTS ngay khi đang đọc báo, xem You
 🔒 RIÊNG TƯ
 • Không quảng cáo, không theo dõi lịch sử duyệt web. Dữ liệu học lưu trên máy bạn.
 
-Vocaband là sản phẩm độc lập, không liên kết với British Council, IDP hay Cambridge. IELTS là nhãn hiệu của các tổ chức này.
+Lexkite là sản phẩm độc lập, không liên kết với British Council, IDP hay Cambridge. IELTS là nhãn hiệu của các tổ chức này.
 ```
 
 ### Description – English
 
 ```
-Vocaband turns everything you read and watch into IELTS vocabulary practice – then reminds you to review at the "golden time", right before you forget.
+Lexkite turns everything you read and watch into IELTS vocabulary practice – then reminds you to review at the "golden time", right before you forget.
 
 • Double-click any English word on any website: British & American IPA, audio, Vietnamese meanings by part of speech, definitions and images.
 • Select a sentence or paragraph and click 🌐 to translate it into Vietnamese, listen to it or copy it.
@@ -62,7 +62,7 @@ Vocaband turns everything you read and watch into IELTS vocabulary practice – 
 • Companion web app with 1,200+ curated IELTS words (24 topics, the Academic Word List, phrasal verbs, idioms, linking words, band-7+ collocations), games, pronunciation scoring, reading passages, XP and badges.
 • No ads, no browsing-history tracking.
 
-Vocaband is independent and not affiliated with or endorsed by the British Council, IDP or Cambridge. IELTS is a trademark of those organisations.
+Lexkite is independent and not affiliated with or endorsed by the British Council, IDP or Cambridge. IELTS is a trademark of those organisations.
 ```
 
 **Ảnh (Graphic assets):**
@@ -121,7 +121,7 @@ Vocaband is independent and not affiliated with or endorsed by the British Counc
 
 1. Vào **https://chrome.google.com/webstore/devconsole** bằng tài khoản Google sẽ đứng tên nhà phát triển.
 2. Chấp nhận điều khoản nhà phát triển và **trả phí đăng ký một lần 5 USD**. Tài khoản cần **bật xác minh 2 bước**.
-3. Điền **Publisher name** (ví dụ: Vocaband) và xác minh email liên hệ.
+3. Điền **Publisher name** (ví dụ: Lexkite) và xác minh email liên hệ.
 4. Bấm **New item** → tải lên `vocaband-extension.zip` (tạo bằng `./scripts/build-extension.sh --zip`).
 5. Điền tab **Store listing**, **Privacy practices**, **Distribution** theo nội dung ở trên, tải ảnh trong thư mục `store/`.
 6. Bấm **Submit for review**. Thời gian duyệt thường vài ngày; tiện ích yêu cầu quyền truy cập mọi trang nên có thể được xem xét kỹ hơn.

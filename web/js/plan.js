@@ -123,7 +123,7 @@
         <div class="row center"><a class="btn primary" href="#/home">${t('Xem kế hoạch hôm nay →')}</a><a class="btn" href="#/path">🗺️ ${t('Lộ trình')}</a></div></div></div>`;
     };
     view.innerHTML = `<div class="study-wrap"><div class="card celebrate empty"><div class="em">🧭</div><h2>${t('Kiểm tra đầu vào (5 phút)')}</h2>
-      <p>${t('20 câu từ vựng và ngữ pháp từ A2 đến C1. Vocaband dùng kết quả để <b>ước tính band</b>, tìm <b>điểm yếu</b> và cá nhân hóa kế hoạch học mỗi ngày.')}</p>
+      <p>${t('20 câu từ vựng và ngữ pháp từ A2 đến C1. Lexkite dùng kết quả để <b>ước tính band</b>, tìm <b>điểm yếu</b> và cá nhân hóa kế hoạch học mỗi ngày.')}</p>
       <p class="small muted">${t('Không biết thì chọn “Tôi không biết” – đừng đoán, kết quả sẽ chính xác hơn.')}</p>
       <button class="btn primary lg" id="go">${t('Bắt đầu →')}</button></div></div>`;
     $('#go').onclick = next;
@@ -136,7 +136,7 @@
     const tasks = [];
     const dueNow = Golden.dueNow(state.cards);
     const doneReviews = (state.stats.days[todayKey()] || 0);
-    if (!s.placement) tasks.push({ em: '🧭', t: t('Làm bài kiểm tra đầu vào (5 phút)'), sub: t('Để Vocaband cá nhân hóa lộ trình cho bạn'), href: '#/placement', done: false });
+    if (!s.placement) tasks.push({ em: '🧭', t: t('Làm bài kiểm tra đầu vào (5 phút)'), sub: t('Để Lexkite cá nhân hóa lộ trình cho bạn'), href: '#/placement', done: false });
     if (dueNow || doneReviews) tasks.push({ em: '🔁', t: dueNow ? t('Ôn {n} thẻ đang đến thời điểm vàng', { n: dueNow }) : t('Ôn tập thẻ đến hạn'), sub: t('Lặp lại ngắt quãng – ưu tiên số 1'), href: '#/review', done: !dueNow && doneReviews > 0 });
     const cur = App.pathCurrent && App.pathCurrent();
     if (cur) tasks.push({ em: cur.topic.emoji, t: t('Lộ trình: {name}', { name: cur.topic.name }), sub: `${cur.stage.name} · ${t('đã học {pct}%', { pct: Math.round(cur.pct * 100) })}`, href: '#/path', done: false });
@@ -171,19 +171,19 @@
     ['🎓', 'IDP IELTS Prepare', 'ielts.idp.com/prepare', 'https://ielts.idp.com/prepare', t('Bài luyện, mẹo và video miễn phí từ IDP.')],
     ['📚', 'LearnEnglish (British Council)', 'learnenglish.britishcouncil.org', 'https://learnenglish.britishcouncil.org/', t('Bài đọc, nghe, ngữ pháp theo trình độ A1–C1 – có bài tập tương tác.')],
     ['📻', 'BBC Learning English', 'bbc.co.uk/learningenglish', 'https://www.bbc.co.uk/learningenglish/', t('“6 Minute English”, tin tức chậm – tuyệt vời để “tắm ngôn ngữ” mỗi ngày.')],
-    ['🎬', 'TED & TED-Ed', 'ted.com', 'https://www.ted.com/talks', t('Bài nói chủ đề học thuật có phụ đề – bật add-on Vocaband trên YouTube để tra từ trong phụ đề.')],
+    ['🎬', 'TED & TED-Ed', 'ted.com', 'https://www.ted.com/talks', t('Bài nói chủ đề học thuật có phụ đề – bật add-on Lexkite trên YouTube để tra từ trong phụ đề.')],
     ['🗽', 'VOA Learning English', 'learningenglish.voanews.com', 'https://learningenglish.voanews.com/', t('Tin tức đọc chậm, rõ (giọng Mỹ) kèm bản chữ.')],
     ['🔊', 'YouGlish', 'youglish.com', 'https://youglish.com/', t('Nghe một từ được người bản xứ phát âm trong hàng nghìn video thật.')],
     ['✍️', 'Write & Improve', 'Cambridge English', 'https://writeandimprove.com/', t('Nộp đoạn viết để nhận phản hồi tự động miễn phí (cấp độ CEFR).')],
-    ['📖', 'Oxford Learner’s Dictionaries', 'oxfordlearnersdictionaries.com', 'https://www.oxfordlearnersdictionaries.com/', t('Từ điển cho người học – tra thêm ví dụ, collocation; add-on Vocaband hoạt động ngay trên trang này.')],
+    ['📖', 'Oxford Learner’s Dictionaries', 'oxfordlearnersdictionaries.com', 'https://www.oxfordlearnersdictionaries.com/', t('Từ điển cho người học – tra thêm ví dụ, collocation; add-on Lexkite hoạt động ngay trên trang này.')],
   ];
   routes.resources = function () {
     view.innerHTML = `
-      <div class="page-head"><div><h1>🌐 ${t('Tài nguyên miễn phí chính thống')}</h1><p class="muted">${t('Đã chọn lọc từ các nguồn uy tín, hợp pháp. Mẹo: mở trang và dùng add-on Vocaband để <b>bấm đúp tra từ, bôi đen dịch câu</b> – mọi từ mới tự vào thư viện “Từ trang web”.')}</p></div></div>
+      <div class="page-head"><div><h1>🌐 ${t('Tài nguyên miễn phí chính thống')}</h1><p class="muted">${t('Đã chọn lọc từ các nguồn uy tín, hợp pháp. Mẹo: mở trang và dùng add-on Lexkite để <b>bấm đúp tra từ, bôi đen dịch câu</b> – mọi từ mới tự vào thư viện “Từ trang web”.')}</p></div></div>
       <div class="grid auto">${RES.map(([em, ti, sub, url, d]) => `<a class="card hover topic-card" href="${url}" target="_blank" rel="noopener" style="color:var(--text)">
         <span class="em">${em}</span><h3>${esc(ti)}</h3><div class="tiny muted" style="font-weight:700">${esc(sub)} ↗</div><div class="muted small">${esc(d)}</div></a>`).join('')}</div>
       <div class="card" style="margin-top:1rem"><h3>📅 ${t('Thói quen “tắm ngôn ngữ” 20 phút/ngày')}</h3>
         <ol style="padding-left:1.2rem;line-height:1.9"><li>${t('Nghe 1 bài BBC 6 Minute English hoặc 1 video TED có phụ đề – tra từ trong phụ đề bằng add-on.')}</li>
-        <li>${t('Đọc 1 bài trong Vocaband hoặc LearnEnglish – lưu 3–5 từ kèm câu gốc.')}</li><li>${t('Ôn flashcard đúng thời điểm vàng.')}</li><li>${t('Nói lại nội dung vừa nghe/đọc trong 1 phút ở Phòng Speaking.')}</li></ol></div>`;
+        <li>${t('Đọc 1 bài trong Lexkite hoặc LearnEnglish – lưu 3–5 từ kèm câu gốc.')}</li><li>${t('Ôn flashcard đúng thời điểm vàng.')}</li><li>${t('Nói lại nội dung vừa nghe/đọc trong 1 phút ở Phòng Speaking.')}</li></ol></div>`;
   };
 })();

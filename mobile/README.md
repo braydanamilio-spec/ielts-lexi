@@ -1,6 +1,6 @@
-# Vocaband – App Android & iOS
+# Lexkite – App Android & iOS
 
-App mobile là **chính web app Vocaband**, đóng gói bằng [Capacitor](https://capacitorjs.com) (mã nguồn mở, miễn phí).
+App mobile là **chính web app Lexkite**, đóng gói bằng [Capacitor](https://capacitorjs.com) (mã nguồn mở, miễn phí).
 Một bộ mã duy nhất cho web, add-on và app, nên sửa một chỗ là cả ba cùng được cập nhật. Dữ liệu và tài khoản dùng chung.
 
 ## Đã làm sẵn (tự động)
@@ -40,7 +40,7 @@ Mỗi lần cập nhật, GitHub tự build file cài đặt (`.github/workflows
 - Cài **Xcode** từ App Store trên Mac (miễn phí, ~15 GB, cần đăng nhập Apple ID).
 - Thử trên iPhone của anh: miễn phí, chỉ cần Apple ID: `npx cap open ios` → chọn iPhone → ▶ Run.
 - Phát hành lên App Store: cần **Apple Developer Program 99 USD/năm**.
-- Lưu ý: Apple từ chối app chỉ là trang web bọc lại. Vocaband có thông báo nhắc học trên máy, chạy offline và rung phản hồi, nên đáp ứng yêu cầu "có tính năng của app gốc".
+- Lưu ý: Apple từ chối app chỉ là trang web bọc lại. Lexkite có thông báo nhắc học trên máy, chạy offline và rung phản hồi, nên đáp ứng yêu cầu "có tính năng của app gốc".
 
 ### 4. Bật đăng nhập Google trong app (để đồng bộ giữa app – web – add-on)
 Google chặn đăng nhập trong khung web của app, nên phải dùng đăng nhập gốc (miễn phí):

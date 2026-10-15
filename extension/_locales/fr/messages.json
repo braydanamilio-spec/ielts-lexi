@@ -1,11 +1,11 @@
 {
  "appName": {
-  "message": "Vocaband – Dictionnaire et fiches IELTS"
+  "message": "Lexkite – Dictionnaire et fiches IELTS"
  },
  "appDesc": {
   "message": "Double-clic sur un mot : sens, API et audio natif. Traduisez phrases et sous-titres YouTube. Enregistrez et révisez avec des fiches."
  },
  "openApp": {
-  "message": "Ouvrir Vocaband"
+  "message": "Ouvrir Lexkite"
  }
 }

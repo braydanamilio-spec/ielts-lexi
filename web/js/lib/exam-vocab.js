@@ -1,4 +1,4 @@
-/* Từ vựng theo kỳ thi (tự biên soạn) – Vocaband, CC BY-SA 4.0 */
+/* Từ vựng theo kỳ thi (tự biên soạn) – Lexkite, CC BY-SA 4.0 */
 (function (g) {
   const add = g.IELTS_DATA.add;
   add('ex-ielts-listen', 'IELTS Listening – Section 1–4 hay gặp', '🎧', 'Điền form (đánh vần, số, mã), nhà ở, đi lại – bản đồ, tiện ích, thảo luận & bài giảng học thuật', [

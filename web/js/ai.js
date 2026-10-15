@@ -175,7 +175,7 @@ Criteria to use: ${kind === 'task1' ? 'Task Achievement, Coherence and Cohesion,
     if (linkUsed.length < 4) improvements.push(t('Dùng đa dạng từ nối hơn: however, moreover, as a result, for instance, in contrast…'));
     if (complex < 0.3) improvements.push(t('Thêm câu phức: mệnh đề quan hệ (which/who), câu điều kiện, “Although…”, mệnh đề rút gọn V-ing.'));
     if (basicHits.length) improvements.push(t('Thay từ quá cơ bản bằng từ chính xác hơn (xem gợi ý bên dưới).'));
-    if (awl < 0.03) improvements.push(t('Dùng thêm từ học thuật (AWL) đã học trong thư viện Vocaband.'));
+    if (awl < 0.03) improvements.push(t('Dùng thêm từ học thuật (AWL) đã học trong thư viện Lexkite.'));
     return {
       overall, criteria: names.map((name, i) => ({ name, band: bands[i], comment: comments[i] })),
       summary: t('Ước lượng nhanh theo các chỉ số đo được (độ dài, bố cục, từ nối, từ vựng, câu phức, lỗi ngữ pháp). Để có nhận xét chi tiết như giám khảo, bật chấm bằng AI.'),
@@ -183,15 +183,15 @@ Criteria to use: ${kind === 'task1' ? 'Task Achievement, Coherence and Cohesion,
       improvements: improvements.slice(0, 5),
       errors: errs.slice(0, 8).map(m => ({ quote: m.bad || m.ctx, fix: (m.reps || [])[0] || '', why: m.msg })),
       vocab: basicHits.slice(0, 6).map(b => ({ from: b, to: BASIC[b], note: t('Từ cơ bản – nên thay để tăng điểm Lexical Resource.') })),
-      _model: t('Vocaband – chấm nhanh theo quy tắc'), _local: true,
+      _model: t('Lexkite – chấm nhanh theo quy tắc'), _local: true,
     };
   }
 
   // ---------- Hướng dẫn lấy khóa ----------
   function keyDialog(onSaved) {
     modal(`<h2 style="margin-top:0">🤖 ${t('Bật chấm bài bằng AI')}</h2>
-      <p class="small" style="background:var(--primary-soft);padding:.5rem .7rem;border-radius:10px">💡 ${t('Trên <b>Chrome máy tính bản mới</b> (máy đủ mạnh), Vocaband dùng được <b>AI có sẵn trong Chrome</b> – miễn phí, không cần khóa. Trình duyệt này chưa hỗ trợ, nên bạn có thể dùng khóa Gemini miễn phí dưới đây (chất lượng chấm tốt hơn).')}</p>
-      <p class="small">${t('Vocaband dùng <b>Google Gemini</b> để chấm Writing & Speaking chi tiết theo 4 tiêu chí IELTS. Mỗi người dùng tạo <b>khóa miễn phí</b> của riêng mình (gói miễn phí của Google đủ cho hàng chục bài mỗi ngày).')}</p>
+      <p class="small" style="background:var(--primary-soft);padding:.5rem .7rem;border-radius:10px">💡 ${t('Trên <b>Chrome máy tính bản mới</b> (máy đủ mạnh), Lexkite dùng được <b>AI có sẵn trong Chrome</b> – miễn phí, không cần khóa. Trình duyệt này chưa hỗ trợ, nên bạn có thể dùng khóa Gemini miễn phí dưới đây (chất lượng chấm tốt hơn).')}</p>
+      <p class="small">${t('Lexkite dùng <b>Google Gemini</b> để chấm Writing & Speaking chi tiết theo 4 tiêu chí IELTS. Mỗi người dùng tạo <b>khóa miễn phí</b> của riêng mình (gói miễn phí của Google đủ cho hàng chục bài mỗi ngày).')}</p>
       <ol class="small" style="padding-left:1.1rem;line-height:1.8"><li>${t('Mở {link} và đăng nhập Google.', { link: '<a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a>' })}</li><li>${t('Bấm <b>Create API key</b> → sao chép khóa (bắt đầu bằng “AIza…”).')}</li><li>${t('Dán vào ô dưới đây.')}</li></ol>
       <input class="input" id="aiK" placeholder="AIza…" autocomplete="off" spellcheck="false">
       <p class="tiny muted">🔒 ${t('Khóa chỉ lưu trên trình duyệt này, không đồng bộ lên tài khoản và chỉ gửi tới Google khi bạn bấm chấm bài. Bài làm của bạn được gửi tới Google Gemini để chấm.')}</p>

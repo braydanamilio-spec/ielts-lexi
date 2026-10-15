@@ -1,4 +1,4 @@
-/* Từ vựng theo kỳ thi – phần 2 (tự biên soạn) – Vocaband, CC BY-SA 4.0 */
+/* Từ vựng theo kỳ thi – phần 2 (tự biên soạn) – Lexkite, CC BY-SA 4.0 */
 (function (g) {
   const add = g.IELTS_DATA.add;
   add('ex-toefl-campus', 'TOEFL Listening – hội thoại trong campus', '🏫', 'Phòng đào tạo, cố vấn học tập, ký túc xá, học phí, gia hạn bài, môn tiên quyết, bảng điểm, thư viện, đời sống sinh viên', [

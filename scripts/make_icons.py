@@ -1,4 +1,4 @@
-"""Vẽ icon PNG của Vocaband (giống icons/icon.svg) bằng thư viện chuẩn – không cần Pillow."""
+"""Vẽ icon PNG của Lexkite (giống icons/icon.svg) bằng thư viện chuẩn – không cần Pillow."""
 import struct, zlib, sys, os, math
 
 def png(path, w, h, px):

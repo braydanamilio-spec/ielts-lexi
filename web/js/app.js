@@ -1,4 +1,4 @@
-/* Vocaband v2 – khung ứng dụng: router, trạng thái, trang chủ, thư viện, từ điển, sổ từ, tiến độ, cài đặt. */
+/* Lexkite v2 – khung ứng dụng: router, trạng thái, trang chủ, thư viện, từ điển, sổ từ, tiến độ, cài đặt. */
 (function () {
   const { Store, SRS, Cards, Stats, Golden, DEFAULT_SETTINGS, todayKey, endOfToday, DAY } = Core;
   const { TOPICS, INDEX, GROUPS } = IELTS_DATA;
@@ -14,7 +14,7 @@
   const ORIGINS = {
     youtube: { emoji: '▶️', name: t('Từ YouTube & video'), desc: t('Lưu khi xem video có phụ đề') },
     web: { emoji: '🌐', name: t('Từ trang web'), desc: t('Lưu bằng add-on khi đọc báo, blog…') },
-    reading: { emoji: '📖', name: t('Từ bài đọc'), desc: t('Lưu khi đọc bài trong Vocaband') },
+    reading: { emoji: '📖', name: t('Từ bài đọc'), desc: t('Lưu khi đọc bài trong Lexkite') },
     dict: { emoji: '🔎', name: t('Từ tra từ điển'), desc: t('Từ bạn tự tra và lưu') },
     library: { emoji: '📚', name: t('Từ thư viện'), desc: t('Thêm từ các bộ từ IELTS') },
   };
@@ -271,8 +271,8 @@
       const v = UI.pickVoice(accent || state.settings.accent), good = v && /Natural|Neural|Online|^Google|Premium|Enhanced|Siri/i.test(v.name);
       if (good || !('speechSynthesis' in window) || !speechSynthesis.getVoices().length) return '';
       const ua = navigator.userAgent, win = /Windows/.test(ua), apple = /Mac|iPhone|iPad/.test(ua), android = /Android/.test(ua), edge = /Edg\//.test(ua);
-      return '🎧 ' + (win && !edge ? t('Giọng hiện tại chưa tự nhiên. Mở Vocaband bằng <b>Microsoft Edge</b> để dùng giọng <b>Natural</b> (rất giống người thật, miễn phí).')
-        : apple ? t('Tải giọng chất lượng cao miễn phí: <b>Cài đặt → Trợ năng → Nội dung được đọc → Giọng nói → English</b> → chọn giọng có chữ <b>Nâng cao/Premium</b>, rồi mở lại Vocaband.')
+      return '🎧 ' + (win && !edge ? t('Giọng hiện tại chưa tự nhiên. Mở Lexkite bằng <b>Microsoft Edge</b> để dùng giọng <b>Natural</b> (rất giống người thật, miễn phí).')
+        : apple ? t('Tải giọng chất lượng cao miễn phí: <b>Cài đặt → Trợ năng → Nội dung được đọc → Giọng nói → English</b> → chọn giọng có chữ <b>Nâng cao/Premium</b>, rồi mở lại Lexkite.')
         : android ? t('Cài <b>Google Speech Services</b> (Dịch vụ giọng nói của Google) từ CH Play và tải giọng tiếng Anh chất lượng cao để nghe tự nhiên hơn.')
         : t('Dùng Chrome hoặc Edge mới nhất để có giọng đọc tự nhiên hơn.'));
   };
@@ -476,10 +476,10 @@
         const ms = nx.at - Date.now(), h = Math.floor(ms / 3600000), m = Math.ceil(ms % 3600000 / 60000);
         el.innerHTML = `<div class="row nowrap"><div style="font-size:2.4rem">⏳</div><div class="grow"><h3 style="margin:0">${t('Thời điểm vàng tiếp theo')}</h3>
           <div class="muted small">${t('Còn <b style="color:var(--primary);font-size:1.1rem">{time}</b> · {n} từ sẽ cần ôn', { time: h ? t('{h} giờ {m} phút', { h, m }) : t('{m} phút', { m }), n: nx.count })}</div></div></div>
-          <p class="small muted" style="margin:.6rem 0 0">${t('Vocaband sẽ nhắc bạn đúng lúc từ sắp bị quên. Trong lúc chờ, hãy học thêm từ mới hoặc chơi Ghép thẻ.')}</p>`;
+          <p class="small muted" style="margin:.6rem 0 0">${t('Lexkite sẽ nhắc bạn đúng lúc từ sắp bị quên. Trong lúc chờ, hãy học thêm từ mới hoặc chơi Ghép thẻ.')}</p>`;
       } else {
         const fresh = Cards.dueCount(state.cards, state.settings, state.stats).newCount;
-        el.innerHTML = `<div class="row nowrap"><div style="font-size:2.4rem">🌱</div><div><h3 style="margin:0">${t('Chưa có lịch ôn')}</h3><div class="muted small">${t('Học từ mới đầu tiên – Vocaband sẽ tự tính “thời điểm vàng” để nhắc bạn ôn đúng lúc sắp quên.')}</div></div></div>
+        el.innerHTML = `<div class="row nowrap"><div style="font-size:2.4rem">🌱</div><div><h3 style="margin:0">${t('Chưa có lịch ôn')}</h3><div class="muted small">${t('Học từ mới đầu tiên – Lexkite sẽ tự tính “thời điểm vàng” để nhắc bạn ôn đúng lúc sắp quên.')}</div></div></div>
           <div class="row" style="margin-top:.9rem">${fresh ? `<a class="btn primary" href="#/review">✨ ${t('Học {n} từ mới ngay', { n: fresh })}</a>` : `<a class="btn primary" href="#/library">📚 ${t('Chọn bộ từ')}</a>`}<a class="btn" href="#/method">${t('Thời điểm vàng là gì?')}</a></div>
           <div class="tiny muted" style="margin-top:.8rem">${t('Đường cong quên lãng: sau 1 ngày bạn quên ~50% từ mới học – ôn đúng lúc giúp nhớ gần như mãi mãi.')}</div>`;
       }
@@ -1128,15 +1128,15 @@
     const [hh, mm] = time.split(':');
     const ymd = todayKey().replace(/-/g, '');
     const url = location.href.split('#')[0];
-    return ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Vocaband//VI', 'CALSCALE:GREGORIAN',
+    return ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Lexkite//VI', 'CALSCALE:GREGORIAN',
       'BEGIN:VEVENT', `UID:ielts-lexi-daily-${ymd}@lexi`, `DTSTAMP:${ymd}T000000Z`, `DTSTART:${ymd}T${hh}${mm}00`, 'DURATION:PT15M', 'RRULE:FREQ=DAILY',
-      'SUMMARY:📚 ' + t('Ôn từ vựng IELTS (15 phút)'), 'DESCRIPTION:' + t('Mở Vocaband để ôn flashcard hôm nay: {url}', { url }), `URL:${url}`,
+      'SUMMARY:📚 ' + t('Ôn từ vựng IELTS (15 phút)'), 'DESCRIPTION:' + t('Mở Lexkite để ôn flashcard hôm nay: {url}', { url }), `URL:${url}`,
       'BEGIN:VALARM', 'ACTION:DISPLAY', 'DESCRIPTION:' + t('Đến giờ ôn từ vựng IELTS!'), 'TRIGGER:PT0M', 'END:VALARM', 'END:VEVENT', 'END:VCALENDAR'].join('\r\n');
   }
 
   async function notify(force) {
     const { total } = Cards.dueCount(state.cards, state.settings, state.stats);
-    const title = t('Vocaband – đến giờ học rồi!') + ' 📚';
+    const title = t('Lexkite – đến giờ học rồi!') + ' 📚';
     const body = total ? t('Bạn có {n} thẻ cần ôn hôm nay. Giữ chuỗi 🔥{s} ngày nhé!', { n: total, s: streak() }) : t('Học vài từ mới để giữ chuỗi ngày học nhé') + ' 🔥';
     if (Store.isExtension && chrome.runtime) { chrome.runtime.sendMessage({ type: 'testNotify' }); return; }
     if (!('Notification' in window)) return force && toast(t('Trình duyệt không hỗ trợ thông báo'));
@@ -1155,7 +1155,7 @@
     if (!('caches' in window) || !navigator.serviceWorker) return;
     const { total } = Cards.dueCount(state.cards, state.settings, state.stats);
     const today = new Date().toISOString().slice(0, 10), studied = (state.stats.days || {})[todayKey()] > 0;
-    const m = { on: s.reminderOn !== false, time: s.reminderTime || '20:00', last: studied ? today : '', title: t('Vocaband – đến giờ học rồi!') + ' 📚',
+    const m = { on: s.reminderOn !== false, time: s.reminderTime || '20:00', last: studied ? today : '', title: t('Lexkite – đến giờ học rồi!') + ' 📚',
       body: total ? t('Bạn có {n} thẻ cần ôn hôm nay. Giữ chuỗi 🔥{s} ngày nhé!', { n: total, s: streak() }) : t('Học vài từ mới để giữ chuỗi ngày học nhé') };
     const k = JSON.stringify(m); if (k === metaKey) return; metaKey = k;
     await (await caches.open('vb-meta')).put('/__meta', new Response(k, { headers: { 'Content-Type': 'application/json' } }));
@@ -1326,10 +1326,10 @@
     const b = document.createElement('button');
     b.id = 'installBtn'; b.className = 'pill'; b.style.cursor = 'pointer'; b.style.color = 'var(--primary)';
     b.innerHTML = `📲 <span class="hide-sm">${t('Cài app')}</span>`;
-    b.title = t('Cài Vocaband lên màn hình chính');
+    b.title = t('Cài Lexkite lên màn hình chính');
     b.onclick = async () => {
-      if (installEvt) { installEvt.prompt(); const r = await installEvt.userChoice; if (r.outcome === 'accepted') { b.remove(); toast('🎉 ' + t('Đã cài Vocaband!')); } installEvt = null; return; }
-      modal(`<h2>📲 ${t('Cài Vocaband lên iPhone')}</h2><ol style="line-height:2;padding-left:1.2rem"><li>${t('Bấm nút <b>Chia sẻ</b> <span style="font-size:1.2rem">⎋</span> ở thanh dưới của Safari')}</li><li>${t('Chọn <b>“Thêm vào MH chính”</b> (Add to Home Screen)')}</li><li>${t('Bấm <b>Thêm</b> – biểu tượng Vocaband sẽ xuất hiện như một app')}</li></ol><button class="btn primary block" data-close>${t('Đã hiểu')}</button>`);
+      if (installEvt) { installEvt.prompt(); const r = await installEvt.userChoice; if (r.outcome === 'accepted') { b.remove(); toast('🎉 ' + t('Đã cài Lexkite!')); } installEvt = null; return; }
+      modal(`<h2>📲 ${t('Cài Lexkite lên iPhone')}</h2><ol style="line-height:2;padding-left:1.2rem"><li>${t('Bấm nút <b>Chia sẻ</b> <span style="font-size:1.2rem">⎋</span> ở thanh dưới của Safari')}</li><li>${t('Chọn <b>“Thêm vào MH chính”</b> (Add to Home Screen)')}</li><li>${t('Bấm <b>Thêm</b> – biểu tượng Lexkite sẽ xuất hiện như một app')}</li></ol><button class="btn primary block" data-close>${t('Đã hiểu')}</button>`);
     };
     $('.top-stats').prepend(b);
   }
@@ -1343,7 +1343,7 @@
       if (active < 3 || Date.now() - last < 14 * 864e5 || document.querySelector('.install-nudge')) return;
       localStorage.setItem('vb.nudgeAt', Date.now());
       const n = document.createElement('div'); n.className = 'install-nudge card';
-      n.innerHTML = `<div class="row nowrap" style="gap:.7rem"><img src="icons/icon-192.png" alt="" width="44" height="44" style="border-radius:12px"><div style="flex:1;min-width:0"><b>${t('Cài Vocaband như một app')}</b><div class="tiny muted">${t('Mở nhanh từ màn hình chính, toàn màn hình, học được cả khi offline')}</div></div><button class="icon-btn sm" data-x aria-label="${t('Đóng')}">✕</button></div><button class="btn primary block" data-go style="margin-top:.6rem">📲 ${t('Cài ngay – miễn phí')}</button>`;
+      n.innerHTML = `<div class="row nowrap" style="gap:.7rem"><img src="icons/icon-192.png" alt="" width="44" height="44" style="border-radius:12px"><div style="flex:1;min-width:0"><b>${t('Cài Lexkite như một app')}</b><div class="tiny muted">${t('Mở nhanh từ màn hình chính, toàn màn hình, học được cả khi offline')}</div></div><button class="icon-btn sm" data-x aria-label="${t('Đóng')}">✕</button></div><button class="btn primary block" data-go style="margin-top:.6rem">📲 ${t('Cài ngay – miễn phí')}</button>`;
       document.body.appendChild(n);
       n.querySelector('[data-x]').onclick = () => n.remove();
       n.querySelector('[data-go]').onclick = () => { n.remove(); const b = $('#installBtn'); if (b) b.click(); };

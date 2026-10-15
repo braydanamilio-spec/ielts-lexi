@@ -6,8 +6,8 @@
   // ai.js
   'AI trên máy': 'on-device AI',
   'Bật chấm bài bằng AI': 'Turn on AI grading',
-  'Trên <b>Chrome máy tính bản mới</b> (máy đủ mạnh), Vocaband dùng được <b>AI có sẵn trong Chrome</b> – miễn phí, không cần khóa. Trình duyệt này chưa hỗ trợ, nên bạn có thể dùng khóa Gemini miễn phí dưới đây (chất lượng chấm tốt hơn).': 'On <b>recent desktop Chrome</b> (on capable hardware), Vocaband can use <b>Chrome’s built-in AI</b> – free, no key needed. This browser doesn’t support it yet, so you can use a free Gemini key below instead (it also grades more accurately).',
-  'Vocaband dùng <b>Google Gemini</b> để chấm Writing & Speaking chi tiết theo 4 tiêu chí IELTS. Mỗi người dùng tạo <b>khóa miễn phí</b> của riêng mình (gói miễn phí của Google đủ cho hàng chục bài mỗi ngày).': 'Vocaband uses <b>Google Gemini</b> to grade your Writing & Speaking in detail against the 4 IELTS criteria. Each user creates their own <b>free key</b> (Google’s free tier covers dozens of submissions a day).',
+  'Trên <b>Chrome máy tính bản mới</b> (máy đủ mạnh), Lexkite dùng được <b>AI có sẵn trong Chrome</b> – miễn phí, không cần khóa. Trình duyệt này chưa hỗ trợ, nên bạn có thể dùng khóa Gemini miễn phí dưới đây (chất lượng chấm tốt hơn).': 'On <b>recent desktop Chrome</b> (on capable hardware), Lexkite can use <b>Chrome’s built-in AI</b> – free, no key needed. This browser doesn’t support it yet, so you can use a free Gemini key below instead (it also grades more accurately).',
+  'Lexkite dùng <b>Google Gemini</b> để chấm Writing & Speaking chi tiết theo 4 tiêu chí IELTS. Mỗi người dùng tạo <b>khóa miễn phí</b> của riêng mình (gói miễn phí của Google đủ cho hàng chục bài mỗi ngày).': 'Lexkite uses <b>Google Gemini</b> to grade your Writing & Speaking in detail against the 4 IELTS criteria. Each user creates their own <b>free key</b> (Google’s free tier covers dozens of submissions a day).',
   'Mở {link} và đăng nhập Google.': 'Open {link} and sign in with Google.',
   'Bấm <b>Create API key</b> → sao chép khóa (bắt đầu bằng “AIza…”).': 'Click <b>Create API key</b> → copy the key (it starts with “AIza…”).',
   'Dán vào ô dưới đây.': 'Paste it into the box below.',
@@ -399,7 +399,7 @@
   'Đã lưu “{p}” – vào Sổ cụm từ để ôn': 'Saved “{p}” – review it in your Phrasebook',
   'Tra nghĩa': 'Look up',
   'Lưu cụm': 'Save phrase',
-  'Lưu từ Vocaband': 'Saved from Vocaband',
+  'Lưu từ Lexkite': 'Saved from Lexkite',
   'Đang tra “{text}”…': 'Looking up “{text}”…',
   'Đang dịch “{text}”…': 'Translating “{text}”…',
   'Bản dịch': 'Translation',
@@ -582,7 +582,7 @@
   'Muốn AI giải thích ngữ pháp, cấu trúc & cách dùng? Chọn 1 cách miễn phí:': 'Want AI to explain grammar, structure & usage? Pick a free option:',
   'Dùng khóa Gemini (miễn phí, 1 phút)': 'Use a Gemini key (free, 1 minute)', 'Tải AI của Chrome (~2GB, 1 lần)': 'Download Chrome’s AI (~2 GB, once)', 'AI phản hồi quá lâu – thử lại sau.': 'AI took too long – try again later.',
 }); })(typeof self !== 'undefined' ? self : this);
-(function (g) { Object.assign(g.I18N_DICT.en, {"{n}/{min} từ · {p} đoạn.": "{n}/{min} words · {p} paragraphs.", "Có câu tổng quan (overview).": "Has an overview.", "Thiếu câu tổng quan (overview) – lỗi nặng ở Task 1.": "No overview – a serious weakness in Task 1.", "{k} số liệu được dẫn.": "{k} figures cited.", "Nêu rõ quan điểm.": "Clear position.", "Chưa nêu rõ quan điểm.": "Position not clearly stated.", "Có kết luận.": "Has a conclusion.", "Thiếu đoạn kết luận.": "Missing a conclusion.", "Dùng {n} từ nối khác nhau: {list}.": "Uses {n} different linking words: {list}.", "Dùng {n} từ nối khác nhau.": "Uses {n} different linking words.", "Độ đa dạng từ {p}%, từ học thuật {a}%.": "Lexical variety {p}%, academic words {a}%.", "{c}% câu có cấu trúc phức · {e} lỗi phát hiện.": "{c}% complex sentences · {e} errors found.", "Viết đủ tối thiểu {min} từ – thiếu từ bị trừ điểm Task.": "Write at least {min} words – under-length answers lose Task marks.", "Thêm câu tổng quan bắt đầu bằng “Overall, …” nêu 2 xu hướng/đặc điểm nổi bật nhất.": "Add an overview starting with “Overall, …” stating the 2 most notable trends or features.", "Nêu rõ quan điểm ngay mở bài và nhắc lại ở kết bài.": "State your position in the introduction and restate it in the conclusion.", "Dùng đa dạng từ nối hơn: however, moreover, as a result, for instance, in contrast…": "Use a wider range of linkers: however, moreover, as a result, for instance, in contrast…", "Thêm câu phức: mệnh đề quan hệ (which/who), câu điều kiện, “Although…”, mệnh đề rút gọn V-ing.": "Add complex sentences: relative clauses (which/who), conditionals, “Although…”, participle clauses.", "Thay từ quá cơ bản bằng từ chính xác hơn (xem gợi ý bên dưới).": "Replace very basic words with more precise ones (see suggestions below).", "Dùng thêm từ học thuật (AWL) đã học trong thư viện Vocaband.": "Use more academic (AWL) words from your Vocaband library.", "Ước lượng nhanh theo các chỉ số đo được (độ dài, bố cục, từ nối, từ vựng, câu phức, lỗi ngữ pháp). Để có nhận xét chi tiết như giám khảo, bật chấm bằng AI.": "A quick estimate from measurable features (length, structure, linkers, vocabulary, complex sentences, grammar errors). For examiner-style feedback, turn on AI grading.", "Liên kết ý tốt với nhiều từ nối.": "Ideas are well linked with varied connectors.", "Vốn từ đa dạng, ít lặp từ.": "Varied vocabulary with little repetition.", "Dùng từ học thuật phù hợp.": "Appropriate academic vocabulary.", "Có nhiều câu phức.": "Good use of complex sentences.", "Đủ độ dài yêu cầu.": "Meets the length requirement.", "Từ cơ bản – nên thay để tăng điểm Lexical Resource.": "Basic word – replace it to raise your Lexical Resource score.", "Vocaband – chấm nhanh theo quy tắc": "Vocaband – quick rule-based scoring", "Chấm sâu như giám khảo bằng AI (miễn phí)": "Get examiner-style AI feedback (free)", "Đây là kết quả chấm nhanh theo quy tắc:": "Here is the quick rule-based result:", "Chấm lại": "Re-grade"}); })(typeof self !== 'undefined' ? self : this);
+(function (g) { Object.assign(g.I18N_DICT.en, {"{n}/{min} từ · {p} đoạn.": "{n}/{min} words · {p} paragraphs.", "Có câu tổng quan (overview).": "Has an overview.", "Thiếu câu tổng quan (overview) – lỗi nặng ở Task 1.": "No overview – a serious weakness in Task 1.", "{k} số liệu được dẫn.": "{k} figures cited.", "Nêu rõ quan điểm.": "Clear position.", "Chưa nêu rõ quan điểm.": "Position not clearly stated.", "Có kết luận.": "Has a conclusion.", "Thiếu đoạn kết luận.": "Missing a conclusion.", "Dùng {n} từ nối khác nhau: {list}.": "Uses {n} different linking words: {list}.", "Dùng {n} từ nối khác nhau.": "Uses {n} different linking words.", "Độ đa dạng từ {p}%, từ học thuật {a}%.": "Lexical variety {p}%, academic words {a}%.", "{c}% câu có cấu trúc phức · {e} lỗi phát hiện.": "{c}% complex sentences · {e} errors found.", "Viết đủ tối thiểu {min} từ – thiếu từ bị trừ điểm Task.": "Write at least {min} words – under-length answers lose Task marks.", "Thêm câu tổng quan bắt đầu bằng “Overall, …” nêu 2 xu hướng/đặc điểm nổi bật nhất.": "Add an overview starting with “Overall, …” stating the 2 most notable trends or features.", "Nêu rõ quan điểm ngay mở bài và nhắc lại ở kết bài.": "State your position in the introduction and restate it in the conclusion.", "Dùng đa dạng từ nối hơn: however, moreover, as a result, for instance, in contrast…": "Use a wider range of linkers: however, moreover, as a result, for instance, in contrast…", "Thêm câu phức: mệnh đề quan hệ (which/who), câu điều kiện, “Although…”, mệnh đề rút gọn V-ing.": "Add complex sentences: relative clauses (which/who), conditionals, “Although…”, participle clauses.", "Thay từ quá cơ bản bằng từ chính xác hơn (xem gợi ý bên dưới).": "Replace very basic words with more precise ones (see suggestions below).", "Dùng thêm từ học thuật (AWL) đã học trong thư viện Lexkite.": "Use more academic (AWL) words from your Lexkite library.", "Ước lượng nhanh theo các chỉ số đo được (độ dài, bố cục, từ nối, từ vựng, câu phức, lỗi ngữ pháp). Để có nhận xét chi tiết như giám khảo, bật chấm bằng AI.": "A quick estimate from measurable features (length, structure, linkers, vocabulary, complex sentences, grammar errors). For examiner-style feedback, turn on AI grading.", "Liên kết ý tốt với nhiều từ nối.": "Ideas are well linked with varied connectors.", "Vốn từ đa dạng, ít lặp từ.": "Varied vocabulary with little repetition.", "Dùng từ học thuật phù hợp.": "Appropriate academic vocabulary.", "Có nhiều câu phức.": "Good use of complex sentences.", "Đủ độ dài yêu cầu.": "Meets the length requirement.", "Từ cơ bản – nên thay để tăng điểm Lexical Resource.": "Basic word – replace it to raise your Lexical Resource score.", "Lexkite – chấm nhanh theo quy tắc": "Lexkite – quick rule-based scoring", "Chấm sâu như giám khảo bằng AI (miễn phí)": "Get examiner-style AI feedback (free)", "Đây là kết quả chấm nhanh theo quy tắc:": "Here is the quick rule-based result:", "Chấm lại": "Re-grade"}); })(typeof self !== 'undefined' ? self : this);
 (function (g) { Object.assign(g.I18N_DICT.en, { 'Trang trọng, học thuật hơn': 'More formal and academic', 'Gọn hơn, bỏ ý thừa': 'More concise', 'Diễn đạt đầy đủ, nhiều cấu trúc hơn': 'Fuller, with richer structures', 'Gợi ý sửa từ AI trên máy': 'Suggestion from on-device AI' }); })(typeof self !== 'undefined' ? self : this);
 (function (g) { Object.assign(g.I18N_DICT.en, { 'Tải về (~2 GB, 1 lần)': 'Download (~2 GB, once)', 'Chấm nhanh & ghi chú từ soạn sẵn': 'Quick scoring & built-in word notes', 'Luôn có': 'Always on', 'AI có sẵn trong Chrome (trên máy, riêng tư)': 'Chrome built-in AI (on-device, private)', 'Gemini – chấm chi tiết như giám khảo': 'Gemini – examiner-style feedback', 'Đã bật': 'On', 'Cần khóa miễn phí': 'Needs a free key', 'AI của Chrome đã sẵn sàng': 'Chrome AI is ready', 'Không tải được – thử lại sau': 'Download failed – try again later',
   'Trang trọng': 'Formal', 'Bán trang trọng': 'Semi-formal', 'Thân mật': 'Informal',
@@ -866,7 +866,7 @@
 (function (g) { Object.assign(g.I18N_DICT.en, {
   'Đang tải mô hình nhận dạng giọng nói… {p}%': 'Downloading the speech recognition model… {p}%',
   'Bật nhận dạng giọng nói trên máy': 'Turn on on-device speech recognition',
-  'Trình duyệt này chưa có nhận dạng giọng nói. Vocaband có thể dùng <b>Whisper</b> (mã nguồn mở) chạy ngay trên máy của bạn: miễn phí, riêng tư – âm thanh không gửi đi đâu.': 'This browser has no built-in speech recognition. Vocaband can use <b>Whisper</b> (open source) running right on your device: free and private – your audio never leaves it.',
+  'Trình duyệt này chưa có nhận dạng giọng nói. Lexkite có thể dùng <b>Whisper</b> (mã nguồn mở) chạy ngay trên máy của bạn: miễn phí, riêng tư – âm thanh không gửi đi đâu.': 'This browser has no built-in speech recognition. Lexkite can use <b>Whisper</b> (open source) running right on your device: free and private – your audio never leaves it.',
   'Cần tải mô hình khoảng 40 MB một lần (nên dùng Wi-Fi).': 'It needs a one-time ~40 MB model download (Wi-Fi recommended).',
   'Tải & bật': 'Download & turn on', 'Đang chuẩn bị… bấm micro lần nữa để nói': 'Getting ready… tap the mic again to speak',
 }); })(typeof self !== 'undefined' ? self : this);
@@ -1359,13 +1359,13 @@
   'Xem kế hoạch hôm nay →': 'See today’s plan →',
   'Lộ trình': 'Path',
   'Kiểm tra đầu vào (5 phút)': 'Placement test (5 min)',
-  '20 câu từ vựng và ngữ pháp từ A2 đến C1. Vocaband dùng kết quả để <b>ước tính band</b>, tìm <b>điểm yếu</b> và cá nhân hóa kế hoạch học mỗi ngày.': '20 vocabulary and grammar questions from A2 to C1. Vocaband uses your results to <b>estimate your band</b>, find your <b>weak spots</b> and personalize your daily study plan.',
+  '20 câu từ vựng và ngữ pháp từ A2 đến C1. Lexkite dùng kết quả để <b>ước tính band</b>, tìm <b>điểm yếu</b> và cá nhân hóa kế hoạch học mỗi ngày.': '20 vocabulary and grammar questions from A2 to C1. Lexkite uses your results to <b>estimate your band</b>, find your <b>weak spots</b> and personalize your daily study plan.',
   'Không biết thì chọn “Tôi không biết” – đừng đoán, kết quả sẽ chính xác hơn.': 'If you don’t know, choose “I don’t know” – don’t guess, and your results will be more accurate.',
   'Bắt đầu →': 'Start →',
 
   /* ---------- plan.js: today's plan ---------- */
   'Làm bài kiểm tra đầu vào (5 phút)': 'Take the placement test (5 min)',
-  'Để Vocaband cá nhân hóa lộ trình cho bạn': 'So Vocaband can personalize your path',
+  'Để Lexkite cá nhân hóa lộ trình cho bạn': 'So Lexkite can personalize your path',
   'Ôn {n} thẻ đang đến thời điểm vàng': 'Review {n} cards at their optimal time',
   'Ôn tập thẻ đến hạn': 'Review due cards',
   'Lặp lại ngắt quãng – ưu tiên số 1': 'Spaced repetition – top priority',
@@ -1397,16 +1397,16 @@
   'Bài luyện, mẹo và video miễn phí từ IDP.': 'Free practice, tips and videos from IDP.',
   'Bài đọc, nghe, ngữ pháp theo trình độ A1–C1 – có bài tập tương tác.': 'Reading, listening and grammar by level, A1–C1 – with interactive exercises.',
   '“6 Minute English”, tin tức chậm – tuyệt vời để “tắm ngôn ngữ” mỗi ngày.': '“6 Minute English” and slow news – great for daily language immersion.',
-  'Bài nói chủ đề học thuật có phụ đề – bật add-on Vocaband trên YouTube để tra từ trong phụ đề.': 'Talks on academic topics with subtitles – turn on the Vocaband add-on on YouTube to look up words in the subtitles.',
+  'Bài nói chủ đề học thuật có phụ đề – bật add-on Lexkite trên YouTube để tra từ trong phụ đề.': 'Talks on academic topics with subtitles – turn on the Lexkite add-on on YouTube to look up words in the subtitles.',
   'Tin tức đọc chậm, rõ (giọng Mỹ) kèm bản chữ.': 'News read slowly and clearly (American accent) with transcripts.',
   'Nghe một từ được người bản xứ phát âm trong hàng nghìn video thật.': 'Hear any word pronounced by native speakers in thousands of real videos.',
   'Nộp đoạn viết để nhận phản hồi tự động miễn phí (cấp độ CEFR).': 'Submit your writing for free automated feedback (CEFR level).',
-  'Từ điển cho người học – tra thêm ví dụ, collocation; add-on Vocaband hoạt động ngay trên trang này.': 'A learner’s dictionary – find more examples and collocations; the Vocaband add-on works right on this site.',
+  'Từ điển cho người học – tra thêm ví dụ, collocation; add-on Lexkite hoạt động ngay trên trang này.': 'A learner’s dictionary – find more examples and collocations; the Lexkite add-on works right on this site.',
   'Tài nguyên miễn phí chính thống': 'Trusted free resources',
-  'Đã chọn lọc từ các nguồn uy tín, hợp pháp. Mẹo: mở trang và dùng add-on Vocaband để <b>bấm đúp tra từ, bôi đen dịch câu</b> – mọi từ mới tự vào thư viện “Từ trang web”.': 'Hand-picked from reputable, legal sources. Tip: open a site and use the Vocaband add-on to <b>double-click to look up words and highlight to translate sentences</b> – new words go straight into your “From websites” library.',
+  'Đã chọn lọc từ các nguồn uy tín, hợp pháp. Mẹo: mở trang và dùng add-on Lexkite để <b>bấm đúp tra từ, bôi đen dịch câu</b> – mọi từ mới tự vào thư viện “Từ trang web”.': 'Hand-picked from reputable, legal sources. Tip: open a site and use the Lexkite add-on to <b>double-click to look up words and highlight to translate sentences</b> – new words go straight into your “From websites” library.',
   'Thói quen “tắm ngôn ngữ” 20 phút/ngày': 'A 20-minute daily immersion habit',
   'Nghe 1 bài BBC 6 Minute English hoặc 1 video TED có phụ đề – tra từ trong phụ đề bằng add-on.': 'Listen to 1 BBC 6 Minute English episode or 1 subtitled TED talk – look up words in the subtitles with the add-on.',
-  'Đọc 1 bài trong Vocaband hoặc LearnEnglish – lưu 3–5 từ kèm câu gốc.': 'Read 1 passage in Vocaband or LearnEnglish – save 3–5 words with their original sentences.',
+  'Đọc 1 bài trong Lexkite hoặc LearnEnglish – lưu 3–5 từ kèm câu gốc.': 'Read 1 passage in Lexkite or LearnEnglish – save 3–5 words with their original sentences.',
   'Ôn flashcard đúng thời điểm vàng.': 'Review your flashcards at the optimal time.',
   'Nói lại nội dung vừa nghe/đọc trong 1 phút ở Phòng Speaking.': 'Retell what you just heard or read in 1 minute in the Speaking room.',
 
@@ -1556,7 +1556,7 @@
   'Ôn thẻ': 'Review cards',
   'Thi thử Listening/Reading': 'Listening/Reading mock test',
   'Bài mẫu + viết Task 2': 'Model answers + Task 2 writing',
-  'Phương pháp học của Vocaband': 'The Vocaband method',
+  'Phương pháp học của Lexkite': 'The Lexkite method',
   'Mỗi tính năng dựa trên một nguyên lý đã được nghiên cứu về trí nhớ và thụ đắc ngôn ngữ – kèm số liệu thật của chính bạn để biết nên làm gì tiếp theo.': 'Every feature is built on a research-backed principle of memory and language acquisition – with your own real data so you know what to do next.',
   'Vòng lặp học mỗi ngày (~30 phút)': 'Daily study loop (~30 min)',
   'Hôm nay {done}/{total}': 'Today {done}/{total}',
@@ -1580,8 +1580,8 @@
   'Kiểm tra trình độ để cá nhân hóa': 'Take the placement test to personalize',
   'Tổng ~{n} phút/ngày. Đều đặn mỗi ngày hiệu quả hơn học dồn cuối tuần.': 'About {n} min/day in total. Studying every day beats cramming on weekends.',
   'Xem Lộ trình chi tiết →': 'See the full path →',
-  '12 nguyên lý & cách Vocaband áp dụng': '12 principles & how Vocaband applies them',
-  'Trong Vocaband:': 'In Vocaband:',
+  '12 nguyên lý & cách Lexkite áp dụng': '12 principles & how Lexkite applies them',
+  'Trong Lexkite:': 'In Lexkite:',
   'Câu hỏi thường gặp': 'FAQ',
   'Mỗi ngày nên học bao nhiêu từ mới?': 'How many new words should I learn each day?',
   '10–20 từ là hợp lý. Mỗi từ mới sinh ra khoảng 5–8 lượt ôn trong tháng đầu, nên học quá nhiều sẽ khiến lượng ôn dồn lên. Chỉnh số từ mới/ngày và giới hạn phiên ôn trong <a href="#/settings">Cài đặt</a>.': '10–20 is reasonable. Each new word generates about 5–8 reviews in the first month, so learning too many will pile up your reviews. Adjust new words per day and the review session limit in <a href="#/settings">Settings</a>.',
@@ -1603,14 +1603,14 @@
   'Lượt nói (điểm)': 'Speaking (points)',
   'Bài ngữ pháp': 'Grammar lessons',
   'Đặt mục tiêu điểm & ngày thi': 'Set your target score & exam date',
-  'Vocaband sẽ chia kế hoạch học từng tuần cho bạn': 'Vocaband will break it down into a weekly study plan',
+  'Lexkite sẽ chia kế hoạch học từng tuần cho bạn': 'Lexkite will break it down into a weekly study plan',
   'Đặt mục tiêu': 'Set goal',
   'còn {days} ngày · hiện ~{cur}': '{days} days left · now ~{cur}',
   'Tuần này {pct}%': 'This week {pct}%',
   'Đúng tiến độ': 'On track',
   'Nên đạt ~{exp}% vào hôm nay – xem chỉ tiêu còn thiếu →': 'Aim for ~{exp}% by today – see what’s left →',
   'Mục tiêu & kế hoạch học': 'Goal & study plan',
-  'Nhập kỳ thi, điểm mục tiêu và ngày thi – Vocaband tính khối lượng cần học và chia chỉ tiêu từng tuần cho từng kỹ năng.': 'Enter your exam, target score and exam date – Vocaband works out how much you need to study and sets weekly targets for each skill.',
+  'Nhập kỳ thi, điểm mục tiêu và ngày thi – Lexkite tính khối lượng cần học và chia chỉ tiêu từng tuần cho từng kỹ năng.': 'Enter your exam, target score and exam date – Lexkite works out how much you need to study and sets weekly targets for each skill.',
   'Mục tiêu của bạn': 'Your goal',
   'Kỳ thi': 'Exam',
   'Điểm mục tiêu': 'Target score',
@@ -1705,7 +1705,7 @@
   'Từ trang web': 'From websites',
   'Lưu bằng add-on khi đọc báo, blog…': 'Saved with the add-on while reading news, blogs…',
   'Từ bài đọc': 'From readings',
-  'Lưu khi đọc bài trong Vocaband': 'Saved while reading in Vocaband',
+  'Lưu khi đọc bài trong Lexkite': 'Saved while reading in Lexkite',
   'Từ tra từ điển': 'From dictionary lookups',
   'Từ bạn tự tra và lưu': 'Words you looked up and saved',
   'Từ thư viện': 'From the library',
@@ -1768,9 +1768,9 @@
   'Còn <b style="color:var(--primary);font-size:1.1rem">{time}</b> · {n} từ sẽ cần ôn': 'In <b style="color:var(--primary);font-size:1.1rem">{time}</b> · {n} words will be due',
   '{h} giờ {m} phút': '{h} h {m} min',
   '{m} phút': '{m} min',
-  'Vocaband sẽ nhắc bạn đúng lúc từ sắp bị quên. Trong lúc chờ, hãy học thêm từ mới hoặc chơi Ghép thẻ.': "Vocaband will remind you right before words fade. Meanwhile, learn some new words or play Match.",
+  'Lexkite sẽ nhắc bạn đúng lúc từ sắp bị quên. Trong lúc chờ, hãy học thêm từ mới hoặc chơi Ghép thẻ.': "Lexkite will remind you right before words fade. Meanwhile, learn some new words or play Match.",
   'Chưa có lịch ôn': 'No reviews scheduled yet',
-  'Học từ mới đầu tiên – Vocaband sẽ tự tính “thời điểm vàng” để nhắc bạn ôn đúng lúc sắp quên.': 'Learn your first words and Vocaband will work out the “golden time” to remind you right before you forget.',
+  'Học từ mới đầu tiên – Lexkite sẽ tự tính “thời điểm vàng” để nhắc bạn ôn đúng lúc sắp quên.': 'Learn your first words and Lexkite will work out the “golden time” to remind you right before you forget.',
   'Học {n} từ mới ngay': 'Learn {n} new words now',
   'Chọn bộ từ': 'Choose a word set',
   'Thời điểm vàng là gì?': 'What is golden time?',
@@ -1994,9 +1994,9 @@
 
   // ---- Reminders & notifications ----
   'Ôn từ vựng IELTS (15 phút)': 'IELTS vocabulary review (15 min)',
-  'Mở Vocaband để ôn flashcard hôm nay: {url}': "Open Vocaband to review today's flashcards: {url}",
+  'Mở Lexkite để ôn flashcard hôm nay: {url}': "Open Lexkite to review today's flashcards: {url}",
   'Đến giờ ôn từ vựng IELTS!': 'Time for your IELTS vocabulary review!',
-  'Vocaband – đến giờ học rồi!': "Vocaband: it's study time!",
+  'Lexkite – đến giờ học rồi!': "Lexkite: it's study time!",
   'Bạn có {n} thẻ cần ôn hôm nay. Giữ chuỗi 🔥{s} ngày nhé!': 'You have {n} cards to review today. Keep your 🔥{s}-day streak going!',
   'Học vài từ mới để giữ chuỗi ngày học nhé': 'Learn a few new words to keep your streak alive',
   'Trình duyệt không hỗ trợ thông báo': "This browser doesn't support notifications",
@@ -2055,12 +2055,12 @@
 
   // ---- Install app, network ----
   'Cài app': 'Install app',
-  'Cài Vocaband lên màn hình chính': 'Install Vocaband on your home screen',
-  'Đã cài Vocaband!': 'Vocaband installed!',
-  'Cài Vocaband lên iPhone': 'Install Vocaband on iPhone',
+  'Cài Lexkite lên màn hình chính': 'Install Lexkite on your home screen',
+  'Đã cài Lexkite!': 'Lexkite installed!',
+  'Cài Lexkite lên iPhone': 'Install Lexkite on iPhone',
   'Bấm nút <b>Chia sẻ</b> <span style="font-size:1.2rem">⎋</span> ở thanh dưới của Safari': 'Tap the <b>Share</b> button <span style="font-size:1.2rem">⎋</span> in Safari’s bottom bar',
   'Chọn <b>“Thêm vào MH chính”</b> (Add to Home Screen)': 'Choose <b>“Add to Home Screen”</b>',
-  'Bấm <b>Thêm</b> – biểu tượng Vocaband sẽ xuất hiện như một app': 'Tap <b>Add</b>. The Vocaband icon will appear like any other app',
+  'Bấm <b>Thêm</b> – biểu tượng Lexkite sẽ xuất hiện như một app': 'Tap <b>Add</b>. The Lexkite icon will appear like any other app',
   'Đã hiểu': 'Got it',
   'Mất kết nối – vẫn ôn tập được, tra từ mới cần mạng': "You're offline. Reviews still work; looking up new words needs a connection",
   'Đã có mạng trở lại': 'Back online',
@@ -2072,16 +2072,16 @@
 (function (g) { Object.assign(g.I18N_DICT.en, { 'Nghĩa từ hiển thị bằng': 'Show word meanings in', 'Định nghĩa tiếng Anh': 'English definitions' }); })(typeof self !== 'undefined' ? self : this);
 (function (g) { Object.assign(g.I18N_DICT.en, { 'Nghĩa theo từ loại': 'Meanings by part of speech', 'Nguồn: Oxford Languages (qua Google), Wiktionary': 'Sources: Oxford Languages (via Google), Wiktionary' }); })(typeof self !== 'undefined' ? self : this);
 (function (g) { Object.assign(g.I18N_DICT.en, { 'Tuần này của bạn': 'Your week', 'so với cả tuần trước': 'vs. all of last week', 'Lượt ôn': 'Reviews', 'Bài luyện': 'Quizzes', 'Ngày học': 'Days active' }); })(typeof self !== 'undefined' ? self : this);
-(function (g) { Object.assign(g.I18N_DICT.en, { 'Cài Vocaband như một app': 'Install Vocaband as an app', 'Mở nhanh từ màn hình chính, toàn màn hình, học được cả khi offline': 'Open from your home screen, full screen, works offline', 'Cài ngay – miễn phí': 'Install now – free', 'Đóng': 'Close' }); })(typeof self !== 'undefined' ? self : this);
+(function (g) { Object.assign(g.I18N_DICT.en, { 'Cài Lexkite như một app': 'Install Lexkite as an app', 'Mở nhanh từ màn hình chính, toàn màn hình, học được cả khi offline': 'Open from your home screen, full screen, works offline', 'Cài ngay – miễn phí': 'Install now – free', 'Đóng': 'Close' }); })(typeof self !== 'undefined' ? self : this);
 (function (g) { Object.assign(g.I18N_DICT.en, { 'Đồng bộ tài khoản': 'Account sync', 'Đăng nhập Google trong app sẽ có ở bản phát hành chính thức. Hiện tại dữ liệu học được lưu an toàn trên máy này; để đồng bộ giữa các thiết bị, hãy đăng nhập trên vocaband.web.app.': 'Google sign-in inside the app arrives with the official release. Your progress is saved safely on this device for now; to sync across devices, sign in at vocaband.web.app.' }); })(typeof self !== 'undefined' ? self : this);
 (function (g) { Object.assign(g.I18N_DICT.en, {
-  'Giọng hiện tại chưa tự nhiên. Mở Vocaband bằng <b>Microsoft Edge</b> để dùng giọng <b>Natural</b> (rất giống người thật, miễn phí).': 'This voice sounds robotic. Open Vocaband in <b>Microsoft Edge</b> to use its free <b>Natural</b> voices (very human-like).',
-  'Tải giọng chất lượng cao miễn phí: <b>Cài đặt → Trợ năng → Nội dung được đọc → Giọng nói → English</b> → chọn giọng có chữ <b>Nâng cao/Premium</b>, rồi mở lại Vocaband.': 'Get free high-quality voices: <b>Settings → Accessibility → Spoken Content → Voices → English</b> → pick an <b>Enhanced/Premium</b> voice, then reopen Vocaband.',
+  'Giọng hiện tại chưa tự nhiên. Mở Lexkite bằng <b>Microsoft Edge</b> để dùng giọng <b>Natural</b> (rất giống người thật, miễn phí).': 'This voice sounds robotic. Open Lexkite in <b>Microsoft Edge</b> to use its free <b>Natural</b> voices (very human-like).',
+  'Tải giọng chất lượng cao miễn phí: <b>Cài đặt → Trợ năng → Nội dung được đọc → Giọng nói → English</b> → chọn giọng có chữ <b>Nâng cao/Premium</b>, rồi mở lại Lexkite.': 'Get free high-quality voices: <b>Settings → Accessibility → Spoken Content → Voices → English</b> → pick an <b>Enhanced/Premium</b> voice, then reopen Lexkite.',
   'Cài <b>Google Speech Services</b> (Dịch vụ giọng nói của Google) từ CH Play và tải giọng tiếng Anh chất lượng cao để nghe tự nhiên hơn.': 'Install <b>Speech Services by Google</b> from Google Play and download a high-quality English voice for more natural audio.',
   'Dùng Chrome hoặc Edge mới nhất để có giọng đọc tự nhiên hơn.': 'Use the latest Chrome or Edge for more natural voices.',
 }); })(typeof self !== 'undefined' ? self : this);
 (function (g) { Object.assign(g.I18N_DICT.en, {
-  'Vocaband – Học từ vựng IELTS & TOEIC miễn phí: flashcard FSRS, từ điển, thi thử': 'Vocaband – Free IELTS & TOEIC vocabulary: FSRS flashcards, dictionary, mock tests',
+  'Lexkite – Học từ vựng IELTS & TOEIC miễn phí: flashcard FSRS, từ điển, thi thử': 'Lexkite – Free IELTS & TOEIC vocabulary: FSRS flashcards, dictionary, mock tests',
   'Học từ vựng IELTS, TOEIC & TOEFL miễn phí: flashcard FSRS, từ điển song ngữ có phát âm, luyện 4 kỹ năng và thi thử có giải thích chi tiết.': 'Learn IELTS, TOEIC & TOEFL vocabulary free: FSRS flashcards, a bilingual dictionary with pronunciation, 4-skill practice and mock tests with detailed explanations.',
   'Giọng đọc tự nhiên cho bài nghe & giám khảo (tải âm thanh từ mạng)': 'Natural voices for listening & examiner (streams audio)',
 }); })(typeof self !== 'undefined' ? self : this);
@@ -2203,7 +2203,7 @@
 
 /* Chữ giao diện add-on (content/popup/background) – nguồn tiếng Anh để Actions dịch sang 13 ngôn ngữ khác */
 (function (g) { Object.assign(g.I18N_DICT.en, {
-  'Dịch với Vocaband': 'Translate with Vocaband',
+  'Dịch với Lexkite': 'Translate with Lexkite',
   'Nghe câu ví dụ': 'Play example',
   'Quay lại từ trước': 'Back to previous word',
   'Anh–Mỹ': 'US English',
@@ -2236,14 +2236,14 @@
   'Giải thích nghĩa trong ngữ cảnh, cấu trúc, collocation, ví dụ': 'Explain meaning in context, structure, collocations, examples',
   '🤖 Giải thích sâu': '🤖 Deep explanation',
   '⏳ AI đang phân tích…': '⏳ AI is analyzing…',
-  'Chưa bật AI. Mở Vocaband → Cài đặt → “Chấm bài bằng AI” để thêm khóa Gemini miễn phí của bạn.': 'AI is not enabled. Open Vocaband → Settings → “AI grading” to add your free Gemini key.',
+  'Chưa bật AI. Mở Lexkite → Cài đặt → “Chấm bài bằng AI” để thêm khóa Gemini miễn phí của bạn.': 'AI is not enabled. Open Lexkite → Settings → “AI grading” to add your free Gemini key.',
   'Khóa AI tạm hết lượt miễn phí – thử lại sau ít phút.': 'Your AI key is out of free quota for now – try again in a few minutes.',
   'Khóa AI không hợp lệ – kiểm tra lại trong Cài đặt.': 'Invalid AI key – check it in Settings.',
   'Không phân tích được lúc này.': 'Could not analyze right now.',
   '⚙️ Mở Cài đặt': '⚙️ Open Settings',
   'Cụm hay đi kèm:': 'Common collocations:',
   '✓ Đã chép': '✓ Copied',
-  'Vocaband cấp {lv}': 'Vocaband level {lv}',
+  'Lexkite cấp {lv}': 'Lexkite level {lv}',
   'mới': 'new',
   '📒 {n} từ bạn đã học xuất hiện trên trang này': '📒 {n} words you have learned appear on this page',
   'Ôn ngay →': 'Review now →',
@@ -2275,14 +2275,14 @@
   '⏳ Đang tra…': '⏳ Looking up…',
   ' Dịch: <b>{vi}</b>': ' Translation: <b>{vi}</b>',
   '✓ Đã có': '✓ Saved',
-  'Vocaband – đến giờ học rồi! 📚': 'Vocaband – time to study! 📚',
+  'Lexkite – đến giờ học rồi! 📚': 'Lexkite – time to study! 📚',
   'Bạn có {n} thẻ cần ôn hôm nay.': 'You have {n} cards to review today.',
   ' Giữ chuỗi {n} ngày 🔥': ' Keep your {n}-day streak 🔥',
   'Thêm vài từ mới để giữ chuỗi ngày học nhé 🔥': 'Add a few new words to keep your streak going 🔥',
   'Ôn ngay': 'Review now',
   '⏰ Thời điểm vàng!': '⏰ Golden moment!',
   '{n} từ đang ở thời điểm sắp quên – ôn 3 phút để nhớ lâu hơn.': '{n} words are about to be forgotten – review for 3 minutes to remember them longer.',
-  'Tra từ “%s” với Vocaband': 'Look up “%s” with Vocaband',
+  'Tra từ “%s” với Lexkite': 'Look up “%s” with Lexkite',
   'Dịch đoạn đã chọn sang tiếng Việt': 'Translate selection to Vietnamese',
 }); })(typeof self !== 'undefined' ? self : this);
 

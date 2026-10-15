@@ -44,7 +44,7 @@
   'Từ trang web': 'From websites',
   'Lưu bằng add-on khi đọc báo, blog…': 'Saved with the add-on while reading news, blogs…',
   'Từ bài đọc': 'From readings',
-  'Lưu khi đọc bài trong Vocaband': 'Saved while reading in Vocaband',
+  'Lưu khi đọc bài trong Lexkite': 'Saved while reading in Lexkite',
   'Từ tra từ điển': 'From dictionary lookups',
   'Từ bạn tự tra và lưu': 'Words you looked up and saved',
   'Từ thư viện': 'From the library',
@@ -107,9 +107,9 @@
   'Còn <b style="color:var(--primary);font-size:1.1rem">{time}</b> · {n} từ sẽ cần ôn': 'In <b style="color:var(--primary);font-size:1.1rem">{time}</b> · {n} words will be due',
   '{h} giờ {m} phút': '{h} h {m} min',
   '{m} phút': '{m} min',
-  'Vocaband sẽ nhắc bạn đúng lúc từ sắp bị quên. Trong lúc chờ, hãy học thêm từ mới hoặc chơi Ghép thẻ.': "Vocaband will remind you right before words fade. Meanwhile, learn some new words or play Match.",
+  'Lexkite sẽ nhắc bạn đúng lúc từ sắp bị quên. Trong lúc chờ, hãy học thêm từ mới hoặc chơi Ghép thẻ.': "Lexkite will remind you right before words fade. Meanwhile, learn some new words or play Match.",
   'Chưa có lịch ôn': 'No reviews scheduled yet',
-  'Học từ mới đầu tiên – Vocaband sẽ tự tính “thời điểm vàng” để nhắc bạn ôn đúng lúc sắp quên.': 'Learn your first words and Vocaband will work out the “golden time” to remind you right before you forget.',
+  'Học từ mới đầu tiên – Lexkite sẽ tự tính “thời điểm vàng” để nhắc bạn ôn đúng lúc sắp quên.': 'Learn your first words and Lexkite will work out the “golden time” to remind you right before you forget.',
   'Học {n} từ mới ngay': 'Learn {n} new words now',
   'Chọn bộ từ': 'Choose a word set',
   'Thời điểm vàng là gì?': 'What is golden time?',
@@ -333,9 +333,9 @@
 
   // ---- Reminders & notifications ----
   'Ôn từ vựng IELTS (15 phút)': 'IELTS vocabulary review (15 min)',
-  'Mở Vocaband để ôn flashcard hôm nay: {url}': "Open Vocaband to review today's flashcards: {url}",
+  'Mở Lexkite để ôn flashcard hôm nay: {url}': "Open Lexkite to review today's flashcards: {url}",
   'Đến giờ ôn từ vựng IELTS!': 'Time for your IELTS vocabulary review!',
-  'Vocaband – đến giờ học rồi!': "Vocaband: it's study time!",
+  'Lexkite – đến giờ học rồi!': "Lexkite: it's study time!",
   'Bạn có {n} thẻ cần ôn hôm nay. Giữ chuỗi 🔥{s} ngày nhé!': 'You have {n} cards to review today. Keep your 🔥{s}-day streak going!',
   'Học vài từ mới để giữ chuỗi ngày học nhé': 'Learn a few new words to keep your streak alive',
   'Trình duyệt không hỗ trợ thông báo': "This browser doesn't support notifications",
@@ -394,12 +394,12 @@
 
   // ---- Install app, network ----
   'Cài app': 'Install app',
-  'Cài Vocaband lên màn hình chính': 'Install Vocaband on your home screen',
-  'Đã cài Vocaband!': 'Vocaband installed!',
-  'Cài Vocaband lên iPhone': 'Install Vocaband on iPhone',
+  'Cài Lexkite lên màn hình chính': 'Install Lexkite on your home screen',
+  'Đã cài Lexkite!': 'Lexkite installed!',
+  'Cài Lexkite lên iPhone': 'Install Lexkite on iPhone',
   'Bấm nút <b>Chia sẻ</b> <span style="font-size:1.2rem">⎋</span> ở thanh dưới của Safari': 'Tap the <b>Share</b> button <span style="font-size:1.2rem">⎋</span> in Safari’s bottom bar',
   'Chọn <b>“Thêm vào MH chính”</b> (Add to Home Screen)': 'Choose <b>“Add to Home Screen”</b>',
-  'Bấm <b>Thêm</b> – biểu tượng Vocaband sẽ xuất hiện như một app': 'Tap <b>Add</b>. The Vocaband icon will appear like any other app',
+  'Bấm <b>Thêm</b> – biểu tượng Lexkite sẽ xuất hiện như một app': 'Tap <b>Add</b>. The Lexkite icon will appear like any other app',
   'Đã hiểu': 'Got it',
   'Mất kết nối – vẫn ôn tập được, tra từ mới cần mạng': "You're offline. Reviews still work; looking up new words needs a connection",
   'Đã có mạng trở lại': 'Back online',
@@ -411,16 +411,16 @@
 (function (g) { Object.assign(g.I18N_DICT.en, { 'Nghĩa từ hiển thị bằng': 'Show word meanings in', 'Định nghĩa tiếng Anh': 'English definitions' }); })(typeof self !== 'undefined' ? self : this);
 (function (g) { Object.assign(g.I18N_DICT.en, { 'Nghĩa theo từ loại': 'Meanings by part of speech', 'Nguồn: Oxford Languages (qua Google), Wiktionary': 'Sources: Oxford Languages (via Google), Wiktionary' }); })(typeof self !== 'undefined' ? self : this);
 (function (g) { Object.assign(g.I18N_DICT.en, { 'Tuần này của bạn': 'Your week', 'so với cả tuần trước': 'vs. all of last week', 'Lượt ôn': 'Reviews', 'Bài luyện': 'Quizzes', 'Ngày học': 'Days active' }); })(typeof self !== 'undefined' ? self : this);
-(function (g) { Object.assign(g.I18N_DICT.en, { 'Cài Vocaband như một app': 'Install Vocaband as an app', 'Mở nhanh từ màn hình chính, toàn màn hình, học được cả khi offline': 'Open from your home screen, full screen, works offline', 'Cài ngay – miễn phí': 'Install now – free', 'Đóng': 'Close' }); })(typeof self !== 'undefined' ? self : this);
+(function (g) { Object.assign(g.I18N_DICT.en, { 'Cài Lexkite như một app': 'Install Lexkite as an app', 'Mở nhanh từ màn hình chính, toàn màn hình, học được cả khi offline': 'Open from your home screen, full screen, works offline', 'Cài ngay – miễn phí': 'Install now – free', 'Đóng': 'Close' }); })(typeof self !== 'undefined' ? self : this);
 (function (g) { Object.assign(g.I18N_DICT.en, { 'Đồng bộ tài khoản': 'Account sync', 'Đăng nhập Google trong app sẽ có ở bản phát hành chính thức. Hiện tại dữ liệu học được lưu an toàn trên máy này; để đồng bộ giữa các thiết bị, hãy đăng nhập trên vocaband.web.app.': 'Google sign-in inside the app arrives with the official release. Your progress is saved safely on this device for now; to sync across devices, sign in at vocaband.web.app.' }); })(typeof self !== 'undefined' ? self : this);
 (function (g) { Object.assign(g.I18N_DICT.en, {
-  'Giọng hiện tại chưa tự nhiên. Mở Vocaband bằng <b>Microsoft Edge</b> để dùng giọng <b>Natural</b> (rất giống người thật, miễn phí).': 'This voice sounds robotic. Open Vocaband in <b>Microsoft Edge</b> to use its free <b>Natural</b> voices (very human-like).',
-  'Tải giọng chất lượng cao miễn phí: <b>Cài đặt → Trợ năng → Nội dung được đọc → Giọng nói → English</b> → chọn giọng có chữ <b>Nâng cao/Premium</b>, rồi mở lại Vocaband.': 'Get free high-quality voices: <b>Settings → Accessibility → Spoken Content → Voices → English</b> → pick an <b>Enhanced/Premium</b> voice, then reopen Vocaband.',
+  'Giọng hiện tại chưa tự nhiên. Mở Lexkite bằng <b>Microsoft Edge</b> để dùng giọng <b>Natural</b> (rất giống người thật, miễn phí).': 'This voice sounds robotic. Open Lexkite in <b>Microsoft Edge</b> to use its free <b>Natural</b> voices (very human-like).',
+  'Tải giọng chất lượng cao miễn phí: <b>Cài đặt → Trợ năng → Nội dung được đọc → Giọng nói → English</b> → chọn giọng có chữ <b>Nâng cao/Premium</b>, rồi mở lại Lexkite.': 'Get free high-quality voices: <b>Settings → Accessibility → Spoken Content → Voices → English</b> → pick an <b>Enhanced/Premium</b> voice, then reopen Lexkite.',
   'Cài <b>Google Speech Services</b> (Dịch vụ giọng nói của Google) từ CH Play và tải giọng tiếng Anh chất lượng cao để nghe tự nhiên hơn.': 'Install <b>Speech Services by Google</b> from Google Play and download a high-quality English voice for more natural audio.',
   'Dùng Chrome hoặc Edge mới nhất để có giọng đọc tự nhiên hơn.': 'Use the latest Chrome or Edge for more natural voices.',
 }); })(typeof self !== 'undefined' ? self : this);
 (function (g) { Object.assign(g.I18N_DICT.en, {
-  'Vocaband – Học từ vựng IELTS & TOEIC miễn phí: flashcard FSRS, từ điển, thi thử': 'Vocaband – Free IELTS & TOEIC vocabulary: FSRS flashcards, dictionary, mock tests',
+  'Lexkite – Học từ vựng IELTS & TOEIC miễn phí: flashcard FSRS, từ điển, thi thử': 'Lexkite – Free IELTS & TOEIC vocabulary: FSRS flashcards, dictionary, mock tests',
   'Học từ vựng IELTS, TOEIC & TOEFL miễn phí: flashcard FSRS, từ điển song ngữ có phát âm, luyện 4 kỹ năng và thi thử có giải thích chi tiết.': 'Learn IELTS, TOEIC & TOEFL vocabulary free: FSRS flashcards, a bilingual dictionary with pronunciation, 4-skill practice and mock tests with detailed explanations.',
   'Giọng đọc tự nhiên cho bài nghe & giám khảo (tải âm thanh từ mạng)': 'Natural voices for listening & examiner (streams audio)',
 }); })(typeof self !== 'undefined' ? self : this);

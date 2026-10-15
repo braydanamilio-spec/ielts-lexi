@@ -52,7 +52,7 @@
     view.innerHTML = `
       <div class="page-head"><div><h1>🎓 ${t('Luyện thi TOEFL iBT')}</h1><p class="muted">${t('Luyện 12 dạng bài của đề TOEFL iBT định dạng mới: Reading, Listening, Writing, Speaking. Đề tự biên soạn, có giải thích tiếng Việt cho từng câu.')}</p></div></div>
       <div class="grid g2">
-        <div class="card hero-main" style="background:linear-gradient(135deg,#7c3aed,#1d4ed8)">
+        <div class="card hero-main" style="background:linear-gradient(135deg,#0F3D3E,#1F7A72)">
           <h2 style="color:#fff;margin:0">🆕 ${t('Định dạng mới từ 21/01/2026')}</h2>
           <ul style="color:#ede9fe;margin:.5rem 0 0;padding-left:1.1rem;line-height:1.7" class="small">
             <li>${t('Bài thi ngắn hơn (khoảng 1,5 giờ) và <b>thích ứng</b>: độ khó thay đổi theo câu trả lời của bạn.')}</li>

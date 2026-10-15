@@ -264,7 +264,7 @@
 (function (g) { Object.assign(g.I18N_DICT.en, {
   'Đang tải mô hình nhận dạng giọng nói… {p}%': 'Downloading the speech recognition model… {p}%',
   'Bật nhận dạng giọng nói trên máy': 'Turn on on-device speech recognition',
-  'Trình duyệt này chưa có nhận dạng giọng nói. Vocaband có thể dùng <b>Whisper</b> (mã nguồn mở) chạy ngay trên máy của bạn: miễn phí, riêng tư – âm thanh không gửi đi đâu.': 'This browser has no built-in speech recognition. Vocaband can use <b>Whisper</b> (open source) running right on your device: free and private – your audio never leaves it.',
+  'Trình duyệt này chưa có nhận dạng giọng nói. Lexkite có thể dùng <b>Whisper</b> (mã nguồn mở) chạy ngay trên máy của bạn: miễn phí, riêng tư – âm thanh không gửi đi đâu.': 'This browser has no built-in speech recognition. Lexkite can use <b>Whisper</b> (open source) running right on your device: free and private – your audio never leaves it.',
   'Cần tải mô hình khoảng 40 MB một lần (nên dùng Wi-Fi).': 'It needs a one-time ~40 MB model download (Wi-Fi recommended).',
   'Tải & bật': 'Download & turn on', 'Đang chuẩn bị… bấm micro lần nữa để nói': 'Getting ready… tap the mic again to speak',
 }); })(typeof self !== 'undefined' ? self : this);

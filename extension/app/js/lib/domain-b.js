@@ -1,4 +1,4 @@
-/* Từ vựng chuyên ngành (tự biên soạn) – Vocaband, CC BY-SA 4.0 */
+/* Từ vựng chuyên ngành (tự biên soạn) – Lexkite, CC BY-SA 4.0 */
 (function (g) {
   const add = g.IELTS_DATA.add;
   add('dom-mkt', 'Marketing & Truyền thông', '📣', 'Thương hiệu, quảng cáo, PR, digital marketing, đo lường hiệu quả chiến dịch…', [

@@ -110,7 +110,7 @@
     const plan = PLAN[stage] || PLAN.s1;
 
     view.innerHTML = `
-      <div class="page-head"><div><h1>🧪 ${t('Phương pháp học của Vocaband')}</h1><p class="muted">${t('Mỗi tính năng dựa trên một nguyên lý đã được nghiên cứu về trí nhớ và thụ đắc ngôn ngữ – kèm số liệu thật của chính bạn để biết nên làm gì tiếp theo.')}</p></div></div>
+      <div class="page-head"><div><h1>🧪 ${t('Phương pháp học của Lexkite')}</h1><p class="muted">${t('Mỗi tính năng dựa trên một nguyên lý đã được nghiên cứu về trí nhớ và thụ đắc ngôn ngữ – kèm số liệu thật của chính bạn để biết nên làm gì tiếp theo.')}</p></div></div>
 
       <div class="card hero-main" style="margin-bottom:1rem">
         <div class="row between"><h2 style="color:#fff;margin:0">${t('Vòng lặp học mỗi ngày (~30 phút)')}</h2><span class="chip" style="background:rgba(255,255,255,.2);color:#fff">${t('Hôm nay {done}/{total}', { done: loopDone, total: LOOP.length })}</span></div>
@@ -140,12 +140,12 @@
         <div class="tiny muted" style="margin-top:.4rem">${t('Tổng ~{n} phút/ngày. Đều đặn mỗi ngày hiệu quả hơn học dồn cuối tuần.', { n: plan[1].reduce((a, x) => a + x[1], 0) })} <a href="#/path">${t('Xem Lộ trình chi tiết →')}</a></div>
       </div>
 
-      <h2>📚 ${t('12 nguyên lý & cách Vocaband áp dụng')}</h2>
+      <h2>📚 ${t('12 nguyên lý & cách Lexkite áp dụng')}</h2>
       <div class="grid g2">${P.map(p => `
         <div class="card mprin">
           <div class="row nowrap"><span style="font-size:2rem">${p.em}</span><div><h3 style="margin:0">${p.t}</h3><div class="tiny muted">${p.who}</div></div></div>
           <p class="small" style="margin:.6rem 0">${p.idea}</p>
-          <div class="example-box small" style="border-left-color:var(--primary)"><b>${t('Trong Vocaband:')}</b> ${p.how}</div>
+          <div class="example-box small" style="border-left-color:var(--primary)"><b>${t('Trong Lexkite:')}</b> ${p.how}</div>
           <div class="row between" style="margin-top:auto;padding-top:.7rem"><span class="chip">📊 ${esc(p.stat)}</span><div class="row">${p.links.map(([h, l], i) => `<a class="btn sm ${i ? 'ghost' : ''}" href="${h}">${l} →</a>`).join('')}</div></div>
         </div>`).join('')}</div>
 

@@ -53,7 +53,7 @@
       if (lang !== 'en') document.write(`<script src="js/i18n/${lang}.js"><\/script>`);
     }
     // Tiêu đề & mô tả trang theo ngôn ngữ (Google đọc được tiêu đề do JS đặt) – khóa dịch nằm trong từ điển giao diện
-    const TITLE = 'Vocaband – Học từ vựng IELTS & TOEIC miễn phí: flashcard FSRS, từ điển, thi thử';
+    const TITLE = 'Lexkite – Học từ vựng IELTS & TOEIC miễn phí: flashcard FSRS, từ điển, thi thử';
     const DESC = 'Học từ vựng IELTS, TOEIC & TOEFL miễn phí: flashcard FSRS, từ điển song ngữ có phát âm, luyện 4 kỹ năng và thi thử có giải thích chi tiết.';
     document.addEventListener('DOMContentLoaded', () => {
       apply();
