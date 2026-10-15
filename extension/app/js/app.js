@@ -1216,19 +1216,19 @@
     ];
     view.innerHTML = `
       <div style="max-width:980px;margin:0 auto">
-        <div class="row between" style="margin-bottom:2rem"><span class="brand" style="padding:0"><img class="logo" src="icons/icon.svg" alt=""><span class="wordmark">Voca<b>band</b></span></span>
+        <div class="row between" style="margin-bottom:2rem"><span class="brand" style="padding:0"><img class="logo" src="icons/icon.svg" alt=""><span class="wordmark">lex<b>kite</b></span></span>
           <span class="row w-tools" style="gap:.5rem">${App.langPicker()}<button class="btn ghost sm" id="skipW">${t('Đã có dữ liệu? Vào app →')}</button></span></div>
         <div class="grid g2" style="align-items:center;gap:2.5rem">
           <div>
             <span class="chip lv">✨ ${t('Dành cho người luyện thi IELTS')}</span>
-            <h1 style="font-size:clamp(2rem,5vw,3.2rem);line-height:1.1;margin:1rem 0">${t('Từ vựng vững,')}<br><span style="background:linear-gradient(90deg,#6D5DFC,#C026D3);-webkit-background-clip:text;background-clip:text;color:transparent">${t('band điểm bứt phá.')}</span></h1>
+            <h1 style="font-size:clamp(2rem,5vw,3.2rem);line-height:1.1;margin:1rem 0">${t('Từ vựng vững,')}<br><span style="background:linear-gradient(90deg,#E5502F,#FFB054);-webkit-background-clip:text;background-clip:text;color:transparent">${t('band điểm bứt phá.')}</span></h1>
             <p class="muted" style="font-size:1.1rem">${t('Học 15 phút mỗi ngày với flashcard thông minh, trò chơi, bài đọc và luyện phát âm. Mọi từ đều có phiên âm chuẩn Anh–Anh, nghĩa tiếng Việt và câu ví dụ IELTS.')}</p>
             <div class="row w-cta" style="margin-top:1.5rem"><a class="btn primary lg" href="#/welcome/setup">${t('Bắt đầu miễn phí →')}</a><button class="btn lg" id="loginW">${t('Tôi đã có tài khoản')}</button></div>
             <a class="small" href="#/placement" style="display:inline-block;margin-top:.7rem;font-weight:700">🧭 ${t('Kiểm tra trình độ trước (5 phút) →')}</a>
             <p class="small muted" style="margin-top:.8rem">${t('Miễn phí · Không quảng cáo · Dữ liệu học thuộc về bạn')}</p>
           </div>
           <div class="card" style="padding:0;overflow:hidden;box-shadow:var(--shadow-lg)">
-            <div style="background:linear-gradient(135deg,#6D5DFC,#7C3AED 55%,#C026D3);padding:1.6rem;color:#fff;text-align:center">
+            <div style="background:linear-gradient(135deg,#0F3D3E,#17595A 60%,#1F7A72);padding:1.6rem;color:#fff;text-align:center">
               <div style="font-size:4rem">🌿</div><div style="font-size:2rem;font-weight:800">sustainable</div>
               <div style="opacity:.85">/səˈsteɪnəbl/ · adj · B2</div></div>
             <div style="padding:1.2rem 1.4rem">
@@ -1250,7 +1250,7 @@
     const topics = TOPICS.filter(t => t.group === 'topics' || t.group === 'writing').slice(0, 15);
     const draw = () => {
       view.innerHTML = `<div style="max-width:760px;margin:0 auto" class="stack">
-        <div class="row between"><span class="brand" style="padding:0"><img class="logo" src="icons/icon.svg" alt=""><span class="wordmark">Voca<b>band</b></span></span><a class="small" href="#/welcome">← ${t('Quay lại')}</a></div>
+        <div class="row between"><span class="brand" style="padding:0"><img class="logo" src="icons/icon.svg" alt=""><span class="wordmark">lex<b>kite</b></span></span><a class="small" href="#/welcome">← ${t('Quay lại')}</a></div>
         <div class="card"><h2>🎯 ${t('Band mục tiêu của bạn?')}</h2><div class="tabs" style="display:inline-flex;margin-top:.4rem" id="bandT">${['5.5', '6.0', '6.5', '7.0', '7.5', '8.0+'].map(b => `<button data-v="${b}" class="${pick.band === b ? 'on' : ''}">${b}</button>`).join('')}</div></div>
         <div class="card"><h2>⏱ ${t('Bạn muốn học với cường độ nào?')}</h2><div class="grid g3" style="margin-top:.6rem">${paces.map(([v, pt, d]) => `<button class="option ${pick.pace === v ? 'right' : ''}" data-pace="${v}" style="flex-direction:column;align-items:flex-start"><b>${pt}</b><span class="small muted" style="font-weight:500">${d}</span></button>`).join('')}</div></div>
         <div class="card"><h2>📚 ${t('Chọn chủ đề muốn học trước')}</h2><p class="muted small">${t('Chọn 1–5 chủ đề, bạn có thể thêm sau trong Thư viện.')}</p>
