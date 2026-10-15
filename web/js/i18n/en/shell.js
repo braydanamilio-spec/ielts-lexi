@@ -32,7 +32,7 @@
   'Cài đặt': 'Settings',
   'Tiến độ': 'Progress',
   'Tra từ… (phím /)': 'Look up a word… (press /)',
-  'Tra từ': 'Look up',
+  'Tra từ': 'Look up a word',
   'Chuỗi ngày học': 'Study streak',
   'Tổng XP': 'Total XP',
   'Đổi giao diện sáng/tối': 'Toggle light/dark theme',

@@ -7,9 +7,21 @@ self.addEventListener('unhandledrejection', e => logErr('bg-promise', e.reason))
 if (typeof importScripts === 'function' && typeof Core === 'undefined') importScripts('app/js/data.js', 'app/js/core.js', 'app/js/vi-check.js', 'app/js/dictionary.js');
 const { Store, Cards, Stats, Golden, DEFAULT_SETTINGS, todayKey } = Core;
 // Ngôn ngữ giao diện (thông báo, menu chuột phải): chỉ en / vi như web app, ngôn ngữ khác → English
-let UI_LANG = (chrome.i18n && chrome.i18n.getUILanguage ? chrome.i18n.getUILanguage() : navigator.language || 'en').toLowerCase().startsWith('vi') ? 'vi' : 'en';
-chrome.storage.local.get('uiLang').then(r => { if (r.uiLang === 'vi' || r.uiLang === 'en') UI_LANG = r.uiLang; }).catch(() => {});
-chrome.storage.onChanged.addListener(ch => { if (ch.uiLang && /^(vi|en)$/.test(ch.uiLang.newValue)) UI_LANG = ch.uiLang.newValue; });
+// Giao diện add-on theo 15 ngôn ngữ của web: vi = chữ gốc, en = bảng EN, ngôn ngữ khác = từ điển web (app/js/i18n/<lang>.js)
+const XLANGS = ['vi', 'en', 'es', 'pt', 'fr', 'de', 'id', 'th', 'zh', 'ja', 'ko', 'hi', 'ar', 'ru', 'tr'];
+const pickLang = l => { l = String(l || '').toLowerCase().split('-')[0]; return XLANGS.includes(l) ? l : null; };
+let UI_LANG = pickLang(chrome.i18n && chrome.i18n.getUILanguage ? chrome.i18n.getUILanguage() : navigator.language) || 'en';
+const uiDicts = {};
+async function uiDict(lang) {
+  if (!lang || lang === 'vi' || lang === 'en') return {};
+  if (uiDicts[lang]) return uiDicts[lang];
+  try { const s = await (await fetch(chrome.runtime.getURL(`app/js/i18n/${lang}.js`))).text(); const i = s.indexOf('{"', s.indexOf('Object.assign(')), j = s.lastIndexOf('});'); uiDicts[lang] = JSON.parse(s.slice(i, j + 1)); } catch (e) { uiDicts[lang] = {}; }
+  return uiDicts[lang];
+}
+let XD = {};
+const setLang = l => { if (!l) return; UI_LANG = l; uiDict(l).then(d => { XD = d; }); };
+chrome.storage.local.get('uiLang').then(r => setLang(pickLang(r.uiLang) || UI_LANG)).catch(() => {});
+chrome.storage.onChanged.addListener(ch => { if (ch.uiLang) setLang(pickLang(ch.uiLang.newValue)); });
 const EN = {
   'Vocaband – đến giờ học rồi! 📚': 'Vocaband – time to study! 📚',
   'Bạn có {n} thẻ cần ôn hôm nay.': 'You have {n} cards to review today.',
@@ -21,7 +33,7 @@ const EN = {
   'Tra từ “%s” với Vocaband': 'Look up “%s” with Vocaband',
   'Dịch đoạn đã chọn sang tiếng Việt': 'Translate selection to Vietnamese',
 };
-const tx = (src, vars) => { let s = UI_LANG === 'vi' ? src : (EN[src] || src); if (vars) s = s.replace(/\{(\w+)\}/g, (m, k) => (vars[k] != null ? vars[k] : m)); return s; };
+const tx = (src, vars) => { let s = UI_LANG === 'vi' ? src : (XD[src] || EN[src] || src); if (vars) s = s.replace(/\{(\w+)\}/g, (m, k) => (vars[k] != null ? vars[k] : m)); return s; };
 
 const APP_URL = chrome.runtime.getURL('app/index.html');
 const getSettings = async () => ({ ...DEFAULT_SETTINGS, ...(await Store.get('settings', {})) });
@@ -193,6 +205,7 @@ chrome.runtime.onMessage.addListener((msg, sender, reply) => {
         const card = await Cards.add(msg.entry, msg.context);
         return reply({ ok: true, card });
       }
+      case 'uiDict': return reply({ dict: await uiDict(msg.lang) });
       case 'translate': return reply({ vi: !msg.tl || msg.tl === 'vi' ? await Dict.translateVi(msg.text) : msg.tl === 'en' ? '' : await Dict.translateTo(msg.text, msg.tl) });
       case 'notes': { // ghi chú học từ soạn sẵn (nằm trong gói add-on, theo chữ cái đầu)
         const w = String(msg.word || '').toLowerCase(), c = /^[a-z]/.test(w) ? w[0] : '_';
